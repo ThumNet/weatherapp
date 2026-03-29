@@ -16,6 +16,14 @@
     /* Smooth iOS momentum scrolling */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
+    /* Safari website tinting samples html, not body */
+    background-color: #0f2027;
+  }
+
+  @media (prefers-color-scheme: light) {
+    html {
+      background-color: #bae6fd;
+    }
   }
 
   body {
@@ -25,6 +33,7 @@
     text-rendering: optimizeLegibility;
 
     /* Dark mode default: deep night-sky gradient */
+    background-color: #0f2027;
     background: linear-gradient(
       to bottom,
       #0f2027 0%,
@@ -38,6 +47,7 @@
   /* Light mode: soft daylight sky gradient */
   @media (prefers-color-scheme: light) {
     body {
+      background-color: #bae6fd;
       background: linear-gradient(
         to bottom,
         #bae6fd 0%,   /* sky-200 */

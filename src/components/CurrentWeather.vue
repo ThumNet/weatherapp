@@ -4,6 +4,8 @@ import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
 import { getWeatherDescription, getWeatherIcon, degreesToCompass } from '@/utils/weatherCodes'
 
+defineEmits<{ (e: 'open-radar'): void }>()
+
 const weatherStore = useWeatherStore()
 const precipStore = usePrecipitationStore()
 
@@ -26,11 +28,6 @@ const description = computed(() =>
 const windCompass = computed(() =>
   weather.value !== null ? degreesToCompass(weather.value.windDirection) : '',
 )
-
-const lastUpdatedLabel = computed(() => {
-  if (!weatherStore.lastUpdated) return null
-  return weatherStore.lastUpdated.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
-})
 
 // ── Precipitation helpers ────────────────────────────────────────────────────
 
@@ -269,54 +266,6 @@ const gridLines = computed(() => {
 
       <!-- Precipitation data -->
       <template v-else-if="precipStore.entries.length > 0">
-        <!-- Alert banner -->
-        <div
-          class="mb-4 flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold shadow-inner transition-colors"
-          :class="{
-            'bg-blue-500/70 text-white': alertStyle === 'rain',
-            'bg-yellow-400/80 text-yellow-900': alertStyle === 'soon',
-            'bg-green-500/60 text-white': alertStyle === 'clear',
-          }"
-        >
-          <!-- Icon -->
-          <span class="text-xl leading-none">
-          {{ rainIntensityIcon }}
-          </span>
-
-          <!-- Message -->
-          <span v-if="alertStyle === 'rain'">{{ rainIntensityLabel }} — falling now</span>
-          <span v-else-if="alertStyle === 'soon'">
-            {{ rainIntensityLabel }} in {{ precipStore.minutesUntilRain }} minute{{
-              precipStore.minutesUntilRain === 1 ? '' : 's'
-            }}
-          </span>
-          <span v-else>No rain expected for the next 2 hours</span>
-
-          <!-- Refreshing spinner -->
-          <svg
-            v-if="precipStore.loading"
-            class="ml-auto size-4 animate-spin opacity-60"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            aria-label="Refreshing"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
-            />
-          </svg>
-        </div>
-
         <!-- Bar chart -->
         <div class="relative">
           <!-- Chart area with gridlines -->
@@ -384,6 +333,70 @@ const gridLines = computed(() => {
           </div>
         </div>
 
+        <!-- Alert banner — tappable button to open radar -->
+        <button
+          class="mt-4 w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold shadow-inner transition-colors"
+          :class="{
+            'bg-blue-500/70 text-white': alertStyle === 'rain',
+            'bg-yellow-400/80 text-yellow-900': alertStyle === 'soon',
+            'bg-green-500/60 text-white': alertStyle === 'clear',
+          }"
+          @click="$emit('open-radar')"
+        >
+          <!-- Icon -->
+          <span class="text-xl leading-none">
+          {{ rainIntensityIcon }}
+          </span>
+
+          <!-- Message -->
+          <span v-if="alertStyle === 'rain'">{{ rainIntensityLabel }} — falling now</span>
+          <span v-else-if="alertStyle === 'soon'">
+            {{ rainIntensityLabel }} in {{ precipStore.minutesUntilRain }} minute{{
+              precipStore.minutesUntilRain === 1 ? '' : 's'
+            }}
+          </span>
+          <span v-else>No rain expected for the next 2 hours</span>
+
+          <!-- Refreshing spinner -->
+          <svg
+            v-if="precipStore.loading"
+            class="ml-auto size-4 animate-spin opacity-60"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-label="Refreshing"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
+            />
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
+            />
+          </svg>
+
+          <!-- Chevron right (only shown when not loading) -->
+          <svg
+            v-else
+            class="ml-auto size-4 opacity-60"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M9 18l6-6-6-6" />
+          </svg>
+        </button>
+
         <!-- Non-blocking precipitation error notice -->
         <p v-if="precipStore.error" class="mt-3 text-center text-xs text-yellow-300/80">
           ⚠️ {{ precipStore.error }}
@@ -400,11 +413,6 @@ const gridLines = computed(() => {
           </div>
         </div>
       </template>
-
-      <!-- Last updated -->
-      <p v-if="lastUpdatedLabel" class="mt-4 text-right text-xs text-white/40">
-        Updated {{ lastUpdatedLabel }}
-      </p>
     </div>
   </div>
   </div>

@@ -19,6 +19,12 @@ const precipitationStore = usePrecipitationStore()
 const { requestPosition, loading: geoLoading, error: geoError } = useGeolocation()
 const { isOnline } = useOnlineStatus()
 
+const radarRef = ref<InstanceType<typeof RadarMap> | null>(null)
+
+function openRadar(): void {
+  radarRef.value?.openOverlay()
+}
+
 // ── Refresh all data for the current location ───────────────────────────────
 async function refreshAll(): Promise<void> {
   const lat = locationStore.latitude
@@ -132,10 +138,9 @@ watch(
       </div>
     </Transition>
 
-    <!-- Page shell: centred column, mobile-first -->
-    <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl">
-      <!-- Compact header bar -->
-      <header class="pb-4 pt-safe pt-6">
+    <!-- Compact header bar — sticky, full-width, with inner centering -->
+    <header class="sticky top-0 z-40 bg-[#0f2027] backdrop-blur-md border-b border-white/10">
+      <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-2 pt-safe pt-4">
         <!-- Header row -->
         <div class="flex items-center gap-2">
           <!-- Brand emoji -->
@@ -171,7 +176,7 @@ watch(
             <button
               class="flex size-8 items-center justify-center rounded-full text-blue-200/60 transition-colors hover:bg-white/10 hover:text-white"
               aria-label="Change location"
-              @click="isEditingLocation = true"
+              @click="isEditingLocation = !isEditingLocation"
             >
               <svg
                 class="size-4"
@@ -242,15 +247,18 @@ watch(
             {{ geoError }}
           </p>
         </Transition>
-      </header>
+      </div>
+    </header>
 
+    <!-- Page shell: centred column, mobile-first -->
+    <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl">
       <!-- Main content: each component fills the column width -->
       <main class="mt-6 flex flex-col gap-5 pb-safe">
         <Transition name="content-fade" appear>
-          <CurrentWeather />
+          <CurrentWeather @open-radar="openRadar" />
         </Transition>
         <Transition name="content-fade" appear>
-          <RadarMap />
+          <RadarMap ref="radarRef" />
         </Transition>
         <Transition name="content-fade" appear>
           <HourlyForecast />

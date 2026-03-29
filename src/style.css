@@ -11,8 +11,6 @@
   }
 
   html {
-    /* Prevent horizontal scroll at the root */
-    overflow-x: hidden;
     /* Smooth iOS momentum scrolling */
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -41,7 +39,7 @@
       #1e3a8a 100%
     );
     min-height: 100dvh;
-    overflow-x: hidden;
+    overflow-x: clip;
   }
 
   /* Light mode: soft daylight sky gradient */

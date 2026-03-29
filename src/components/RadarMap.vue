@@ -199,34 +199,11 @@ onUnmounted(() => {
 watch(mapCenter, () => {
   // No need to reload frames — radar is global
 })
+
+defineExpose({ openOverlay })
 </script>
 
 <template>
-  <!-- ── Trigger button (always visible in the page flow) ────────────────── -->
-  <button
-    class="w-full max-w-md flex items-center justify-between rounded-2xl border border-white/20 bg-white/10 px-5 py-4 shadow-xl backdrop-blur-md transition hover:bg-white/15 active:bg-white/20 dark:bg-white/5"
-    aria-label="Open Rain Radar"
-    @click="openOverlay"
-  >
-    <div class="flex items-center gap-2">
-      <span class="text-lg" aria-hidden="true">🌧️</span>
-      <span class="text-sm font-semibold uppercase tracking-wide text-white/80">Rain Radar</span>
-    </div>
-    <!-- Chevron right -->
-    <svg
-      class="size-5 text-white/40"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="2"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M9 18l6-6-6-6" />
-    </svg>
-  </button>
-
   <!-- ── Full-screen overlay (teleported to <body>) ──────────────────────── -->
   <Teleport to="body">
     <Transition name="radar-overlay">

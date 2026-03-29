@@ -1,0 +1,90 @@
+import { defineStore } from 'pinia'
+import { ref } from 'vue'
+import {
+  fetchCurrentWeather,
+  fetchDailyForecast,
+  fetchHourlyForecast,
+} from '@/services/weatherService'
+import type { CurrentWeather, DailyForecast, HourlyForecast } from '@/types/weather'
+
+const STORAGE_KEY = 'dutch-weather:weather'
+
+interface WeatherCache {
+  currentWeather: CurrentWeather
+  hourlyForecast: HourlyForecast
+  dailyForecast: DailyForecast
+  lastUpdated: string // ISO string
+}
+
+function loadFromStorage(): WeatherCache | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as WeatherCache
+  } catch {
+    return null
+  }
+}
+
+function saveToStorage(cache: WeatherCache): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cache))
+  } catch {
+    // Storage quota exceeded or unavailable — silently ignore
+  }
+}
+
+export const useWeatherStore = defineStore('weather', () => {
+  // Hydrate from localStorage on init
+  const cached = loadFromStorage()
+
+  const currentWeather = ref<CurrentWeather | null>(cached?.currentWeather ?? null)
+  const hourlyForecast = ref<HourlyForecast | null>(cached?.hourlyForecast ?? null)
+  const dailyForecast = ref<DailyForecast | null>(cached?.dailyForecast ?? null)
+  const loading = ref(false)
+  const error = ref<string | null>(null)
+  const lastUpdated = ref<Date | null>(
+    cached?.lastUpdated ? new Date(cached.lastUpdated) : null,
+  )
+
+  async function fetchWeather(lat: number, lon: number): Promise<void> {
+    loading.value = true
+    error.value = null
+
+    try {
+      const [current, hourly, daily] = await Promise.all([
+        fetchCurrentWeather(lat, lon),
+        fetchHourlyForecast(lat, lon),
+        fetchDailyForecast(lat, lon),
+      ])
+      currentWeather.value = current
+      hourlyForecast.value = hourly
+      dailyForecast.value = daily
+      lastUpdated.value = new Date()
+
+      // Persist fresh data for offline use
+      saveToStorage({
+        currentWeather: current,
+        hourlyForecast: hourly,
+        dailyForecast: daily,
+        lastUpdated: lastUpdated.value.toISOString(),
+      })
+    } catch (err) {
+      error.value =
+        err instanceof Error ? err.message : 'Failed to fetch weather data. Please try again.'
+      // Keep the previous weather data visible while showing the error
+    } finally {
+      loading.value = false
+    }
+  }
+
+  return {
+    currentWeather,
+    hourlyForecast,
+    dailyForecast,
+    loading,
+    error,
+    lastUpdated,
+    fetchWeather,
+  }
+})

@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dark blue rounded background -->
+  <rect width="512" height="512" rx="96" fill="#1e40af"/>
+
+  <!-- Sun rays -->
+  <g fill="#fbbf24" opacity="0.9">
+    <!-- Sun center -->
+    <circle cx="300" cy="185" r="52"/>
+    <!-- Rays -->
+    <rect x="295" y="105" width="10" height="28" rx="5"/>
+    <rect x="295" y="237" width="10" height="28" rx="5"/>
+    <rect x="217" y="180" width="28" height="10" rx="5"/>
+    <rect x="349" y="180" width="28" height="10" rx="5"/>
+    <!-- Diagonal rays -->
+    <rect x="243" y="125" width="10" height="28" rx="5" transform="rotate(-45 248 139)"/>
+    <rect x="343" y="125" width="10" height="28" rx="5" transform="rotate(45 348 139)"/>
+    <rect x="243" y="222" width="10" height="28" rx="5" transform="rotate(45 248 236)"/>
+    <rect x="343" y="222" width="10" height="28" rx="5" transform="rotate(-45 348 236)"/>
+  </g>
+
+  <!-- Main cloud (white) -->
+  <g fill="white">
+    <!-- cloud body -->
+    <ellipse cx="220" cy="300" rx="115" ry="75"/>
+    <!-- cloud bumps -->
+    <circle cx="155" cy="285" r="58"/>
+    <circle cx="255" cy="265" r="72"/>
+    <circle cx="320" cy="295" r="52"/>
+  </g>
+
+  <!-- Cloud underside fill (clean flat bottom) -->
+  <rect x="97" y="310" width="275" height="65" rx="0" fill="white"/>
+
+  <!-- Rain drops -->
+  <g fill="#93c5fd" opacity="0.85">
+    <ellipse cx="155" cy="395" rx="7" ry="14"/>
+    <ellipse cx="195" cy="415" rx="7" ry="14"/>
+    <ellipse cx="235" cy="395" rx="7" ry="14"/>
+    <ellipse cx="275" cy="415" rx="7" ry="14"/>
+    <ellipse cx="315" cy="395" rx="7" ry="14"/>
+  </g>
+</svg>

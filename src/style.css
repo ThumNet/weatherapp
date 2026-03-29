@@ -1,0 +1,89 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base resets & font rendering ─────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    /* Prevent horizontal scroll at the root */
+    overflow-x: hidden;
+    /* Smooth iOS momentum scrolling */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    /* Crisp text rendering on all platforms */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+
+    /* Dark mode default: deep night-sky gradient */
+    background: linear-gradient(
+      to bottom,
+      #0f2027 0%,
+      #1a3a5c 40%,
+      #1e3a8a 100%
+    );
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* Light mode: soft daylight sky gradient */
+  @media (prefers-color-scheme: light) {
+    body {
+      background: linear-gradient(
+        to bottom,
+        #bae6fd 0%,   /* sky-200 */
+        #e0f2fe 35%,  /* sky-100 */
+        #f0f9ff 70%,  /* sky-50 */
+        #f8fafc 100%  /* slate-50 */
+      );
+    }
+  }
+}
+
+/* ── Custom scrollbar ─────────────────────────────────────────────────────── */
+@layer base {
+  /* Webkit (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);   /* slate-400/35 */
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.55);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+}
+
+/* ── Safe-area utility ────────────────────────────────────────────────────── */
+@layer utilities {
+  .pb-safe {
+    padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
+  }
+
+  .pt-safe {
+    padding-top: max(0px, env(safe-area-inset-top));
+  }
+}

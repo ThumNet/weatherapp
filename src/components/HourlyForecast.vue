@@ -168,6 +168,7 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
 </script>
 
 <template>
+  <div>
   <!-- -------------------------------------------------------------------- -->
   <!-- Loading skeleton                                                        -->
   <!-- -------------------------------------------------------------------- -->
@@ -263,5 +264,6 @@ const chartOptions = computed<ChartOptions<'bar'>>(() => ({
         ⚠️ Refresh failed — showing last known data
       </p>
     </div>
+  </div>
   </div>
 </template>

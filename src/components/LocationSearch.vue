@@ -4,6 +4,11 @@ import { useLocationStore } from '@/stores/location'
 import { searchCities } from '@/services/weatherService'
 import type { CitySearchResult } from '@/types/weather'
 
+const emit = defineEmits<{
+  (e: 'select'): void
+  (e: 'cancel'): void
+}>()
+
 const locationStore = useLocationStore()
 
 const query = ref('')
@@ -57,6 +62,7 @@ function selectCity(city: CitySearchResult): void {
   results.value = []
   isOpen.value = false
   activeIndex.value = -1
+  emit('select')
 }
 
 function onKeyDown(event: KeyboardEvent): void {
@@ -77,6 +83,7 @@ function onKeyDown(event: KeyboardEvent): void {
     isOpen.value = false
     activeIndex.value = -1
     inputRef.value?.blur()
+    emit('cancel')
   }
 }
 
@@ -89,6 +96,7 @@ function handleClickOutside(event: MouseEvent): void {
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
+  inputRef.value?.focus()
 })
 
 onUnmounted(() => {

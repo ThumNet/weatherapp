@@ -48,6 +48,7 @@ const error = computed(() => weatherStore.error)
 </script>
 
 <template>
+  <div>
   <!-- Loading skeleton -->
   <div
     v-if="isLoading"
@@ -136,5 +137,6 @@ const error = computed(() => weatherStore.error)
         ⚠️ Refresh failed — showing last known data
       </p>
     </div>
+  </div>
   </div>
 </template>

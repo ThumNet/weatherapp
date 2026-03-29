@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useGeolocation } from '@/composables/useGeolocation'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import { usePullToRefresh } from '@/composables/usePullToRefresh'
@@ -11,7 +11,6 @@ import LocationSearch from '@/components/LocationSearch.vue'
 import CurrentWeather from '@/components/CurrentWeather.vue'
 import HourlyForecast from '@/components/HourlyForecast.vue'
 import DailyForecast from '@/components/DailyForecast.vue'
-import PrecipitationAlert from '@/components/PrecipitationAlert.vue'
 import RadarMap from '@/components/RadarMap.vue'
 
 const locationStore = useLocationStore()
@@ -41,6 +40,8 @@ const lastUpdatedLabel = computed<string | null>(() => {
 })
 
 const isLoading = computed(() => weatherStore.loading || precipitationStore.loading)
+
+const isEditingLocation = ref(false)
 
 onMounted(async () => {
   // Fetch weather + precipitation for the initial/persisted location immediately
@@ -133,27 +134,17 @@ watch(
 
     <!-- Page shell: centred column, mobile-first -->
     <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl">
-      <!-- Header -->
-      <header class="pb-5 pt-safe pt-8 text-center">
-        <h1 class="mb-1 text-4xl font-bold tracking-tight drop-shadow-md">
-          🌤️ Dutch Weather
-        </h1>
-        <p class="text-sm text-blue-200 dark:text-blue-300">
-          Real-time forecasts for the Netherlands
-        </p>
-      </header>
+      <!-- Compact header bar -->
+      <header class="pb-4 pt-safe pt-6">
+        <!-- Header row -->
+        <div class="flex items-center gap-2">
+          <!-- Brand emoji -->
+          <span class="text-xl" aria-hidden="true">🌤️</span>
 
-      <!-- Location bar -->
-      <section class="flex flex-col items-center gap-3">
-        <!-- Search component -->
-        <LocationSearch />
-
-        <!-- Current location display + refresh button -->
-        <div class="flex min-h-[44px] items-center gap-2 text-blue-100 dark:text-blue-200">
-          <!-- Geolocation loading state -->
+          <!-- Location: detecting state or city name + edit button -->
           <template v-if="geoLoading">
             <svg
-              class="size-4 animate-spin"
+              class="size-4 animate-spin text-blue-200"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -173,84 +164,88 @@ watch(
                 d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            <span class="text-sm">Detecting your location…</span>
+            <span class="text-sm text-blue-200">Detecting…</span>
           </template>
-
-          <!-- Normal state: show city name -->
           <template v-else>
-            <svg
-              class="size-4 shrink-0"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              aria-hidden="true"
+            <span class="text-sm font-semibold text-white">{{ locationStore.cityName }}</span>
+            <button
+              class="flex size-8 items-center justify-center rounded-full text-blue-200/60 transition-colors hover:bg-white/10 hover:text-white"
+              aria-label="Change location"
+              @click="isEditingLocation = true"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-              />
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-              />
-            </svg>
-            <span class="text-sm font-semibold">{{ locationStore.cityName }}</span>
-            <span class="text-xs text-blue-300/70">
-              ({{ locationStore.latitude.toFixed(2) }}, {{ locationStore.longitude.toFixed(2) }})
-            </span>
+              <svg
+                class="size-4"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
+                />
+              </svg>
+            </button>
           </template>
 
-          <!-- Refresh button — min 44 px tap target -->
-          <button
-            class="ml-1 flex size-11 items-center justify-center rounded-full text-blue-200 transition-colors hover:bg-white/10 hover:text-white active:bg-white/20 disabled:opacity-40"
-            :disabled="isLoading"
-            :title="isLoading ? 'Refreshing…' : 'Refresh weather data'"
-            aria-label="Refresh weather data"
-            @click="refreshAll"
-          >
-            <svg
-              class="size-5"
-              :class="{ 'animate-spin': isLoading }"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke-width="2"
-              stroke="currentColor"
-              aria-hidden="true"
+          <!-- Right side: last updated + refresh -->
+          <div class="ml-auto flex items-center gap-1">
+            <Transition name="fade">
+              <span v-if="isOnline && lastUpdatedLabel" class="text-xs text-blue-300/60">
+                Last updated {{ lastUpdatedLabel }}
+              </span>
+            </Transition>
+
+            <!-- Refresh button — min 44px tap target -->
+            <button
+              class="flex size-8 items-center justify-center rounded-full text-blue-200/60 transition-colors hover:bg-white/10 hover:text-white active:bg-white/20 disabled:opacity-40"
+              :disabled="isLoading"
+              :title="isLoading ? 'Refreshing…' : 'Refresh weather data'"
+              aria-label="Refresh weather data"
+              @click="refreshAll"
             >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"
-              />
-            </svg>
-          </button>
+              <svg
+                class="size-4"
+                :class="{ 'animate-spin': isLoading }"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
-        <!-- Last updated notice (when online, subtle; offline handled by banner) -->
+        <!-- Search row: visible when editing -->
         <Transition name="fade">
-          <p v-if="isOnline && lastUpdatedLabel" class="text-xs text-blue-300/60">
-            Last updated {{ lastUpdatedLabel }}
-          </p>
+          <div v-if="isEditingLocation" class="mt-2">
+            <LocationSearch
+              @select="isEditingLocation = false"
+              @cancel="isEditingLocation = false"
+            />
+          </div>
         </Transition>
 
         <!-- Geolocation error notice -->
         <Transition name="fade">
-          <p v-if="geoError" class="max-w-sm text-center text-xs text-yellow-300">
+          <p v-if="geoError" class="mt-2 text-xs text-yellow-300">
             {{ geoError }}
           </p>
         </Transition>
-      </section>
+      </header>
 
       <!-- Main content: each component fills the column width -->
       <main class="mt-6 flex flex-col gap-5 pb-safe">
-        <Transition name="content-fade" appear>
-          <PrecipitationAlert />
-        </Transition>
         <Transition name="content-fade" appear>
           <CurrentWeather />
         </Transition>

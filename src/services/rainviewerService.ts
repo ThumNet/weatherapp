@@ -50,5 +50,5 @@ export function buildRadarTileUrl(host: string, framePath: string): string {
  */
 export function formatFrameTime(timestamp: number): string {
   const date = new Date(timestamp * 1000)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  return date.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
 }

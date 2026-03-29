@@ -36,10 +36,10 @@ export function useGeolocation() {
           loading.value = false
           switch (err.code) {
             case err.PERMISSION_DENIED:
-              error.value = 'Location permission denied. Using default location.'
+              // Silently fall back to default location
               break
             case err.POSITION_UNAVAILABLE:
-              error.value = 'Location information is unavailable.'
+              // Silently fall back to default location — no need to surface this to the user
               break
             case err.TIMEOUT:
               error.value = 'Location request timed out.'

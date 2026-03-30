@@ -6,6 +6,7 @@ import { usePullToRefresh } from '@/composables/usePullToRefresh'
 import { useLocationStore } from '@/stores/location'
 import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
+import { useThemeStore } from '@/stores/theme'
 import { reverseGeocode } from '@/services/weatherService'
 import LocationSearch from '@/components/LocationSearch.vue'
 import CurrentWeather from '@/components/CurrentWeather.vue'
@@ -16,6 +17,7 @@ import RadarMap from '@/components/RadarMap.vue'
 const locationStore = useLocationStore()
 const weatherStore = useWeatherStore()
 const precipitationStore = usePrecipitationStore()
+const themeStore = useThemeStore()
 const { requestPosition, loading: geoLoading, error: geoError } = useGeolocation()
 const { isOnline } = useOnlineStatus()
 
@@ -24,6 +26,23 @@ const radarRef = ref<InstanceType<typeof RadarMap> | null>(null)
 function openRadar(): void {
   radarRef.value?.openOverlay()
 }
+
+// ── Theme toggle — cycles dark → light → system → dark ──────────────────────
+const THEME_CYCLE = ['dark', 'light', 'system'] as const
+function cycleTheme(): void {
+  const idx = THEME_CYCLE.indexOf(themeStore.theme)
+  themeStore.setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length])
+}
+const themeLabel = computed(() => {
+  if (themeStore.theme === 'dark') return 'Switch to light mode'
+  if (themeStore.theme === 'light') return 'Switch to system theme'
+  return 'Switch to dark mode'
+})
+const themeIcon = computed(() => {
+  if (themeStore.theme === 'dark') return '☀️'
+  if (themeStore.theme === 'light') return '🌙'
+  return '⚙️'
+})
 
 // ── Refresh all data for the current location ───────────────────────────────
 async function refreshAll(): Promise<void> {
@@ -82,12 +101,12 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-dvh text-white">
+  <div class="min-h-dvh text-slate-800 dark:text-white">
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div
         v-if="isPulling || isRefreshing"
-        class="flex items-center justify-center py-3 text-sm text-blue-200 dark:text-blue-300"
+        class="flex items-center justify-center py-3 text-sm text-blue-600 dark:text-blue-300"
         :style="{ opacity: isRefreshing ? 1 : pullProgress }"
       >
         <svg
@@ -139,7 +158,7 @@ watch(
     </Transition>
 
     <!-- Compact header bar — sticky, full-width, with inner centering -->
-    <header class="sticky top-0 z-40 bg-[#0f2027] backdrop-blur-md border-b border-white/10">
+    <header class="sticky top-0 z-40 bg-sky-100 dark:bg-[#0f2027] backdrop-blur-md border-b border-slate-300/50 dark:border-white/10">
       <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-2 pt-safe pt-4">
         <!-- Header row -->
         <div class="flex items-center gap-2">
@@ -149,7 +168,7 @@ watch(
           <!-- Location: detecting state or city name + edit button -->
           <template v-if="geoLoading">
             <svg
-              class="size-4 animate-spin text-blue-200"
+              class="size-4 animate-spin text-blue-600 dark:text-blue-200"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -169,12 +188,12 @@ watch(
                 d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            <span class="text-sm text-blue-200">Detecting…</span>
+            <span class="text-sm text-blue-600 dark:text-blue-200">Detecting…</span>
           </template>
           <template v-else>
-            <span class="text-sm font-semibold text-white">{{ locationStore.cityName }}</span>
+            <span class="text-sm font-semibold text-slate-800 dark:text-white">{{ locationStore.cityName }}</span>
             <button
-              class="flex size-8 items-center justify-center rounded-full text-blue-200/60 transition-colors hover:bg-white/10 hover:text-white"
+              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
               aria-label="Change location"
               @click="isEditingLocation = !isEditingLocation"
             >
@@ -195,17 +214,27 @@ watch(
             </button>
           </template>
 
-          <!-- Right side: last updated + refresh -->
+          <!-- Right side: last updated + theme toggle + refresh -->
           <div class="ml-auto flex items-center gap-1">
             <Transition name="fade">
-              <span v-if="isOnline && lastUpdatedLabel" class="text-xs text-blue-300/60">
+              <span v-if="isOnline && lastUpdatedLabel" class="text-xs text-blue-600/60 dark:text-blue-300/60">
                 Last updated {{ lastUpdatedLabel }}
               </span>
             </Transition>
 
+            <!-- Theme toggle button — cycles dark → light → system -->
+            <button
+              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white active:bg-black/10 dark:active:bg-white/20"
+              :title="themeLabel"
+              :aria-label="themeLabel"
+              @click="cycleTheme"
+            >
+              <span class="text-sm leading-none" aria-hidden="true">{{ themeIcon }}</span>
+            </button>
+
             <!-- Refresh button — min 44px tap target -->
             <button
-              class="flex size-8 items-center justify-center rounded-full text-blue-200/60 transition-colors hover:bg-white/10 hover:text-white active:bg-white/20 disabled:opacity-40"
+              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white active:bg-black/10 dark:active:bg-white/20 disabled:opacity-40"
               :disabled="isLoading"
               :title="isLoading ? 'Refreshing…' : 'Refresh weather data'"
               aria-label="Refresh weather data"
@@ -243,7 +272,7 @@ watch(
 
         <!-- Geolocation error notice -->
         <Transition name="fade">
-          <p v-if="geoError" class="mt-2 text-xs text-yellow-300">
+          <p v-if="geoError" class="mt-2 text-xs text-yellow-600 dark:text-yellow-300">
             {{ geoError }}
           </p>
         </Transition>

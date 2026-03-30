@@ -15,13 +15,12 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     /* Safari website tinting samples html, not body */
-    background-color: #0f2027;
+    /* Light mode default */
+    background-color: #bae6fd;
   }
 
-  @media (prefers-color-scheme: light) {
-    html {
-      background-color: #bae6fd;
-    }
+  html.dark {
+    background-color: #0f2027;
   }
 
   body {
@@ -30,7 +29,21 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
 
-    /* Dark mode default: deep night-sky gradient */
+    /* Light mode default: soft daylight sky gradient */
+    background-color: #bae6fd;
+    background: linear-gradient(
+      to bottom,
+      #bae6fd 0%,   /* sky-200 */
+      #e0f2fe 35%,  /* sky-100 */
+      #f0f9ff 70%,  /* sky-50 */
+      #f8fafc 100%  /* slate-50 */
+    );
+    min-height: 100dvh;
+    overflow-x: clip;
+  }
+
+  /* Dark mode: deep night-sky gradient */
+  html.dark body {
     background-color: #0f2027;
     background: linear-gradient(
       to bottom,
@@ -38,22 +51,6 @@
       #1a3a5c 40%,
       #1e3a8a 100%
     );
-    min-height: 100dvh;
-    overflow-x: clip;
-  }
-
-  /* Light mode: soft daylight sky gradient */
-  @media (prefers-color-scheme: light) {
-    body {
-      background-color: #bae6fd;
-      background: linear-gradient(
-        to bottom,
-        #bae6fd 0%,   /* sky-200 */
-        #e0f2fe 35%,  /* sky-100 */
-        #f0f9ff 70%,  /* sky-50 */
-        #f8fafc 100%  /* slate-50 */
-      );
-    }
   }
 }
 

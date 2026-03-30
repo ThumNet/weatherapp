@@ -46,7 +46,7 @@ function barHeightPercent(mmPerHour: number): number {
 
 /** Color class for a precipitation bar based on intensity */
 function barColorClass(mmPerHour: number): string {
-  if (mmPerHour <= 0) return 'bg-white/15 dark:bg-white/10'
+  if (mmPerHour <= 0) return 'bg-slate-200 dark:bg-white/10'
   if (mmPerHour < 0.5) return 'bg-blue-300/60 dark:bg-blue-300/50'
   if (mmPerHour <= 2.5) return 'bg-blue-400/80 dark:bg-blue-400/70'
   if (mmPerHour <= 7.5) return 'bg-blue-600/85 dark:bg-blue-500/80'
@@ -113,33 +113,33 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-if="loading && !weather"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-white/10 shadow-2xl backdrop-blur-md"
+    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-slate-100 dark:bg-white/10 shadow-2xl backdrop-blur-md"
     aria-busy="true"
     aria-label="Loading weather data"
   >
     <div class="p-6">
       <!-- Temperature skeleton -->
       <div class="mb-4 flex items-end justify-between">
-        <div class="h-20 w-36 animate-pulse rounded-xl bg-white/20" />
-        <div class="h-12 w-12 animate-pulse rounded-full bg-white/20" />
+        <div class="h-20 w-36 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20" />
+        <div class="h-12 w-12 animate-pulse rounded-full bg-slate-200 dark:bg-white/20" />
       </div>
       <!-- Description skeleton -->
-      <div class="mb-6 h-5 w-40 animate-pulse rounded-lg bg-white/20" />
+      <div class="mb-6 h-5 w-40 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
       <!-- Stats row skeleton -->
       <div class="grid grid-cols-3 gap-3">
-        <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-xl bg-white/20" />
+        <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20" />
       </div>
 
       <!-- Divider skeleton -->
-      <div class="my-4 h-px w-full animate-pulse rounded bg-white/10" />
+      <div class="my-4 h-px w-full animate-pulse rounded bg-slate-100 dark:bg-white/10" />
 
       <!-- Precipitation skeleton -->
-      <div class="mb-3 h-8 animate-pulse rounded-lg bg-white/20" />
+      <div class="mb-3 h-8 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
       <div class="flex items-end gap-0.5">
         <div
           v-for="n in 24"
           :key="n"
-          class="h-16 flex-1 animate-pulse rounded-t bg-white/10"
+          class="h-16 flex-1 animate-pulse rounded-t bg-slate-100 dark:bg-white/10"
           :style="{ animationDelay: `${n * 40}ms` }"
         />
       </div>
@@ -157,8 +157,8 @@ const gridLines = computed(() => {
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold text-white">Could not load weather</p>
-        <p class="mt-1 text-sm text-red-200">{{ error }}</p>
+        <p class="font-semibold">Could not load weather</p>
+        <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
   </div>
@@ -168,12 +168,12 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-else-if="weather"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-white/20 via-white/10 to-white/5 shadow-2xl backdrop-blur-md transition-all duration-500 dark:from-slate-700/40 dark:via-slate-800/30 dark:to-slate-900/20"
+    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-gradient-to-br from-white/70 via-white/60 to-white/50 dark:from-slate-700/40 dark:via-slate-800/30 dark:to-slate-900/20 shadow-2xl backdrop-blur-md transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing -->
     <div
       v-if="loading"
-      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-white/60 to-transparent"
+      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-slate-400/60 dark:via-white/60 to-transparent"
     />
 
     <div class="p-6">
@@ -182,10 +182,10 @@ const gridLines = computed(() => {
         <!-- Temperature -->
         <div>
           <div class="flex items-start leading-none">
-            <span class="text-7xl font-thin tracking-tighter text-white drop-shadow-lg">
+            <span class="text-7xl font-thin tracking-tighter drop-shadow-lg">
               {{ temperature }}
             </span>
-            <span class="mt-3 text-3xl font-light text-white/80">°C</span>
+            <span class="mt-3 text-3xl font-light text-slate-600 dark:text-white/80">°C</span>
           </div>
         </div>
 
@@ -199,7 +199,7 @@ const gridLines = computed(() => {
       </div>
 
       <!-- Description -->
-      <p class="mb-6 text-lg font-medium text-white/90">
+      <p class="mb-6 text-lg font-medium text-slate-700 dark:text-white/90">
         {{ description }}
       </p>
 
@@ -207,50 +207,50 @@ const gridLines = computed(() => {
       <div class="grid grid-cols-3 gap-3">
         <!-- Feels like -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-white/10 bg-white/10 px-2 py-3 text-center dark:bg-white/5"
+          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
           <span class="text-xl" aria-hidden="true">🌡️</span>
-          <span class="text-xs font-medium uppercase tracking-wide text-white/60">Feels like</span>
-          <span class="text-base font-semibold text-white">{{ feelsLike }}°C</span>
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Feels like</span>
+          <span class="text-base font-semibold">{{ feelsLike }}°C</span>
         </div>
 
         <!-- Humidity -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-white/10 bg-white/10 px-2 py-3 text-center dark:bg-white/5"
+          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
           <span class="text-xl" aria-hidden="true">💧</span>
-          <span class="text-xs font-medium uppercase tracking-wide text-white/60">Humidity</span>
-          <span class="text-base font-semibold text-white">{{ weather.humidity }}%</span>
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Humidity</span>
+          <span class="text-base font-semibold">{{ weather.humidity }}%</span>
         </div>
 
         <!-- Wind -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-white/10 bg-white/10 px-2 py-3 text-center dark:bg-white/5"
+          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
           <span class="text-xl" aria-hidden="true">💨</span>
-          <span class="text-xs font-medium uppercase tracking-wide text-white/60">Wind</span>
-          <span class="text-base font-semibold text-white">
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Wind</span>
+          <span class="text-base font-semibold">
             {{ Math.round(weather.windSpeed) }}
-            <span class="text-xs font-normal text-white/70">km/h</span>
+            <span class="text-xs font-normal text-slate-500 dark:text-white/70">km/h</span>
           </span>
-          <span class="text-xs text-white/60">{{ windCompass }}</span>
+          <span class="text-xs text-slate-500 dark:text-white/60">{{ windCompass }}</span>
         </div>
       </div>
 
       <!-- Inline error when a refresh fails (but old weather data is still shown) -->
-      <p v-if="error" class="mt-3 text-center text-xs text-yellow-300" role="alert">
+      <p v-if="error" class="mt-3 text-center text-xs text-yellow-600 dark:text-yellow-300" role="alert">
         ⚠️ Refresh failed — showing last known data
       </p>
 
       <!-- ---------------------------------------------------------------- -->
       <!-- Precipitation section                                              -->
       <!-- ---------------------------------------------------------------- -->
-      <hr class="my-4 border-white/10" />
+      <hr class="my-4 border-slate-200 dark:border-white/10" />
 
       <!-- Precipitation loading skeleton (weather card already visible) -->
       <template v-if="precipStore.loading && precipStore.entries.length === 0">
         <div
-          class="mb-3 h-8 animate-pulse rounded-lg bg-white/20"
+          class="mb-3 h-8 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20"
           aria-busy="true"
           aria-label="Loading precipitation data"
         />
@@ -258,7 +258,7 @@ const gridLines = computed(() => {
           <div
             v-for="n in 24"
             :key="n"
-            class="h-16 flex-1 animate-pulse rounded-t bg-white/10"
+            class="h-16 flex-1 animate-pulse rounded-t bg-slate-100 dark:bg-white/10"
             :style="{ animationDelay: `${n * 40}ms` }"
           />
         </div>
@@ -279,7 +279,7 @@ const gridLines = computed(() => {
                 class="pointer-events-none absolute left-0 right-0 z-10"
                 :style="{ bottom: `${line.percent}%` }"
               >
-                <div class="border-t border-dashed border-white/20" />
+                <div class="border-t border-dashed border-slate-300/40 dark:border-white/20" />
               </div>
 
               <!-- Bar columns -->
@@ -307,7 +307,7 @@ const gridLines = computed(() => {
               <span
                 v-for="line in gridLines"
                 :key="'label-' + line.mmPerHour"
-                class="pointer-events-none absolute right-0 -translate-y-1/2 text-[9px] leading-none text-white/40"
+                class="pointer-events-none absolute right-0 -translate-y-1/2 text-[9px] leading-none text-slate-400 dark:text-white/40"
                 :style="{ bottom: `${line.percent}%` }"
               >
                 {{ line.label }}
@@ -329,7 +329,7 @@ const gridLines = computed(() => {
                 {{ entry.time }}
               </span>
             </div>
-            <span class="shrink-0 text-[9px] leading-tight text-blue-200/40 pl-1">mm/h</span>
+            <span class="shrink-0 text-[9px] leading-tight text-slate-400 dark:text-blue-200/40 pl-1">mm/h</span>
           </div>
         </div>
 
@@ -398,7 +398,7 @@ const gridLines = computed(() => {
         </button>
 
         <!-- Non-blocking precipitation error notice -->
-        <p v-if="precipStore.error" class="mt-3 text-center text-xs text-yellow-300/80">
+        <p v-if="precipStore.error" class="mt-3 text-center text-xs text-yellow-600/80 dark:text-yellow-300/80">
           ⚠️ {{ precipStore.error }}
         </p>
       </template>
@@ -408,8 +408,8 @@ const gridLines = computed(() => {
         <div class="flex items-start gap-3 rounded-xl bg-red-500/20 px-4 py-3" role="alert">
           <span class="mt-0.5 text-xl" aria-hidden="true">⚠️</span>
           <div>
-            <p class="text-sm font-semibold text-white">Precipitation data unavailable</p>
-            <p class="mt-0.5 text-xs text-red-200">{{ precipStore.error }}</p>
+            <p class="text-sm font-semibold">Precipitation data unavailable</p>
+            <p class="mt-0.5 text-xs text-red-600 dark:text-red-200">{{ precipStore.error }}</p>
           </div>
         </div>
       </template>

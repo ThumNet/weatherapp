@@ -36,6 +36,7 @@ const RADAR_MAX_ZOOM = 7
 const radarHost = ref('')
 const frames = ref<RadarFrame[]>([])
 const currentFrameIndex = ref(0)
+const nowcastStartIndex = ref(0)
 const loading = ref(false)
 const error = ref<string | null>(null)
 const isPlaying = ref(false)
@@ -58,21 +59,14 @@ const currentTileUrl = computed<string>(() => {
   return buildRadarTileUrl(radarHost.value, currentFrame.value.path)
 })
 
+const isCurrentFrameNowcast = computed<boolean>(() => {
+  return currentFrameIndex.value >= nowcastStartIndex.value
+})
+
 const currentTimeLabel = computed<string>(() => {
   if (!currentFrame.value) return ''
-  const isNowcast = currentFrameIndex.value >= frames.value.findIndex(
-    (_, i) => i > 0 && frames.value[i].time > frames.value[i - 1].time + 600,
-  )
   const timeStr = formatFrameTime(currentFrame.value.time)
-  // Mark nowcast frames (future) with an indicator
-  const nowcastStart = frames.value.findIndex((f) => {
-    const prevIdx = frames.value.indexOf(f) - 1
-    return prevIdx >= 0 && f.time - frames.value[prevIdx].time > 600
-  })
-  const label = isNowcast && nowcastStart !== -1 && currentFrameIndex.value >= nowcastStart
-    ? `${timeStr} (forecast)`
-    : timeStr
-  return label
+  return isCurrentFrameNowcast.value ? `${timeStr} (forecast)` : timeStr
 })
 
 const frameCount = computed(() => frames.value.length)
@@ -87,8 +81,9 @@ async function loadFrames(): Promise<void> {
     const result = await fetchRadarFrames()
     radarHost.value = result.host
     frames.value = result.frames
-    // Start at the latest past frame (last item before nowcast, or last overall)
-    currentFrameIndex.value = Math.max(0, result.frames.length - 1)
+    nowcastStartIndex.value = result.nowcastStartIndex
+    // Start at the last past frame (the "now" position), so animation plays forward into forecast
+    currentFrameIndex.value = Math.max(0, result.nowcastStartIndex - 1)
     framesLoaded.value = true
   } catch (err) {
     error.value = err instanceof Error ? err.message : 'Failed to load radar data'
@@ -138,9 +133,32 @@ function stepForward(): void {
   currentFrameIndex.value = Math.min(frames.value.length - 1, currentFrameIndex.value + 1)
 }
 
-function onSliderInput(event: Event): void {
+/** Handle tap/drag on the scrubber bar to navigate frames */
+function onScrubStart(event: PointerEvent): void {
   stopAnimation()
-  currentFrameIndex.value = parseInt((event.target as HTMLInputElement).value, 10)
+  const bar = event.currentTarget as HTMLElement
+  bar.setPointerCapture(event.pointerId)
+
+  function updateFromPointer(e: PointerEvent) {
+    const rect = bar.getBoundingClientRect()
+    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
+    const ratio = x / rect.width
+    currentFrameIndex.value = Math.round(ratio * (frames.value.length - 1))
+  }
+
+  updateFromPointer(event) // Handle initial tap
+
+  function onMove(e: PointerEvent) {
+    updateFromPointer(e)
+  }
+
+  function onUp() {
+    bar.removeEventListener('pointermove', onMove)
+    bar.removeEventListener('pointerup', onUp)
+  }
+
+  bar.addEventListener('pointermove', onMove)
+  bar.addEventListener('pointerup', onUp)
 }
 
 // ---------------------------------------------------------------------------
@@ -200,7 +218,7 @@ watch(mapCenter, () => {
   // No need to reload frames — radar is global
 })
 
-defineExpose({ openOverlay })
+defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 </script>
 
 <template>
@@ -221,7 +239,10 @@ defineExpose({ openOverlay })
             <h2 class="text-sm font-semibold uppercase tracking-wide text-white/80">Rain Radar</h2>
           </div>
           <!-- Time label -->
-          <span class="text-xs font-medium text-blue-200/80">
+          <span
+            class="text-xs font-medium"
+            :class="isCurrentFrameNowcast ? 'text-amber-400' : 'text-blue-200/80'"
+          >
             {{ currentTimeLabel || '—' }}
           </span>
           <!-- Close button — min 44px tap target -->
@@ -324,22 +345,49 @@ defineExpose({ openOverlay })
 
         <!-- Animation controls -->
         <div class="shrink-0 border-t border-white/10 bg-black/30 px-5 py-4 backdrop-blur-sm">
-          <!-- Time scrubber — taller touch target area -->
-          <div class="mb-3 flex items-center gap-3">
-            <span class="shrink-0 text-xs text-blue-200/60">
-              {{ currentFrameIndex + 1 }}/{{ frameCount }}
-            </span>
-            <div class="flex flex-1 items-center py-2">
-              <input
-                type="range"
-                :min="0"
-                :max="frameCount - 1"
-                :value="currentFrameIndex"
-                :disabled="frames.length === 0"
-                class="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-blue-400 disabled:opacity-40"
-                aria-label="Radar timeline"
-                @input="onSliderInput"
+          <!-- Timeline scrubber bar -->
+          <div class="mb-3">
+            <!-- Frame counter + color-coded time label -->
+            <div class="mb-2 flex items-center justify-between">
+              <span class="text-xs text-blue-200/60">
+                {{ currentFrameIndex + 1 }}/{{ frameCount }}
+              </span>
+              <span
+                class="text-xs font-medium"
+                :class="isCurrentFrameNowcast ? 'text-amber-400' : 'text-blue-200/80'"
+              >
+                {{ currentTimeLabel || '—' }}
+              </span>
+            </div>
+
+            <!-- Scrubber segments -->
+            <div
+              class="relative flex h-2 items-stretch gap-px rounded-full overflow-hidden cursor-pointer"
+              role="slider"
+              :aria-valuemin="0"
+              :aria-valuemax="frameCount - 1"
+              :aria-valuenow="currentFrameIndex"
+              aria-label="Radar timeline scrubber"
+              @pointerdown="onScrubStart"
+            >
+              <div
+                v-for="(frame, i) in frames"
+                :key="frame.time"
+                class="flex-1 transition-opacity duration-150"
+                :class="[
+                  i < nowcastStartIndex ? 'bg-blue-400' : 'bg-amber-400',
+                  i === currentFrameIndex ? 'opacity-100' : 'opacity-30',
+                  i <= currentFrameIndex ? 'opacity-60' : '',
+                ]"
               />
+              <!-- "Now" divider marker — positioned at the nowcast boundary -->
+              <div
+                v-if="nowcastStartIndex > 0 && nowcastStartIndex < frames.length"
+                class="absolute top-0 bottom-0 w-0.5 bg-white z-10"
+                :style="{ left: `${(nowcastStartIndex / frameCount) * 100}%` }"
+              >
+                <span class="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-medium text-white/70 whitespace-nowrap">now</span>
+              </div>
             </div>
           </div>
 

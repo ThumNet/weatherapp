@@ -17,9 +17,10 @@ const RAINVIEWER_API = 'https://api.rainviewer.com/public/weather-maps.json'
 
 /**
  * Fetches available radar frames from the RainViewer public API.
- * Returns a combined list of past + nowcast frames, sorted by time ascending.
+ * Returns past + nowcast frames in chronological order, plus the index where
+ * nowcast begins (so callers don't need to infer the boundary from time gaps).
  */
-export async function fetchRadarFrames(): Promise<{ host: string; frames: RadarFrame[] }> {
+export async function fetchRadarFrames(): Promise<{ host: string; frames: RadarFrame[]; nowcastStartIndex: number }> {
   const response = await fetch(RAINVIEWER_API)
 
   if (!response.ok) {
@@ -28,12 +29,12 @@ export async function fetchRadarFrames(): Promise<{ host: string; frames: RadarF
 
   const data = (await response.json()) as RainViewerResponse
 
-  const frames: RadarFrame[] = [
-    ...data.radar.past,
-    ...data.radar.nowcast,
-  ].sort((a, b) => a.time - b.time)
+  const pastFrames = [...data.radar.past].sort((a, b) => a.time - b.time)
+  const nowcastFrames = [...data.radar.nowcast].sort((a, b) => a.time - b.time)
+  const frames = [...pastFrames, ...nowcastFrames]
+  const nowcastStartIndex = pastFrames.length // The index where nowcast begins
 
-  return { host: data.host, frames }
+  return { host: data.host, frames, nowcastStartIndex }
 }
 
 /**

@@ -26,6 +26,7 @@ interface DayRow {
   tempMax: number
   tempMin: number
   precipProb: number
+  precipSum: number
 }
 
 const days = computed<DayRow[]>(() => {
@@ -40,6 +41,7 @@ const days = computed<DayRow[]>(() => {
     tempMax: Math.round(f.temperatureMax[i] ?? 0),
     tempMin: Math.round(f.temperatureMin[i] ?? 0),
     precipProb: Math.round(f.precipitationProbabilityMax[i] ?? 0),
+    precipSum: Math.round((f.precipitationSum[i] ?? 0) * 10) / 10,
   }))
 })
 
@@ -52,16 +54,16 @@ const error = computed(() => weatherStore.error)
   <!-- Loading skeleton -->
   <div
     v-if="isLoading"
-    class="w-full max-w-md overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-5 shadow-xl backdrop-blur-md dark:bg-white/5"
+    class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-300/50 dark:border-white/20 bg-slate-100 dark:bg-white/10 p-5 shadow-xl backdrop-blur-md"
     aria-busy="true"
     aria-label="Loading 7-day forecast"
   >
-    <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-white/20" />
+    <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
     <div v-for="n in 7" :key="n" class="flex animate-pulse items-center gap-3 py-2.5">
-      <div class="h-4 w-10 rounded bg-white/20" />
-      <div class="h-6 w-6 rounded bg-white/20" />
-      <div class="ml-auto h-4 w-20 rounded bg-white/20" />
-      <div class="h-4 w-10 rounded bg-white/20" />
+      <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
+      <div class="h-6 w-6 rounded bg-slate-200 dark:bg-white/20" />
+      <div class="ml-auto h-4 w-20 rounded bg-slate-200 dark:bg-white/20" />
+      <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
     </div>
   </div>
 
@@ -74,8 +76,8 @@ const error = computed(() => weatherStore.error)
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold text-white">Could not load forecast</p>
-        <p class="mt-1 text-sm text-red-200">{{ error }}</p>
+        <p class="font-semibold">Could not load forecast</p>
+        <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
   </div>
@@ -83,16 +85,16 @@ const error = computed(() => weatherStore.error)
   <!-- Forecast card -->
   <div
     v-else-if="days.length"
-    class="w-full max-w-md overflow-hidden rounded-2xl border border-white/20 bg-gradient-to-br from-white/15 via-white/10 to-white/5 shadow-xl backdrop-blur-md transition-all duration-500 dark:from-slate-700/30 dark:via-slate-800/20 dark:to-slate-900/10"
+    class="w-full max-w-md overflow-hidden rounded-2xl border border-slate-300/50 dark:border-white/20 bg-gradient-to-br from-white/70 via-white/60 to-white/50 dark:from-slate-700/30 dark:via-slate-800/20 dark:to-slate-900/10 shadow-xl backdrop-blur-md transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing with existing data -->
     <div
       v-if="weatherStore.loading"
-      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-white/60 to-transparent"
+      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-slate-400/60 dark:via-white/60 to-transparent"
     />
 
     <div class="p-5">
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-white/60">
+      <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-white/60">
         7-Day Forecast
       </h2>
 
@@ -101,17 +103,17 @@ const error = computed(() => weatherStore.error)
         v-for="(day, index) in days"
         :key="day.date"
         class="flex min-h-[44px] items-center gap-3 py-2"
-        :class="{ 'border-t border-white/10': index > 0 }"
+        :class="{ 'border-t border-slate-200 dark:border-white/10': index > 0 }"
       >
         <!-- Day name + date -->
         <div class="w-16 shrink-0">
           <span
             class="block text-sm font-semibold"
-            :class="index === 0 ? 'text-white' : 'text-blue-100'"
+            :class="index === 0 ? '' : 'text-slate-600 dark:text-blue-100'"
           >
             {{ day.dayName }}
           </span>
-          <span class="block text-xs text-blue-300">{{ day.dateLabel }}</span>
+          <span class="block text-xs text-slate-400 dark:text-blue-300">{{ day.dateLabel }}</span>
         </div>
 
         <!-- Weather icon -->
@@ -119,21 +121,26 @@ const error = computed(() => weatherStore.error)
           {{ day.icon }}
         </span>
 
-        <!-- Precipitation probability -->
-        <div class="flex items-center gap-1 text-xs text-blue-200">
-          <span aria-hidden="true">💧</span>
-          <span>{{ day.precipProb }}%</span>
+        <!-- Precipitation info -->
+        <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-200">
+          <span class="flex items-center gap-0.5">
+            <span aria-hidden="true">💧</span>
+            <span>{{ day.precipProb }}%</span>
+          </span>
+          <span v-if="day.precipSum > 0" class="flex items-center gap-0.5 text-blue-500 dark:text-blue-300">
+            <span>{{ day.precipSum }}mm</span>
+          </span>
         </div>
 
         <!-- Temperature range (pushed to the right) -->
         <div class="ml-auto flex items-baseline gap-1 tabular-nums">
-          <span class="text-sm font-bold text-white">{{ day.tempMax }}°</span>
-          <span class="text-xs text-blue-300">/ {{ day.tempMin }}°</span>
+          <span class="text-sm font-bold">{{ day.tempMax }}°</span>
+          <span class="text-xs text-slate-400 dark:text-blue-300">/ {{ day.tempMin }}°</span>
         </div>
       </div>
 
       <!-- Inline error when a refresh fails but old data is shown -->
-      <p v-if="error" class="mt-3 text-center text-xs text-yellow-300" role="alert">
+      <p v-if="error" class="mt-3 text-center text-xs text-yellow-600 dark:text-yellow-300" role="alert">
         ⚠️ Refresh failed — showing last known data
       </p>
     </div>

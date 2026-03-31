@@ -6,6 +6,7 @@ import L from 'leaflet'
 import { useLocationStore } from '@/stores/location'
 import { fetchRadarFrames, buildRadarTileUrl, formatFrameTime } from '@/services/rainviewerService'
 import type { RadarFrame } from '@/services/rainviewerService'
+import RadarScrubberB from '@/components/RadarScrubberB.vue'
 
 // ---------------------------------------------------------------------------
 // Fix Leaflet default marker icons broken by bundlers
@@ -27,7 +28,7 @@ const mapCenter = computed<[number, number]>(() => [
   locationStore.longitude,
 ])
 
-const zoom = ref(7)
+const zoom = ref(9)
 // RainViewer radar tiles only go up to zoom level 7 (for both 256 and 512px tile sizes).
 // https://www.rainviewer.com/api/weather-maps-api.html
 const RADAR_MAX_ZOOM = 7
@@ -133,34 +134,6 @@ function stepForward(): void {
   currentFrameIndex.value = Math.min(frames.value.length - 1, currentFrameIndex.value + 1)
 }
 
-/** Handle tap/drag on the scrubber bar to navigate frames */
-function onScrubStart(event: PointerEvent): void {
-  stopAnimation()
-  const bar = event.currentTarget as HTMLElement
-  bar.setPointerCapture(event.pointerId)
-
-  function updateFromPointer(e: PointerEvent) {
-    const rect = bar.getBoundingClientRect()
-    const x = Math.max(0, Math.min(e.clientX - rect.left, rect.width))
-    const ratio = x / rect.width
-    currentFrameIndex.value = Math.round(ratio * (frames.value.length - 1))
-  }
-
-  updateFromPointer(event) // Handle initial tap
-
-  function onMove(e: PointerEvent) {
-    updateFromPointer(e)
-  }
-
-  function onUp() {
-    bar.removeEventListener('pointermove', onMove)
-    bar.removeEventListener('pointerup', onUp)
-  }
-
-  bar.addEventListener('pointermove', onMove)
-  bar.addEventListener('pointerup', onUp)
-}
-
 // ---------------------------------------------------------------------------
 // Overlay open / close
 // ---------------------------------------------------------------------------
@@ -238,13 +211,6 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             <span class="text-lg" aria-hidden="true">🌧️</span>
             <h2 class="text-sm font-semibold uppercase tracking-wide text-white/80">Rain Radar</h2>
           </div>
-          <!-- Time label -->
-          <span
-            class="text-xs font-medium"
-            :class="isCurrentFrameNowcast ? 'text-amber-400' : 'text-blue-200/80'"
-          >
-            {{ currentTimeLabel || '—' }}
-          </span>
           <!-- Close button — min 44px tap target -->
           <button
             class="flex size-11 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white active:bg-white/20"
@@ -345,50 +311,16 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
         <!-- Animation controls -->
         <div class="shrink-0 border-t border-white/10 bg-black/30 px-5 py-4 backdrop-blur-sm">
-          <!-- Timeline scrubber bar -->
+          <!-- Timeline scrubber -->
           <div class="mb-3">
-            <!-- Frame counter + color-coded time label -->
-            <div class="mb-2 flex items-center justify-between">
-              <span class="text-xs text-blue-200/60">
-                {{ currentFrameIndex + 1 }}/{{ frameCount }}
-              </span>
-              <span
-                class="text-xs font-medium"
-                :class="isCurrentFrameNowcast ? 'text-amber-400' : 'text-blue-200/80'"
-              >
-                {{ currentTimeLabel || '—' }}
-              </span>
-            </div>
-
-            <!-- Scrubber segments -->
-            <div
-              class="relative flex h-2 items-stretch gap-px rounded-full overflow-hidden cursor-pointer"
-              role="slider"
-              :aria-valuemin="0"
-              :aria-valuemax="frameCount - 1"
-              :aria-valuenow="currentFrameIndex"
-              aria-label="Radar timeline scrubber"
-              @pointerdown="onScrubStart"
-            >
-              <div
-                v-for="(frame, i) in frames"
-                :key="frame.time"
-                class="flex-1 transition-opacity duration-150"
-                :class="[
-                  i < nowcastStartIndex ? 'bg-blue-400' : 'bg-amber-400',
-                  i === currentFrameIndex ? 'opacity-100' : 'opacity-30',
-                  i <= currentFrameIndex ? 'opacity-60' : '',
-                ]"
-              />
-              <!-- "Now" divider marker — positioned at the nowcast boundary -->
-              <div
-                v-if="nowcastStartIndex > 0 && nowcastStartIndex < frames.length"
-                class="absolute top-0 bottom-0 w-0.5 bg-white z-10"
-                :style="{ left: `${(nowcastStartIndex / frameCount) * 100}%` }"
-              >
-                <span class="absolute -top-4 left-1/2 -translate-x-1/2 text-[9px] font-medium text-white/70 whitespace-nowrap">now</span>
-              </div>
-            </div>
+            <RadarScrubberB
+              :frames="frames"
+              :current-frame-index="currentFrameIndex"
+              :nowcast-start-index="nowcastStartIndex"
+              :frames-loaded="framesLoaded"
+              @update:current-frame-index="currentFrameIndex = $event"
+              @scrub-start="stopAnimation"
+            />
           </div>
 
           <!-- Playback buttons -->

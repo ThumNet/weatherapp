@@ -33,33 +33,60 @@ interface DayRow {
 }
 
 /**
- * Derive a daily precipitation intensity bucket using wet-duration as the
- * primary signal and total-sum as a fallback for older cache shapes where
- * `precipitationHours` is absent (null).
+ * Derive a daily precipitation intensity bucket.
  *
- * Wet-duration buckets (hours with ≥ 0.1 mm):
- *   0        → undefined (dry)
- *   < 2 h    → 'light'   (occasional showers or brief drizzle)
- *   < 6 h    → 'moderate'(several hours of rain across the day)
- *   ≥ 6 h    → 'heavy'   (persistent / all-day rain)
+ * Primary path — wet-hour average (requires `precipitationHours` ≥ 1):
+ *   avg = precipitationSum / precipitationHours  (mm/h across wet hours)
  *
- * Sum-only fallback (mm/day, only when precipitationHours is null):
- *   > 0      → 'light'
- *   ≥ 5      → 'moderate'
- *   ≥ 20     → 'heavy'
+ *   avg buckets:
+ *     dry:      0 mm or 0 wet hours   → undefined
+ *     drizzle:  > 0   to < 0.5 mm/h  → 'light'
+ *     light:    0.5   to  2.5  mm/h  → 'light'
+ *     moderate: 2.6   to  7.6  mm/h  → 'moderate'
+ *     heavy:    > 7.6 mm/h           → 'heavy'
+ *
+ *   Daily overrides (applied after the avg bucket, can only raise intensity):
+ *     precipitationSum ≥ 35 mm/day                              → 'heavy'
+ *     precipitationSum ≥ 20 mm/day                              → at least 'moderate'
+ *     precipitationHours ≥ 8 and precipitationSum ≥ 15 mm/day  → 'heavy'
+ *
+ * Fallback — sum-only (when `precipitationHours` is null, older cache shapes):
+ *   dry:      0 mm              → undefined
+ *   drizzle:  > 0  to < 2.5    → 'light'
+ *   light:    2.5  to  7.5 mm  → 'light'
+ *   moderate: 7.6  to 20   mm  → 'moderate'
+ *   heavy:    > 20 mm          → 'heavy'
  */
 function dailyIntensity(precipHours: number | null, precipSum: number): WeatherIntensity | undefined {
   if (precipHours !== null) {
-    if (precipHours === 0) return undefined
-    if (precipHours < 2) return 'light'
-    if (precipHours < 6) return 'moderate'
-    return 'heavy'
+    // Primary: avg mm/h over wet hours
+    if (precipHours === 0 || precipSum <= 0) return undefined
+    const avg = precipSum / precipHours
+
+    let intensity: WeatherIntensity
+    if (avg > 7.6) {
+      intensity = 'heavy'
+    } else if (avg >= 0.5) {
+      // covers light (0.5–2.5) and moderate (2.6–7.6)
+      intensity = avg <= 2.5 ? 'light' : 'moderate'
+    } else {
+      intensity = 'light' // drizzle: > 0 to < 0.5 avg mm/h
+    }
+
+    // Daily overrides — can only raise, never lower
+    if (precipSum >= 35) return 'heavy'
+    if (precipHours >= 8 && precipSum >= 15) return 'heavy'
+    if (precipSum >= 20 && intensity !== 'heavy') return 'moderate'
+
+    return intensity
   }
-  // Fallback: sum-based (crude but safe for legacy cache)
+
+  // Fallback: sum-based for legacy cache shapes where precipitationHours is null
   if (precipSum <= 0) return undefined
-  if (precipSum >= 20) return 'heavy'
-  if (precipSum >= 5) return 'moderate'
-  return 'light'
+  if (precipSum > 20) return 'heavy'
+  if (precipSum >= 7.6) return 'moderate'
+  if (precipSum >= 2.5) return 'light'
+  return 'light' // drizzle: > 0 to < 2.5 mm/day
 }
 
 const days = computed<DayRow[]>(() => {

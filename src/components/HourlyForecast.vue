@@ -107,7 +107,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
           <!-- Weather icon -->
           <WeatherIcon
             :code="card.code"
-            :intensity="card.precip >= 7.5 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
+            :intensity="card.precip > 7.6 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
             :size="28"
           />
           <!-- Temperature -->

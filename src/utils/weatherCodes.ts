@@ -52,14 +52,19 @@ export type SvgIconKey =
   | 'showers-light'
   | 'showers-moderate'
   | 'showers-heavy'
-  | 'freezing-rain'
+  | 'freezing-drizzle-light'
+  | 'freezing-drizzle-heavy'
+  | 'freezing-rain-light'
+  | 'freezing-rain-heavy'
   | 'snow-light'
   | 'snow-moderate'
   | 'snow-heavy'
   | 'snow-showers-light'
   | 'snow-showers-heavy'
+  | 'fog-icy'
   | 'thunderstorm'
   | 'thunderstorm-hail'
+  | 'thunderstorm-hail-heavy'
   | 'unknown'
 
 // ---------------------------------------------------------------------------
@@ -78,7 +83,7 @@ export type SvgIconKey =
  *   - Lightning:   #FDE68A (amber-200)
  *   - Hail:        #E0F2FE (sky-100) with #7DD3FC border
  *   - Fog lines:   #94A3B8 (slate-400)
- *   - Freeze:      #BAE6FD (sky-200)
+ *   - Freeze:      #BAE6FD (sky-200) lines / #7DD3FC (sky-300) pellet diamonds
  *   - Dark cloud:  #64748B (slate-500) — used for heavy/storm variants
  */
 export const SVG_ICONS: Record<SvgIconKey, string> = {
@@ -134,43 +139,58 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
     <path d="M14 44 Q22 38 32 44 Q42 38 50 44" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/>
     <line x1="20" y1="56" x2="44" y2="56" stroke="#CBD5E1" stroke-width="3" stroke-linecap="round"/>`,
 
+  // ── Icy fog (WMO 48) ───────────────────────────────────────────────────────
+  // Same three wavy fog lines as 'fog', but ice-crystal diamonds replace the
+  // bottom baseline — shape-first differentiation readable at small sizes.
+  // Diamond points: top, right, bottom, left (cx±4, cy±4 axes).
+  'fog-icy': `
+    <path d="M14 20 Q22 14 32 20 Q42 14 50 20" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M14 32 Q22 26 32 32 Q42 26 50 32" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M14 44 Q22 38 32 44 Q42 38 50 44" stroke="#94A3B8" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <polygon points="22,52 26,56 22,60 18,56" fill="#BAE6FD" stroke="#7DD3FC" stroke-width="1"/>
+    <polygon points="32,52 36,56 32,60 28,56" fill="#BAE6FD" stroke="#7DD3FC" stroke-width="1"/>
+    <polygon points="42,52 46,56 42,60 38,56" fill="#BAE6FD" stroke="#7DD3FC" stroke-width="1"/>`,
+
   // ── Drizzle ────────────────────────────────────────────────────────────────
+  // Short, fine marks (length ≈5, stroke-width 1.5) — clearly lighter than rain
   'drizzle-light': `
     <path d="M46 36 Q46 24 54 24 Q52 16 45 16 Q43 8 34 10 Q28 4 21 10 Q14 10 14 20 Q14 36 28 36 Z" fill="#CBD5E1"/>
-    <line x1="24" y1="44" x2="22" y2="52" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="34" y1="44" x2="32" y2="52" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="24" y1="44" x2="23" y2="49" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="34" y1="44" x2="33" y2="49" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>`,
 
   'drizzle-moderate': `
     <path d="M46 36 Q46 24 54 24 Q52 16 45 16 Q43 8 34 10 Q28 4 21 10 Q14 10 14 20 Q14 36 28 36 Z" fill="#94A3B8"/>
-    <line x1="22" y1="43" x2="20" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="32" y1="43" x2="30" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="42" y1="43" x2="40" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="22" y1="43" x2="21" y2="48" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="32" y1="43" x2="31" y2="48" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="42" y1="43" x2="41" y2="48" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>`,
 
   'drizzle-heavy': `
     <path d="M46 36 Q46 24 54 24 Q52 16 45 16 Q43 8 34 10 Q28 4 21 10 Q14 10 14 20 Q14 36 28 36 Z" fill="#64748B"/>
-    <line x1="20" y1="42" x2="18" y2="50" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="29" y1="42" x2="27" y2="50" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="38" y1="42" x2="36" y2="50" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="47" y1="42" x2="45" y2="50" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="20" y1="42" x2="19" y2="47" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="29" y1="42" x2="28" y2="47" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="38" y1="42" x2="37" y2="47" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="47" y1="42" x2="46" y2="47" stroke="#60A5FA" stroke-width="1.5" stroke-linecap="round"/>`,
 
   // ── Rain ───────────────────────────────────────────────────────────────────
+  // Medium streaks (length ≈10, stroke-width 2.5) — clearly heavier than drizzle
   'rain-light': `
     <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#CBD5E1"/>
-    <line x1="24" y1="42" x2="20" y2="54" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="36" y1="42" x2="32" y2="54" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="24" y1="42" x2="21" y2="52" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="36" y1="42" x2="33" y2="52" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
 
   'rain-moderate': `
     <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#94A3B8"/>
-    <line x1="22" y1="41" x2="18" y2="53" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="32" y1="41" x2="28" y2="53" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="42" y1="41" x2="38" y2="53" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+    <line x1="22" y1="41" x2="19" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="32" y1="41" x2="29" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="42" y1="41" x2="39" y2="51" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
 
+  // Long, bold streaks (length ≈15, stroke-width 3) — unmistakably heavy
   'rain-heavy': `
     <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#64748B"/>
-    <line x1="19" y1="40" x2="15" y2="52" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-    <line x1="29" y1="40" x2="25" y2="52" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-    <line x1="39" y1="40" x2="35" y2="52" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-    <line x1="49" y1="40" x2="45" y2="52" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
+    <line x1="19" y1="40" x2="14" y2="55" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="29" y1="40" x2="24" y2="55" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="39" y1="40" x2="34" y2="55" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="49" y1="40" x2="44" y2="55" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
 
   // ── Showers (sun + cloud + drops) ─────────────────────────────────────────
   'showers-light': `
@@ -207,19 +227,59 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
       <line x1="32" y1="8"  x2="29" y2="11"/>
     </g>
     <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#64748B"/>
-    <line x1="26" y1="46" x2="24" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-    <line x1="35" y1="46" x2="33" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-    <line x1="44" y1="46" x2="42" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
+    <line x1="24" y1="46" x2="22" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="32" y1="46" x2="30" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="40" y1="46" x2="38" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="48" y1="46" x2="46" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
 
-  // ── Freezing rain ──────────────────────────────────────────────────────────
-  'freezing-rain': `
-    <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#94A3B8"/>
-    <line x1="24" y1="42" x2="20" y2="52" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="34" y1="42" x2="30" y2="52" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="44" y1="42" x2="40" y2="52" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
-    <circle cx="22" cy="56" r="2.5" fill="#BAE6FD"/>
-    <circle cx="32" cy="56" r="2.5" fill="#BAE6FD"/>
-    <circle cx="42" cy="56" r="2.5" fill="#BAE6FD"/>`,
+  // ── Freezing drizzle (WMO 56 = light, 57 = heavy) ────────────────────────
+  // Short, fine strokes in ice-blue (#BAE6FD, length ≈5, stroke-width 1.5)
+  // mirror the drizzle stroke language; terminal frozen circles mark the freeze
+  // modifier. Uses the drizzle cloud path to reinforce the fine-precipitation
+  // read, while the ice-blue palette distinguishes it from normal drizzle.
+  // Light = 2 strokes+circles, heavy = 4 strokes+circles.
+  'freezing-drizzle-light': `
+    <path d="M46 36 Q46 24 54 24 Q52 16 45 16 Q43 8 34 10 Q28 4 21 10 Q14 10 14 20 Q14 36 28 36 Z" fill="#CBD5E1"/>
+    <line x1="24" y1="44" x2="23" y2="49" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="34" y1="44" x2="33" y2="49" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="25" cy="53" r="2" fill="#BAE6FD"/>
+    <circle cx="35" cy="53" r="2" fill="#BAE6FD"/>`,
+
+  'freezing-drizzle-heavy': `
+    <path d="M46 36 Q46 24 54 24 Q52 16 45 16 Q43 8 34 10 Q28 4 21 10 Q14 10 14 20 Q14 36 28 36 Z" fill="#64748B"/>
+    <line x1="18" y1="42" x2="17" y2="47" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="27" y1="42" x2="26" y2="47" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="36" y1="42" x2="35" y2="47" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="45" y1="42" x2="44" y2="47" stroke="#BAE6FD" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="19" cy="51" r="2" fill="#BAE6FD"/>
+    <circle cx="28" cy="51" r="2" fill="#BAE6FD"/>
+    <circle cx="37" cy="51" r="2" fill="#BAE6FD"/>
+    <circle cx="46" cy="51" r="2" fill="#BAE6FD"/>`,
+
+  // ── Freezing rain (WMO 66 = light, 67 = heavy) ───────────────────────────
+  // Longer rain-style streaks in ice-blue (#BAE6FD, length ≈10, stroke-width 2.5)
+  // mirror the rain stroke language; small filled circles at streak-ends signal
+  // the frozen state. Ice-blue palette (vs. blue-400 for normal rain) marks the
+  // freeze modifier. Distinct from snow (soft circles, no streaks) and normal
+  // rain (blue-400 diagonal streaks, no terminal circles).
+  // Light = 2 strokes+circles, heavy = 4 strokes+circles.
+  'freezing-rain-light': `
+    <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#CBD5E1"/>
+    <line x1="26" y1="42" x2="22" y2="52" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="40" y1="42" x2="36" y2="52" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="24" cy="56" r="2.5" fill="#BAE6FD"/>
+    <circle cx="38" cy="56" r="2.5" fill="#BAE6FD"/>`,
+
+  'freezing-rain-heavy': `
+    <path d="M46 34 Q46 22 54 22 Q52 14 45 14 Q43 6 34 8 Q28 2 21 8 Q14 8 14 18 Q14 34 28 34 Z" fill="#64748B"/>
+    <line x1="19" y1="40" x2="15" y2="50" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="29" y1="40" x2="25" y2="50" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="39" y1="40" x2="35" y2="50" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="49" y1="40" x2="45" y2="50" stroke="#BAE6FD" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="17" cy="54" r="2.5" fill="#BAE6FD"/>
+    <circle cx="27" cy="54" r="2.5" fill="#BAE6FD"/>
+    <circle cx="37" cy="54" r="2.5" fill="#BAE6FD"/>
+    <circle cx="47" cy="54" r="2.5" fill="#BAE6FD"/>`,
 
   // ── Snow ───────────────────────────────────────────────────────────────────
   'snow-light': `
@@ -296,6 +356,22 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
       <circle cx="52" cy="56" r="4" fill="#E0F2FE"/>
     </g>`,
 
+  // ── Thunderstorm with heavy hail (WMO 99) ─────────────────────────────────
+  // Shape-first differentiation from normal hail (WMO 96):
+  //   • Cloud spans the full width (left edge at x=10 vs x=14) for a bigger,
+  //     more threatening profile.
+  //   • Four hail pellets (vs two) in a 2×2 grid, with larger radii (r=5 vs r=4),
+  //     so the denser pellet field is unmistakable even at small render sizes.
+  'thunderstorm-hail-heavy': `
+    <path d="M48 30 Q48 18 56 18 Q54 10 47 10 Q45 2 36 4 Q30 -2 22 4 Q14 4 14 14 Q14 30 28 30 Z" fill="#475569"/>
+    <polygon points="34,30 27,43 33,43 26,56 41,39 35,39" fill="#FDE68A"/>
+    <g fill="#E0F2FE" stroke="#7DD3FC" stroke-width="1.5">
+      <circle cx="40" cy="46" r="5"/>
+      <circle cx="52" cy="46" r="5"/>
+      <circle cx="40" cy="58" r="5"/>
+      <circle cx="52" cy="58" r="5"/>
+    </g>`,
+
   // ── Unknown / fallback ─────────────────────────────────────────────────────
   'unknown': `
     <circle cx="32" cy="32" r="20" stroke="#94A3B8" stroke-width="3" fill="none"/>
@@ -312,17 +388,17 @@ const CODE_MAP: Record<number, WeatherCodeMeta> = {
   2:  { description: 'Partly cloudy',               icon: '⛅',     svgKey: 'partly-cloudy' },
   3:  { description: 'Overcast',                    icon: '☁️',     svgKey: 'overcast' },
   45: { description: 'Fog',                         icon: '🌫️',    svgKey: 'fog' },
-  48: { description: 'Icy fog',                     icon: '🌫️',    svgKey: 'fog' },
+  48: { description: 'Icy fog',                     icon: '🌫️',    svgKey: 'fog-icy' },
   51: { description: 'Light drizzle',               icon: '🌧️',    svgKey: 'drizzle-light' },
   53: { description: 'Drizzle',                     icon: '🌧️',    svgKey: 'drizzle-moderate' },
   55: { description: 'Heavy drizzle',               icon: '🌧️',    svgKey: 'drizzle-heavy' },
-  56: { description: 'Light freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-rain' },
-  57: { description: 'Heavy freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-rain' },
+  56: { description: 'Light freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-drizzle-light' },
+  57: { description: 'Heavy freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-drizzle-heavy' },
   61: { description: 'Light rain',                  icon: '🌧️',    svgKey: 'rain-light' },
   63: { description: 'Rain',                        icon: '🌧️',    svgKey: 'rain-moderate' },
   65: { description: 'Heavy rain',                  icon: '🌧️',    svgKey: 'rain-heavy' },
-  66: { description: 'Light freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain' },
-  67: { description: 'Heavy freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain' },
+  66: { description: 'Light freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain-light' },
+  67: { description: 'Heavy freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain-heavy' },
   71: { description: 'Light snow',                  icon: '🌨️',    svgKey: 'snow-light' },
   73: { description: 'Snow',                        icon: '🌨️',    svgKey: 'snow-moderate' },
   75: { description: 'Heavy snow',                  icon: '🌨️',    svgKey: 'snow-heavy' },
@@ -334,7 +410,7 @@ const CODE_MAP: Record<number, WeatherCodeMeta> = {
   86: { description: 'Heavy snow showers',          icon: '🌨️',    svgKey: 'snow-showers-heavy' },
   95: { description: 'Thunderstorm',                icon: '⛈️',    svgKey: 'thunderstorm' },
   96: { description: 'Thunderstorm with hail',      icon: '⛈️',    svgKey: 'thunderstorm-hail' },
-  99: { description: 'Thunderstorm with heavy hail',icon: '⛈️',    svgKey: 'thunderstorm-hail' },
+  99: { description: 'Thunderstorm with heavy hail',icon: '⛈️',    svgKey: 'thunderstorm-hail-heavy' },
 }
 
 const FALLBACK: WeatherCodeMeta = { description: 'Unknown', icon: '🌡️', svgKey: 'unknown' }
@@ -359,8 +435,8 @@ export function getWeatherIcon(code: number): string {
 /**
  * Groups of WMO codes that support intensity-differentiated SVG variants.
  *
- * Codes not listed here are non-intensity-differentiated (fog, clear, clouds,
- * thunderstorms, freezing precipitation) — for those the base svgKey is
+ * Codes not listed here are non-intensity-differentiated (fog, icy fog, clear,
+ * clouds, thunderstorms, freezing precipitation) — for those the base svgKey is
  * always returned regardless of the `intensity` argument.
  */
 type IntensityIconMap = Record<WeatherIntensity, SvgIconKey>

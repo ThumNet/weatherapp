@@ -49,14 +49,18 @@ function isValidEndpoint(value: unknown): value is CommuteEndpoint {
 function isValidRoute(value: unknown): value is CyclingRoute {
   if (value === null || typeof value !== 'object') return false
   const v = value as Record<string, unknown>
-  return (
-    typeof v['id'] === 'string' &&
-    typeof v['name'] === 'string' &&
-    v['origin'] !== null &&
-    typeof v['origin'] === 'object' &&
-    v['destination'] !== null &&
-    typeof v['destination'] === 'object'
-  )
+  if (
+    typeof v['id'] !== 'string' ||
+    typeof v['name'] !== 'string' ||
+    v['origin'] === null ||
+    typeof v['origin'] !== 'object' ||
+    v['destination'] === null ||
+    typeof v['destination'] !== 'object'
+  ) return false
+  // Reject routes without geometry — they would show the map panel but render
+  // no polyline (e.g. data persisted before geometry was added to the schema).
+  if (!Array.isArray(v['geometry']) || (v['geometry'] as unknown[]).length === 0) return false
+  return true
 }
 
 function loadFromStorage(): PersistedCommute {

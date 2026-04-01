@@ -12,12 +12,25 @@
  *  - Start (🏠) and destination (🏢) labelled markers
  *  - Map auto-fitted to route bounds when route data is present
  *
- * The component is self-contained — it reads from `useCommuteStore()` directly
- * and re-fits the map whenever the route changes.
+ * Rendering strategy — declarative vue-leaflet components only:
+ *  All route geometry (polyline, circle markers, endpoint markers) is rendered
+ *  declaratively via <LPolyline>, <LCircleMarker> and <LMarker> children of
+ *  <LMap>. This guarantees they share the EXACT same Leaflet module instance
+ *  as the map itself (injected via vue-leaflet's provide/inject tree), avoiding
+ *  the invisible-layer bug caused by having two Leaflet module instances when
+ *  using imperative L.polyline() calls with :use-global-leaflet="false".
+ *
+ *  Prop style: all styling (color, weight, opacity, pane, etc.) is passed as
+ *  individual top-level props on <LPolyline> / <LCircleMarker>, NOT bundled
+ *  into the :options bag. This matches vue-leaflet's documented API and avoids
+ *  edge-cases in how the options object is merged at mount time.
+ *
+ *  Custom pane: a "routePane" (z-index 450) is created in onMapReady, above
+ *  the radar tile overlay, ensuring the route is always visible on top.
  */
 import 'leaflet/dist/leaflet.css'
 import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
-import { LMap, LTileLayer } from '@vue-leaflet/vue-leaflet'
+import { LMap, LTileLayer, LPolyline, LCircleMarker, LMarker, LPopup } from '@vue-leaflet/vue-leaflet'
 import L from 'leaflet'
 import { useCommuteStore } from '@/stores/commute'
 import { fetchRadarFrames, buildRadarTileUrl, formatFrameTime } from '@/services/rainviewerService'
@@ -37,6 +50,11 @@ const commuteStore = useCommuteStore()
 
 // ─── Map instance ref ────────────────────────────────────────────────────────
 const lmapRef = ref<InstanceType<typeof LMap> | null>(null)
+
+/**
+ * Stores the raw Leaflet map instance once `@ready` fires.
+ */
+const mapInstance = ref<L.Map | null>(null)
 
 // ─── Radar state ─────────────────────────────────────────────────────────────
 const RADAR_MAX_ZOOM = 7
@@ -83,6 +101,7 @@ const currentTimeLabel = computed<string>(() => {
 
 /**
  * Returns the route polyline as Leaflet LatLng pairs, or an empty array.
+ * Used both for the LPolyline component and the hasRoute flag.
  */
 const routeLatLngs = computed<L.LatLngTuple[]>(() => {
   const geometry = commuteStore.route?.geometry
@@ -112,37 +131,7 @@ const allCheckpointScores = computed<CheckpointScore[]>(() => {
   return commuteStore.recommendation?.bestDeparture?.checkpointScores ?? []
 })
 
-// ─── Leaflet layer management (imperative, via map ref) ──────────────────────
-
-// We use imperative Leaflet API for the polyline and checkpoint markers
-// because @vue-leaflet doesn't expose LPolyline/LCircleMarker in a way that
-// easily supports dynamic re-creation with popup content on older 0.x versions.
-
-let routePolyline: L.Polyline | null = null
-let checkpointLayers: L.Layer[] = []
-let startMarker: L.Marker | null = null
-let endMarker: L.Marker | null = null
-
-function getLeafletMap(): L.Map | null {
-  return (lmapRef.value as unknown as { leafletObject?: L.Map } | null)?.leafletObject ?? null
-}
-
-function createDivIcon(emoji: string, title: string, extraClasses = ''): L.DivIcon {
-  return L.divIcon({
-    className: '',
-    html: `<div title="${title}" class="commute-endpoint-icon ${extraClasses}" style="
-      display:flex;align-items:center;justify-content:center;
-      width:32px;height:32px;border-radius:50%;
-      background:rgba(15,32,39,0.85);
-      border:2px solid rgba(255,255,255,0.4);
-      font-size:16px;line-height:1;
-      box-shadow:0 2px 6px rgba(0,0,0,0.5);
-    ">${emoji}</div>`,
-    iconSize: [32, 32],
-    iconAnchor: [16, 16],
-    popupAnchor: [0, -16],
-  })
-}
+// ─── Derived display data for declarative marker rendering ──────────────────
 
 /**
  * Colour for a checkpoint circle based on risk rating.
@@ -155,135 +144,121 @@ function ratingColour(rating: string): string {
 }
 
 /**
- * Redraw route polyline + checkpoint markers on the map.
- * Clears previous layers first.
+ * Checkpoints to render as circle markers.
+ * When a recommendation is available, uses scored checkpoints (colour-coded).
+ * Otherwise, falls back to the plain route checkpoints in neutral blue.
  */
-function redrawRouteLayers(): void {
-  const map = getLeafletMap()
-  if (!map) return
+interface CheckpointMarker {
+  key: string
+  lat: number
+  lon: number
+  radius: number
+  color: string
+  fillOpacity: number
+  weight: number
+  label: string
+  mmPerHour: number | null
+  rating: string
+}
 
-  // ── Remove old layers ──────────────────────────────────────────────────
-  if (routePolyline) {
-    routePolyline.remove()
-    routePolyline = null
-  }
-  for (const layer of checkpointLayers) {
-    layer.remove()
-  }
-  checkpointLayers = []
-  if (startMarker) { startMarker.remove(); startMarker = null }
-  if (endMarker) { endMarker.remove(); endMarker = null }
-
-  const latlngs = routeLatLngs.value
-  if (latlngs.length === 0) return
-
-  // ── Route polyline ─────────────────────────────────────────────────────
-  routePolyline = L.polyline(latlngs, {
-    color: '#38bdf8',      // sky-400 — visible on dark map
-    weight: 4,
-    opacity: 0.92,
-    lineJoin: 'round',
-    lineCap: 'round',
-  }).addTo(map)
-
-  // ── Checkpoint circles ─────────────────────────────────────────────────
-  // If a recommendation exists, colour each checkpoint by its risk rating.
-  // Otherwise, draw all route checkpoints in neutral blue.
+const checkpointMarkers = computed<CheckpointMarker[]>(() => {
   const scores = allCheckpointScores.value
-  const scoredPositions = new Set(
-    scores.map((cs) => `${cs.checkpoint.position.lat.toFixed(5)},${cs.checkpoint.position.lon.toFixed(5)}`),
-  )
-
   if (scores.length > 0) {
-    for (const cs of scores) {
+    return scores.map((cs, i) => {
       const colour = ratingColour(cs.rating)
       const ring = cs.isRisky ? 3 : 2
       const radius = cs.isRisky ? 9 : 6
-
-      const circle = L.circleMarker(
-        [cs.checkpoint.position.lat, cs.checkpoint.position.lon],
-        {
-          radius,
-          color: colour,
-          fillColor: colour,
-          fillOpacity: cs.isRisky ? 0.9 : 0.6,
-          weight: ring,
-          opacity: 1,
-        },
-      )
-
-      const mmLabel =
-        cs.mmPerHour > 0
-          ? `<br><span style="color:${colour};font-weight:bold">${cs.mmPerHour.toFixed(1)} mm/h</span>`
-          : ''
-      const riskLabel = cs.isRisky
-        ? `<span style="color:${colour};font-weight:bold">${cs.rating}</span>`
-        : `<span style="color:#10b981">clear</span>`
-      circle.bindPopup(
-        `<div style="font-size:13px;line-height:1.5">
-          <strong>${cs.checkpoint.label}</strong><br>
-          ${riskLabel}${mmLabel}
-        </div>`,
-        { maxWidth: 180 },
-      )
-
-      circle.addTo(map)
-      checkpointLayers.push(circle)
-    }
-  } else {
-    // No recommendation yet — draw checkpoints from route.checkpoints if available
-    const checkpoints = commuteStore.route?.checkpoints ?? []
-    for (const cp of checkpoints) {
-      const circle = L.circleMarker([cp.position.lat, cp.position.lon], {
-        radius: 5,
-        color: '#38bdf8',
-        fillColor: '#38bdf8',
-        fillOpacity: 0.5,
-        weight: 2,
-        opacity: 0.8,
-      })
-      circle.bindPopup(`<strong style="font-size:13px">${cp.label}</strong>`, { maxWidth: 160 })
-      circle.addTo(map)
-      checkpointLayers.push(circle)
-    }
-  }
-
-  // ── Start marker (🏠) ──────────────────────────────────────────────────
-  const origin = commuteStore.route?.origin
-  if (origin) {
-    startMarker = L.marker([origin.lat, origin.lon], {
-      icon: createDivIcon('🏠', commuteStore.home?.name ?? 'Home'),
-      zIndexOffset: 100,
+      return {
+        key: `score-${i}`,
+        lat: cs.checkpoint.position.lat,
+        lon: cs.checkpoint.position.lon,
+        radius,
+        color: colour,
+        fillOpacity: cs.isRisky ? 0.9 : 0.6,
+        weight: ring,
+        label: cs.checkpoint.label,
+        mmPerHour: cs.mmPerHour,
+        rating: cs.rating,
+      }
     })
-      .bindPopup(`<strong style="font-size:13px">${commuteStore.home?.name ?? 'Home'}</strong>`, { maxWidth: 180 })
-      .addTo(map)
   }
 
-  // ── End marker (🏢) ────────────────────────────────────────────────────
-  const destination = commuteStore.route?.destination
-  if (destination) {
-    endMarker = L.marker([destination.lat, destination.lon], {
-      icon: createDivIcon('🏢', commuteStore.work?.name ?? 'Work'),
-      zIndexOffset: 100,
-    })
-      .bindPopup(`<strong style="font-size:13px">${commuteStore.work?.name ?? 'Work'}</strong>`, { maxWidth: 180 })
-      .addTo(map)
-  }
+  // No recommendation — fall back to plain route checkpoints
+  const checkpoints = commuteStore.route?.checkpoints ?? []
+  return checkpoints.map((cp, i) => ({
+    key: `cp-${i}`,
+    lat: cp.position.lat,
+    lon: cp.position.lon,
+    radius: 5,
+    color: '#38bdf8',
+    fillOpacity: 0.5,
+    weight: 2,
+    label: cp.label,
+    mmPerHour: null,
+    rating: 'good',
+  }))
+})
 
-  // ── Fit map to route bounds ────────────────────────────────────────────
-  fitToBounds(map)
+/** DivIcon HTML for endpoint markers */
+function endpointIconHtml(emoji: string, title: string): string {
+  return `<div title="${title}" style="
+    display:flex;align-items:center;justify-content:center;
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(15,32,39,0.9);
+    border:2.5px solid rgba(255,255,255,0.5);
+    font-size:18px;line-height:1;
+    box-shadow:0 2px 8px rgba(0,0,0,0.6);
+  ">${emoji}</div>`
+}
+
+const homeEndpointIcon = computed(() =>
+  L.divIcon({
+    className: '',
+    html: endpointIconHtml('🏠', commuteStore.home?.name ?? 'Home'),
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18],
+  }),
+)
+
+const workEndpointIcon = computed(() =>
+  L.divIcon({
+    className: '',
+    html: endpointIconHtml('🏢', commuteStore.work?.name ?? 'Work'),
+    iconSize: [36, 36],
+    iconAnchor: [18, 18],
+    popupAnchor: [0, -18],
+  }),
+)
+
+// ─── Map bounds management ──────────────────────────────────────────────────
+
+function getLeafletMap(): L.Map | null {
+  if (mapInstance.value) return mapInstance.value
+  return (lmapRef.value as unknown as { leafletObject?: L.Map } | null)?.leafletObject ?? null
 }
 
 function fitToBounds(map: L.Map): void {
   const bounds = commuteStore.routeBounds
   if (!bounds) return
 
-  const leafletBounds = L.latLngBounds(
-    [bounds.south, bounds.west],
-    [bounds.north, bounds.east],
+  // Guard: skip if bounds span is zero (degenerate geometry)
+  if (bounds.north === bounds.south || bounds.east === bounds.west) return
+
+  map.invalidateSize({ animate: false })
+
+  // Use a plain nested-array instead of L.latLngBounds() so that this call is
+  // safe even if the statically-imported 'leaflet' CJS module is a different
+  // runtime instance from the ESM one used by vue-leaflet's LMap internally.
+  // Leaflet's fitBounds() normalises [[lat,lon],[lat,lon]] arrays directly.
+  map.fitBounds(
+    [[bounds.south, bounds.west], [bounds.north, bounds.east]],
+    { padding: [40, 40], maxZoom: 14 },
   )
-  map.fitBounds(leafletBounds, { padding: [32, 32], maxZoom: 14 })
 }
+
+// Phase-2 timer handle — cleared on unmount to prevent memory leaks
+let phase2Timer: ReturnType<typeof setTimeout> | null = null
 
 // ─── Radar animation ─────────────────────────────────────────────────────────
 
@@ -347,43 +322,87 @@ async function loadFrames(): Promise<void> {
 
 /**
  * Called by LMap's @ready event once the Leaflet map instance is initialised.
- * At this point the map DOM is present, so we can draw overlays and fit bounds.
+ *
+ * Route geometry is rendered DECLARATIVELY via <LPolyline> / <LCircleMarker>
+ * children, so they are automatically present in the map by the time this
+ * callback fires.  All we need to do here is:
+ *  1. Create a dedicated "routePane" above the radar overlay so the polyline
+ *     is always visible regardless of tile-layer stacking order.
+ *  2. Fit the view to the route bounds.
+ *
+ * Two-phase fit strategy handles the CommutePage fade-in transition:
+ *  Phase 1 (immediate): invalidateSize + fitBounds.
+ *  Phase 2 (400 ms):   repeat invalidateSize + fitBounds after the 200 ms
+ *                       CSS opacity transition has fully completed.
  */
-async function onMapReady(): Promise<void> {
+async function onMapReady(leafletMap: L.Map): Promise<void> {
+  mapInstance.value = leafletMap
+
+  // Create a dedicated pane that sits above tilePane (200), overlayPane (400),
+  // and the radar tile overlay — ensuring the route polyline is always on top.
+  if (!leafletMap.getPane('routePane')) {
+    const pane = leafletMap.createPane('routePane')
+    pane.style.zIndex = '450'
+    // Panes need pointer-events:none so the map stays interactive
+    pane.style.pointerEvents = 'none'
+  }
+
   await nextTick()
-  // Small delay to let the container settle its final dimensions
-  setTimeout(() => {
+
+  // Phase 1 — fit immediately
+  fitToBounds(leafletMap)
+
+  // Phase 2 — re-fit after CSS fade-in transition (200 ms) completes
+  phase2Timer = setTimeout(() => {
+    phase2Timer = null
     const map = getLeafletMap()
-    map?.invalidateSize()
-    redrawRouteLayers()
-  }, 100)
+    if (!map) return
+    fitToBounds(map)
+  }, 400)
 }
 
-// ─── Watchers ─────────────────────────────────────────────────────────────────
+// ─── Watch: re-fit when route or recommendation changes ────────────────────
 
-// Re-draw when route or recommendation changes
 watch(
-  () => [commuteStore.route, commuteStore.recommendation],
+  () => commuteStore.route,
   async () => {
     await nextTick()
-    redrawRouteLayers()
+    const map = getLeafletMap()
+    if (!map) return
+    fitToBounds(map)
   },
-  { deep: false },
+)
+
+watch(
+  () => commuteStore.recommendation,
+  async () => {
+    await nextTick()
+    // No bounds change needed for recommendation updates — just let Vue
+    // re-render the declarative checkpoint markers reactively.
+  },
 )
 
 // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
-// Load radar frames eagerly when the component mounts
 void loadFrames()
 
 onUnmounted(() => {
   stopAnimation()
-  // Clean up Leaflet layers
-  if (routePolyline) routePolyline.remove()
-  for (const l of checkpointLayers) l.remove()
-  if (startMarker) startMarker.remove()
-  if (endMarker) endMarker.remove()
+  if (phase2Timer !== null) {
+    clearTimeout(phase2Timer)
+    phase2Timer = null
+  }
+  mapInstance.value = null
 })
+
+/**
+ * Human-readable label for a condition rating used inside popups.
+ */
+function ratingLabel(rating: string): string {
+  if (rating === 'poor') return 'Poor — heavy rain'
+  if (rating === 'marginal') return 'Marginal — light rain'
+  return 'Clear'
+}
 
 // ─── Risk legend entries ──────────────────────────────────────────────────────
 
@@ -400,7 +419,7 @@ const riskyCount = computed(() => riskyCheckpointScores.value.length)
     aria-label="Route map with radar"
   >
     <!-- ── Map area ──────────────────────────────────────────────────────── -->
-    <div class="relative" style="height: 340px">
+    <div class="relative" style="height: 360px">
 
       <!-- Loading state -->
       <div
@@ -424,7 +443,7 @@ const riskyCount = computed(() => riskyCheckpointScores.value.length)
         </div>
       </div>
 
-      <!-- Leaflet map -->
+      <!-- Leaflet map — all route layers rendered declaratively as children -->
       <LMap
         ref="lmapRef"
         :zoom="mapZoom"
@@ -448,6 +467,81 @@ const riskyCount = computed(() => riskyCheckpointScores.value.length)
           :options="{ opacity: 0.65, maxNativeZoom: RADAR_MAX_ZOOM, maxZoom: 18 }"
           attribution="RainViewer"
         />
+
+        <!-- ── Route polyline (declarative — same Leaflet instance as LMap) ── -->
+        <!--
+          Uses individual top-level props (color, weight, opacity, etc.) rather
+          than the :options bag — this is the vue-leaflet documented approach and
+          avoids any ambiguity in how the options object is merged at mount time.
+
+          Both polylines go into the custom 'routePane' (z-index 450) which is
+          created in onMapReady above.  This guarantees they always render above
+          the radar tile overlay (tilePane z-index 200) and overlayPane (400).
+        -->
+        <template v-if="hasRoute">
+          <!-- Dark outline for contrast on light map tiles -->
+          <LPolyline
+            :key="`route-outline-${routeLatLngs.length}`"
+            :lat-lngs="routeLatLngs"
+            pane="routePane"
+            color="#0f172a"
+            :weight="12"
+            :opacity="0.6"
+            line-cap="round"
+            line-join="round"
+          />
+          <!-- Bright cyan route line on top -->
+          <LPolyline
+            :key="`route-fill-${routeLatLngs.length}`"
+            :lat-lngs="routeLatLngs"
+            pane="routePane"
+            color="#0ea5e9"
+            :weight="7"
+            :opacity="1"
+            line-cap="round"
+            line-join="round"
+          />
+
+          <!-- ── Checkpoint circle markers ───────────────────────────────── -->
+          <LCircleMarker
+            v-for="cm in checkpointMarkers"
+            :key="cm.key"
+            :lat-lng="[cm.lat, cm.lon]"
+            pane="routePane"
+            :radius="cm.radius"
+            :color="cm.color"
+            :fill-color="cm.color"
+            :fill-opacity="cm.fillOpacity"
+            :weight="cm.weight"
+            :opacity="1"
+          >
+            <LPopup>
+              <div style="min-width: 120px; font-size: 13px; line-height: 1.5">
+                <strong>{{ cm.label }}</strong><br />
+                <span v-if="cm.mmPerHour !== null">
+                  {{ cm.mmPerHour.toFixed(1) }} mm/h &mdash; {{ ratingLabel(cm.rating) }}
+                </span>
+                <span v-else style="color: #94a3b8">No rain data</span>
+              </div>
+            </LPopup>
+          </LCircleMarker>
+
+          <!-- ── Start marker (🏠) ───────────────────────────────────────── -->
+          <LMarker
+            v-if="commuteStore.route?.origin"
+            :lat-lng="[commuteStore.route.origin.lat, commuteStore.route.origin.lon]"
+            :icon="homeEndpointIcon"
+            :z-index-offset="200"
+          />
+
+          <!-- ── End marker (🏢) ─────────────────────────────────────────── -->
+          <LMarker
+            v-if="commuteStore.route?.destination"
+            :lat-lng="[commuteStore.route.destination.lat, commuteStore.route.destination.lon]"
+            :icon="workEndpointIcon"
+            :z-index-offset="200"
+          />
+        </template>
       </LMap>
 
       <!-- ── Radar timestamp badge ──────────────────────────────────────── -->

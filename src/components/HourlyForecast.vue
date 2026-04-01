@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useWeatherStore } from '@/stores/weather'
-import { getWeatherIcon } from '@/utils/weatherCodes'
+import WeatherIcon from '@/components/WeatherIcon.vue'
 
 const weatherStore = useWeatherStore()
 
@@ -17,7 +17,7 @@ function formatHour(isoTime: string): string {
 
 interface HourlyCard {
   time: string
-  icon: string
+  code: number
   temp: number
   precip: number
   precipProb: number
@@ -27,7 +27,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   if (!forecast.value) return []
   return forecast.value.time.map((t, i) => ({
     time: formatHour(t),
-    icon: getWeatherIcon(forecast.value!.weatherCode[i] ?? 0),
+    code: forecast.value!.weatherCode[i] ?? 0,
     temp: Math.round(forecast.value!.temperature[i] ?? 0),
     precip: forecast.value!.precipitation[i] ?? 0,
     precipProb: forecast.value!.precipitationProbability[i] ?? 0,
@@ -105,7 +105,11 @@ const hourlyCards = computed<HourlyCard[]>(() => {
           <!-- Time -->
           <span class="text-xs text-slate-500 dark:text-white/60">{{ card.time }}</span>
           <!-- Weather icon -->
-          <span class="text-xl" aria-hidden="true">{{ card.icon }}</span>
+          <WeatherIcon
+            :code="card.code"
+            :intensity="card.precip > 7.6 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
+            :size="28"
+          />
           <!-- Temperature -->
           <span class="text-sm font-semibold text-slate-800 dark:text-white">{{ card.temp }}°</span>
           <!-- Precipitation mm (only if > 0) -->

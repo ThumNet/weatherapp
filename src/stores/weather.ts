@@ -20,7 +20,19 @@ function loadFromStorage(): WeatherCache | null {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
-    return JSON.parse(raw) as WeatherCache
+    const parsed = JSON.parse(raw) as WeatherCache
+
+    // Backward-compatible normalization: older cached shapes may be missing
+    // fields added after the initial release. Coerce undefined → null so the
+    // rest of the app always receives a known type (number | null).
+    if (parsed.currentWeather) {
+      parsed.currentWeather.precipitation = parsed.currentWeather.precipitation ?? null
+    }
+    if (parsed.dailyForecast) {
+      parsed.dailyForecast.precipitationHours = parsed.dailyForecast.precipitationHours ?? null
+    }
+
+    return parsed
   } catch {
     return null
   }

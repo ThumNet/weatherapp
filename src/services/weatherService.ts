@@ -85,7 +85,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     latitude: String(lat),
     longitude: String(lon),
     current:
-      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m',
+      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
     timezone: 'auto',
   })
 
@@ -107,6 +107,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     windSpeed: c.wind_speed_10m,
     windDirection: c.wind_direction_10m,
     time: c.time,
+    precipitation: c.precipitation ?? null,
   }
 }
 
@@ -149,7 +150,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     latitude: String(lat),
     longitude: String(lon),
     daily:
-      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max',
+      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours',
     timezone: 'auto',
   })
 
@@ -170,5 +171,6 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     temperatureMin: d.temperature_2m_min,
     precipitationSum: d.precipitation_sum,
     precipitationProbabilityMax: d.precipitation_probability_max,
+    precipitationHours: d.precipitation_hours ?? null,
   }
 }

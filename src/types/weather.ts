@@ -69,6 +69,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     weather_code: string
     wind_speed_10m: string
     wind_direction_10m: string
+    /** Present only when precipitation is requested */
+    precipitation?: string
   }
   current: {
     time: string
@@ -78,6 +80,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     weather_code: number
     wind_speed_10m: number
     wind_direction_10m: number
+    /** Precipitation amount in mm for the current hour; absent in older cached shapes */
+    precipitation?: number
   }
 }
 
@@ -91,6 +95,11 @@ export interface CurrentWeather {
   windDirection: number
   /** ISO 8601 timestamp returned by Open-Meteo */
   time: string
+  /**
+   * Precipitation amount for the current hour in mm.
+   * Null when the value is missing (e.g. older persisted cache shapes).
+   */
+  precipitation: number | null
 }
 
 // ---------------------------------------------------------------------------
@@ -140,6 +149,11 @@ export interface DailyForecast {
   temperatureMin: number[]
   precipitationSum: number[]
   precipitationProbabilityMax: number[]
+  /**
+   * Number of hours with precipitation per day (≥ 0.1 mm threshold).
+   * Null when the value is missing (e.g. older persisted cache shapes).
+   */
+  precipitationHours: number[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (daily fields only) */
@@ -155,6 +169,8 @@ export interface OpenMeteoDailyResponse {
     temperature_2m_min: string
     precipitation_sum: string
     precipitation_probability_max: string
+    /** Present only when precipitation_hours is requested */
+    precipitation_hours?: string
   }
   daily: {
     time: string[]
@@ -163,6 +179,8 @@ export interface OpenMeteoDailyResponse {
     temperature_2m_min: number[]
     precipitation_sum: number[]
     precipitation_probability_max: number[]
+    /** Absent in older cached shapes */
+    precipitation_hours?: number[]
   }
 }
 

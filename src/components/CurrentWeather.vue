@@ -2,7 +2,9 @@
 import { computed } from 'vue'
 import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
-import { getWeatherDescription, getWeatherIcon, degreesToCompass } from '@/utils/weatherCodes'
+import { getWeatherDescription, degreesToCompass } from '@/utils/weatherCodes'
+import type { WeatherIntensity } from '@/utils/weatherCodes'
+import WeatherIcon from '@/components/WeatherIcon.vue'
 
 defineEmits<{ (e: 'open-radar'): void }>()
 
@@ -19,15 +21,39 @@ const temperature = computed(() =>
 const feelsLike = computed(() =>
   weather.value !== null ? Math.round(weather.value.apparentTemperature) : null,
 )
-const icon = computed(() =>
-  weather.value !== null ? getWeatherIcon(weather.value.weatherCode) : '',
-)
 const description = computed(() =>
   weather.value !== null ? getWeatherDescription(weather.value.weatherCode) : '',
 )
 const windCompass = computed(() =>
   weather.value !== null ? degreesToCompass(weather.value.windDirection) : '',
 )
+
+// ── Current-hour icon intensity ──────────────────────────────────────────────
+
+/**
+ * Intensity hint for the hero WeatherIcon derived from the current-hour
+ * precipitation value (mm/h). Uses the same rate-based thresholds as the
+ * hourly forecast view so the two are visually consistent.
+ *
+ * Thresholds (mm/h):
+ *   dry:      0
+ *   drizzle:  > 0  to < 0.5  → 'light'  (routes to drizzle-light SVG via WMO code)
+ *   light:    0.5  to  2.5   → 'light'
+ *   moderate: 2.6  to  7.6   → 'moderate'
+ *   heavy:    > 7.6          → 'heavy'
+ *
+ * Falls back to `undefined` when:
+ *   - no weather data is loaded yet
+ *   - `precipitation` is null (older persisted cache shape without this field)
+ *   - precipitation is 0 (dry — no intensity override needed)
+ */
+const currentWeatherIntensity = computed<WeatherIntensity | undefined>(() => {
+  const precip = weather.value?.precipitation ?? null
+  if (precip === null || precip === 0) return undefined
+  if (precip > 7.6) return 'heavy'
+  if (precip >= 0.5) return 'moderate'
+  return 'light' // covers drizzle (> 0 to < 0.5) and light (0.5 to 2.5, handled above)
+})
 
 // ── Precipitation helpers ────────────────────────────────────────────────────
 
@@ -47,10 +73,10 @@ function barHeightPercent(mmPerHour: number): number {
 /** Color class for a precipitation bar based on intensity */
 function barColorClass(mmPerHour: number): string {
   if (mmPerHour <= 0) return 'bg-slate-200 dark:bg-white/10'
-  if (mmPerHour < 0.5) return 'bg-blue-300/60 dark:bg-blue-300/50'
-  if (mmPerHour <= 2.5) return 'bg-blue-400/80 dark:bg-blue-400/70'
-  if (mmPerHour <= 7.5) return 'bg-blue-600/85 dark:bg-blue-500/80'
-  return 'bg-purple-500/90 dark:bg-purple-400/85'
+  if (mmPerHour < 0.5) return 'bg-blue-300/60 dark:bg-blue-300/50'   // drizzle
+  if (mmPerHour <= 2.5) return 'bg-blue-400/80 dark:bg-blue-400/70'  // light
+  if (mmPerHour <= 7.6) return 'bg-blue-600/85 dark:bg-blue-500/80'  // moderate
+  return 'bg-purple-500/90 dark:bg-purple-400/85'                     // heavy
 }
 
 /** Describes the intensity of the first upcoming rain */
@@ -58,20 +84,28 @@ const rainIntensityLabel = computed<string>(() => {
   const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
   if (idx === -1) return ''
   const mm = precipStore.entries[idx].mmPerHour
-  if (mm < 0.5) return 'Light drizzle'
-  if (mm <= 2.5) return 'Light rain'
-  if (mm <= 7.5) return 'Moderate rain'
-  return 'Heavy rain'
+  if (mm < 0.5) return 'Light drizzle'   // > 0 to < 0.5 mm/h
+  if (mm <= 2.5) return 'Light rain'     // 0.5 to 2.5 mm/h
+  if (mm <= 7.6) return 'Moderate rain'  // 2.6 to 7.6 mm/h
+  return 'Heavy rain'                     // > 7.6 mm/h
 })
 
-/** Icon for the current/upcoming rain intensity */
-const rainIntensityIcon = computed<string>(() => {
+/** WMO code to show in the rain alert icon (clear-sky or current weather code) */
+const rainAlertCode = computed<number>(() => {
   const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
-  if (idx === -1) return '☀️'
+  if (idx === -1) return 0 // clear sky
+  return weather.value?.weatherCode ?? 63 // fallback to plain rain
+})
+
+/** Intensity hint for the rain alert icon */
+const rainAlertIntensity = computed<'light' | 'moderate' | 'heavy' | undefined>(() => {
+  const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
+  if (idx === -1) return undefined
   const mm = precipStore.entries[idx].mmPerHour
-  if (mm < 0.5) return '🌦️'
-  if (mm <= 7.5) return '🌧️'
-  return '⛈️'
+  if (mm < 0.5) return 'light'    // drizzle (> 0 to < 0.5 mm/h)
+  if (mm <= 2.5) return 'light'   // light (0.5 to 2.5 mm/h)
+  if (mm <= 7.6) return 'moderate' // moderate (2.6 to 7.6 mm/h)
+  return 'heavy'                    // heavy (> 7.6 mm/h)
 })
 
 /** Show every Nth label to avoid crowding (Buienradar gives 24 × 5-min entries) */
@@ -93,7 +127,7 @@ const chartScale = computed(() => Math.max(precipStore.maxIntensity, MIN_SCALE_M
 
 const gridLines = computed(() => {
   const max = chartScale.value
-  const thresholds = [0.5, 2.5, 7.5]
+  const thresholds = [0.5, 2.5, 7.6]
   const visible = thresholds.filter(t => {
     const pct = (t / max) * 100
     return pct >= 5 && pct <= 95
@@ -190,12 +224,12 @@ const gridLines = computed(() => {
         </div>
 
         <!-- Weather icon (large) -->
-        <span
-          class="select-none text-6xl drop-shadow-md transition-all duration-300"
-          aria-hidden="true"
-        >
-          {{ icon }}
-        </span>
+        <WeatherIcon
+          :code="weather.weatherCode"
+          :intensity="currentWeatherIntensity"
+          :size="64"
+          class="drop-shadow-md transition-all duration-300"
+        />
       </div>
 
       <!-- Description -->
@@ -290,7 +324,7 @@ const gridLines = computed(() => {
                 class="relative flex-1 rounded-t transition-all duration-300"
                 :class="barColorClass(entry.mmPerHour)"
                 :style="{ height: `${barHeightPercent(entry.mmPerHour)}%` }"
-                :title="`${entry.time} — ${entry.mmPerHour > 0 ? entry.mmPerHour.toFixed(2) + ' mm/h (' + (entry.mmPerHour < 0.5 ? 'drizzle' : entry.mmPerHour <= 2.5 ? 'light' : entry.mmPerHour <= 7.5 ? 'moderate' : 'heavy') + ')' : 'dry'}`"
+                :title="`${entry.time} — ${entry.mmPerHour > 0 ? entry.mmPerHour.toFixed(2) + ' mm/h (' + (entry.mmPerHour < 0.5 ? 'drizzle' : entry.mmPerHour <= 2.5 ? 'light' : entry.mmPerHour <= 7.6 ? 'moderate' : 'heavy') + ')' : 'dry'}`"
                 :aria-label="`${entry.time}: ${entry.mmPerHour.toFixed(2)} mm/h`"
               >
                 <!-- Highlight the first rainy bar -->
@@ -344,9 +378,11 @@ const gridLines = computed(() => {
           @click="$emit('open-radar')"
         >
           <!-- Icon -->
-          <span class="text-xl leading-none">
-          {{ rainIntensityIcon }}
-          </span>
+          <WeatherIcon
+            :code="rainAlertCode"
+            :intensity="rainAlertIntensity"
+            :size="24"
+          />
 
           <!-- Message -->
           <span v-if="alertStyle === 'rain'">{{ rainIntensityLabel }} — falling now</span>

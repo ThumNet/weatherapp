@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useWeatherStore } from '@/stores/weather'
-import { getWeatherIcon } from '@/utils/weatherCodes'
+import WeatherIcon from '@/components/WeatherIcon.vue'
+import type { WeatherIntensity } from '@/utils/weatherCodes'
 
 const weatherStore = useWeatherStore()
 
@@ -22,11 +23,70 @@ interface DayRow {
   date: string
   dayName: string
   dateLabel: string
-  icon: string
+  code: number
   tempMax: number
   tempMin: number
   precipProb: number
   precipSum: number
+  /** Hours with precipitation ≥ 0.1 mm; null when field is absent from older cache shapes */
+  precipHours: number | null
+}
+
+/**
+ * Derive a daily precipitation intensity bucket.
+ *
+ * Primary path — wet-hour average (requires `precipitationHours` ≥ 1):
+ *   avg = precipitationSum / precipitationHours  (mm/h across wet hours)
+ *
+ *   avg buckets:
+ *     dry:      0 mm or 0 wet hours   → undefined
+ *     drizzle:  > 0   to < 0.5 mm/h  → 'light'
+ *     light:    0.5   to  2.5  mm/h  → 'light'
+ *     moderate: 2.6   to  7.6  mm/h  → 'moderate'
+ *     heavy:    > 7.6 mm/h           → 'heavy'
+ *
+ *   Daily overrides (applied after the avg bucket, can only raise intensity):
+ *     precipitationSum ≥ 35 mm/day                              → 'heavy'
+ *     precipitationSum ≥ 20 mm/day                              → at least 'moderate'
+ *     precipitationHours ≥ 8 and precipitationSum ≥ 15 mm/day  → 'heavy'
+ *
+ * Fallback — sum-only (when `precipitationHours` is null, older cache shapes):
+ *   dry:      0 mm              → undefined
+ *   drizzle:  > 0  to < 2.5    → 'light'
+ *   light:    2.5  to  7.5 mm  → 'light'
+ *   moderate: 7.6  to 20   mm  → 'moderate'
+ *   heavy:    > 20 mm          → 'heavy'
+ */
+function dailyIntensity(precipHours: number | null, precipSum: number): WeatherIntensity | undefined {
+  if (precipHours !== null) {
+    // Primary: avg mm/h over wet hours
+    if (precipHours === 0 || precipSum <= 0) return undefined
+    const avg = precipSum / precipHours
+
+    let intensity: WeatherIntensity
+    if (avg > 7.6) {
+      intensity = 'heavy'
+    } else if (avg >= 0.5) {
+      // covers light (0.5–2.5) and moderate (2.6–7.6)
+      intensity = avg <= 2.5 ? 'light' : 'moderate'
+    } else {
+      intensity = 'light' // drizzle: > 0 to < 0.5 avg mm/h
+    }
+
+    // Daily overrides — can only raise, never lower
+    if (precipSum >= 35) return 'heavy'
+    if (precipHours >= 8 && precipSum >= 15) return 'heavy'
+    if (precipSum >= 20 && intensity !== 'heavy') return 'moderate'
+
+    return intensity
+  }
+
+  // Fallback: sum-based for legacy cache shapes where precipitationHours is null
+  if (precipSum <= 0) return undefined
+  if (precipSum > 20) return 'heavy'
+  if (precipSum >= 7.6) return 'moderate'
+  if (precipSum >= 2.5) return 'light'
+  return 'light' // drizzle: > 0 to < 2.5 mm/day
 }
 
 const days = computed<DayRow[]>(() => {
@@ -37,11 +97,13 @@ const days = computed<DayRow[]>(() => {
     date,
     dayName: formatDayName(date, i),
     dateLabel: formatDate(date),
-    icon: getWeatherIcon(f.weatherCode[i] ?? 0),
+    code: f.weatherCode[i] ?? 0,
     tempMax: Math.round(f.temperatureMax[i] ?? 0),
     tempMin: Math.round(f.temperatureMin[i] ?? 0),
     precipProb: Math.round(f.precipitationProbabilityMax[i] ?? 0),
     precipSum: Math.round((f.precipitationSum[i] ?? 0) * 10) / 10,
+    // precipitationHours is null when absent from older persisted cache shapes
+    precipHours: f.precipitationHours !== null ? (f.precipitationHours[i] ?? null) : null,
   }))
 })
 
@@ -117,9 +179,11 @@ const error = computed(() => weatherStore.error)
         </div>
 
         <!-- Weather icon -->
-        <span class="text-xl leading-none" :title="day.icon" aria-hidden="true">
-          {{ day.icon }}
-        </span>
+        <WeatherIcon
+          :code="day.code"
+          :intensity="dailyIntensity(day.precipHours, day.precipSum)"
+          :size="28"
+        />
 
         <!-- Precipitation info -->
         <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-200">

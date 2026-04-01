@@ -13,6 +13,9 @@ import CurrentWeather from '@/components/CurrentWeather.vue'
 import HourlyForecast from '@/components/HourlyForecast.vue'
 import DailyForecast from '@/components/DailyForecast.vue'
 import RadarMap from '@/components/RadarMap.vue'
+import WeatherIconDemo from '@/components/WeatherIconDemo.vue'
+
+const isDev = import.meta.env.DEV
 
 const locationStore = useLocationStore()
 const weatherStore = useWeatherStore()
@@ -295,6 +298,7 @@ watch(
         <Transition name="content-fade" appear>
           <DailyForecast />
         </Transition>
+        <WeatherIconDemo v-if="isDev" />
       </main>
     </div>
   </div>

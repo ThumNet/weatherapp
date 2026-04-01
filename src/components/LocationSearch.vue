@@ -4,6 +4,31 @@ import { useLocationStore } from '@/stores/location'
 import { searchCities } from '@/services/weatherService'
 import type { CitySearchResult } from '@/types/weather'
 
+const props = withDefaults(
+  defineProps<{
+    /**
+     * Optional override for city-selection behaviour.
+     *
+     * When provided, this callback is called instead of writing to the global
+     * location store. The parent component is responsible for persisting the
+     * selected city however it sees fit (e.g. saving a commute endpoint).
+     *
+     * When omitted (the default), the component behaves exactly as before:
+     * it calls `locationStore.setLocationWithCity()` on selection.
+     */
+    onSelect?: (city: CitySearchResult) => void
+    /**
+     * Optional placeholder text for the search input.
+     * Defaults to "Search a city…".
+     */
+    placeholder?: string
+  }>(),
+  {
+    onSelect: undefined,
+    placeholder: 'Search a city…',
+  },
+)
+
 const emit = defineEmits<{
   (e: 'select'): void
   (e: 'cancel'): void
@@ -57,7 +82,13 @@ watch(query, (newVal) => {
 })
 
 function selectCity(city: CitySearchResult): void {
-  locationStore.setLocationWithCity(city.latitude, city.longitude, city.name)
+  if (props.onSelect) {
+    // Commute (or any other override) mode: delegate handling to the parent.
+    props.onSelect(city)
+  } else {
+    // Default mode: update the global weather location store as before.
+    locationStore.setLocationWithCity(city.latitude, city.longitude, city.name)
+  }
   query.value = ''
   results.value = []
   isOpen.value = false
@@ -139,7 +170,7 @@ function getCitySubtitle(city: CitySearchResult): string {
         ref="inputRef"
         v-model="query"
         type="text"
-        placeholder="Search a city…"
+        :placeholder="placeholder"
         autocomplete="off"
         spellcheck="false"
         class="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 outline-none dark:text-white dark:placeholder-blue-300"

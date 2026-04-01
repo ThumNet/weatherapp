@@ -14,6 +14,7 @@ import HourlyForecast from '@/components/HourlyForecast.vue'
 import DailyForecast from '@/components/DailyForecast.vue'
 import RadarMap from '@/components/RadarMap.vue'
 import WeatherIconDemo from '@/components/WeatherIconDemo.vue'
+import CommutePage from '@/components/CommutePage.vue'
 
 const isDev = import.meta.env.DEV
 
@@ -29,6 +30,9 @@ const radarRef = ref<InstanceType<typeof RadarMap> | null>(null)
 function openRadar(): void {
   radarRef.value?.openOverlay()
 }
+
+// ── Commute page toggle ──────────────────────────────────────────────────────
+const isCommuteOpen = ref(false)
 
 // ── Theme toggle — cycles dark → light → system → dark ──────────────────────
 const THEME_CYCLE = ['dark', 'light', 'system'] as const
@@ -225,6 +229,16 @@ watch(
               </span>
             </Transition>
 
+            <!-- Commute button -->
+            <button
+              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
+              title="Bike commute"
+              aria-label="Open bike commute"
+              @click="isCommuteOpen = true"
+            >
+              <span class="text-sm leading-none" aria-hidden="true">🚴</span>
+            </button>
+
             <!-- Theme toggle button — cycles dark → light → system -->
             <button
               class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white active:bg-black/10 dark:active:bg-white/20"
@@ -301,6 +315,11 @@ watch(
         <WeatherIconDemo v-if="isDev" />
       </main>
     </div>
+
+    <!-- Commute page overlay -->
+    <Transition name="slide-up">
+      <CommutePage v-if="isCommuteOpen" @close="isCommuteOpen = false" />
+    </Transition>
   </div>
 </template>
 
@@ -353,5 +372,19 @@ watch(
 .content-fade-enter-from {
   opacity: 0;
   transform: translateY(12px);
+}
+
+/* ── Commute page slide-up transition ──────────────────────────────────── */
+.slide-up-enter-active,
+.slide-up-leave-active {
+  transition:
+    opacity 0.25s ease,
+    transform 0.25s ease;
+}
+
+.slide-up-enter-from,
+.slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(32px);
 }
 </style>

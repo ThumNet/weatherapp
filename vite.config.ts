@@ -138,6 +138,20 @@ export default defineConfig({
               cacheableResponse: { statuses: [0, 200] },
             },
           },
+          // ── OSRM cycling routing API ────────────────────────────────────────
+          {
+            urlPattern: /^https:\/\/router\.project-osrm\.org\//,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'osrm-routing',
+              expiration: {
+                maxEntries: 20,
+                maxAgeSeconds: 60 * 60 * 24, // 24 hours — routes between fixed points rarely change
+              },
+              networkTimeoutSeconds: 15,
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
         ],
       },
     }),

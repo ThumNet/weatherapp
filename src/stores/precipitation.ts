@@ -2,9 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { fetchPrecipitationForecast } from '@/services/buienradarService'
 import type { PrecipitationEntry } from '@/types/weather'
-
-/** Minimum mm/h value considered "rain" (light drizzle threshold) */
-const RAIN_THRESHOLD_MM_PER_HOUR = 0.1
+import { RAIN_THRESHOLD_MM_PER_HOUR } from '@/utils/precipitationClassifier'
 
 const STORAGE_KEY = 'dutch-weather:precipitation'
 

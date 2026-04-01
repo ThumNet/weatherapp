@@ -40,25 +40,25 @@ Why alternatives were rejected:
   - Mitigation: keep commute state in a dedicated store instead of overloading location state.
 
 ## Steps
-1. [ ] Define commute domain and external service seams
+1. [x] Define commute domain and external service seams
    - Files: `src/types/weather.ts` or new commute types file, new routing service file, new precipitation utility file
    - Done when: route shape, checkpoint shape, recommendation result shape, and centralized heavy-rain classification are clearly modeled for reuse
-2. [ ] Add persisted commute settings
+2. [x] Add persisted commute settings
    - Files: new commute store in `src/stores/`, reuse/adapt `src/components/LocationSearch.vue`
    - Done when: user can save home/work endpoints and retrieve them after reload
-3. [ ] Implement routing integration
+3. [x] Implement routing integration
    - Files: new routing service, store/service wiring
    - Done when: app can fetch cycling geometry, duration, and route bounds for home/work trips
-4. [ ] Build checkpoint recommendation engine
+4. [x] Build checkpoint recommendation engine
    - Files: new commute recommendation service/util, precipitation utility, related types/store wiring
    - Done when: departures now and across next 2 hours are scored using start/quarter/mid/three-quarter/finish checkpoints with expansion for longer trips and ±10 minute buffers
-5. [ ] Build commute page UI and entry point
+5. [x] Build commute page UI and entry point
    - Files: `src/App.vue`, new commute page/component(s)
    - Done when: user can open the commute feature from a button and see settings, recommendation, and explanation
-6. [ ] Extend map experience for commute view
+6. [x] Extend map experience for commute view
    - Files: `src/components/RadarMap.vue` or new commute map sibling component
    - Done when: cycling route is rendered over radar and risky route segments/checkpoints are visually called out
-7. [ ] Add caching, freshness, and degraded-state handling
+7. [x] Add caching, freshness, and degraded-state handling
    - Files: `vite.config.ts`, relevant stores/services/UI messaging
    - Done when: routing API is cached appropriately, stale recommendation states are handled, and offline/failed fetch behavior is clear
 8. [ ] Validate cycling ETA assumptions from the routing backend

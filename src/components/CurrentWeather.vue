@@ -2,7 +2,9 @@
 import { computed } from 'vue'
 import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
-import { getWeatherDescription, getWeatherIcon, degreesToCompass } from '@/utils/weatherCodes'
+import { getWeatherDescription, degreesToCompass } from '@/utils/weatherCodes'
+import type { WeatherIntensity } from '@/utils/weatherCodes'
+import WeatherIcon from '@/components/WeatherIcon.vue'
 
 defineEmits<{ (e: 'open-radar'): void }>()
 
@@ -19,15 +21,32 @@ const temperature = computed(() =>
 const feelsLike = computed(() =>
   weather.value !== null ? Math.round(weather.value.apparentTemperature) : null,
 )
-const icon = computed(() =>
-  weather.value !== null ? getWeatherIcon(weather.value.weatherCode) : '',
-)
 const description = computed(() =>
   weather.value !== null ? getWeatherDescription(weather.value.weatherCode) : '',
 )
 const windCompass = computed(() =>
   weather.value !== null ? degreesToCompass(weather.value.windDirection) : '',
 )
+
+// ── Current-hour icon intensity ──────────────────────────────────────────────
+
+/**
+ * Intensity hint for the hero WeatherIcon derived from the current-hour
+ * precipitation value (mm). Uses the same rate-based thresholds as the
+ * hourly forecast view so the two are visually consistent.
+ *
+ * Falls back to `undefined` when:
+ *   - no weather data is loaded yet
+ *   - `precipitation` is null (older persisted cache shape without this field)
+ *   - precipitation is 0 (dry — no intensity override needed)
+ */
+const currentWeatherIntensity = computed<WeatherIntensity | undefined>(() => {
+  const precip = weather.value?.precipitation ?? null
+  if (precip === null || precip === 0) return undefined
+  if (precip >= 7.5) return 'heavy'
+  if (precip >= 0.5) return 'moderate'
+  return 'light'
+})
 
 // ── Precipitation helpers ────────────────────────────────────────────────────
 
@@ -64,14 +83,21 @@ const rainIntensityLabel = computed<string>(() => {
   return 'Heavy rain'
 })
 
-/** Icon for the current/upcoming rain intensity */
-const rainIntensityIcon = computed<string>(() => {
+/** WMO code to show in the rain alert icon (clear-sky or current weather code) */
+const rainAlertCode = computed<number>(() => {
   const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
-  if (idx === -1) return '☀️'
+  if (idx === -1) return 0 // clear sky
+  return weather.value?.weatherCode ?? 63 // fallback to plain rain
+})
+
+/** Intensity hint for the rain alert icon */
+const rainAlertIntensity = computed<'light' | 'moderate' | 'heavy' | undefined>(() => {
+  const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
+  if (idx === -1) return undefined
   const mm = precipStore.entries[idx].mmPerHour
-  if (mm < 0.5) return '🌦️'
-  if (mm <= 7.5) return '🌧️'
-  return '⛈️'
+  if (mm < 0.5) return 'light'
+  if (mm <= 7.5) return 'moderate'
+  return 'heavy'
 })
 
 /** Show every Nth label to avoid crowding (Buienradar gives 24 × 5-min entries) */
@@ -190,12 +216,12 @@ const gridLines = computed(() => {
         </div>
 
         <!-- Weather icon (large) -->
-        <span
-          class="select-none text-6xl drop-shadow-md transition-all duration-300"
-          aria-hidden="true"
-        >
-          {{ icon }}
-        </span>
+        <WeatherIcon
+          :code="weather.weatherCode"
+          :intensity="currentWeatherIntensity"
+          :size="64"
+          class="drop-shadow-md transition-all duration-300"
+        />
       </div>
 
       <!-- Description -->
@@ -344,9 +370,11 @@ const gridLines = computed(() => {
           @click="$emit('open-radar')"
         >
           <!-- Icon -->
-          <span class="text-xl leading-none">
-          {{ rainIntensityIcon }}
-          </span>
+          <WeatherIcon
+            :code="rainAlertCode"
+            :intensity="rainAlertIntensity"
+            :size="24"
+          />
 
           <!-- Message -->
           <span v-if="alertStyle === 'rain'">{{ rainIntensityLabel }} — falling now</span>

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useWeatherStore } from '@/stores/weather'
-import { getWeatherIcon } from '@/utils/weatherCodes'
+import WeatherIcon from '@/components/WeatherIcon.vue'
+import type { WeatherIntensity } from '@/utils/weatherCodes'
 
 const weatherStore = useWeatherStore()
 
@@ -22,11 +23,43 @@ interface DayRow {
   date: string
   dayName: string
   dateLabel: string
-  icon: string
+  code: number
   tempMax: number
   tempMin: number
   precipProb: number
   precipSum: number
+  /** Hours with precipitation ≥ 0.1 mm; null when field is absent from older cache shapes */
+  precipHours: number | null
+}
+
+/**
+ * Derive a daily precipitation intensity bucket using wet-duration as the
+ * primary signal and total-sum as a fallback for older cache shapes where
+ * `precipitationHours` is absent (null).
+ *
+ * Wet-duration buckets (hours with ≥ 0.1 mm):
+ *   0        → undefined (dry)
+ *   < 2 h    → 'light'   (occasional showers or brief drizzle)
+ *   < 6 h    → 'moderate'(several hours of rain across the day)
+ *   ≥ 6 h    → 'heavy'   (persistent / all-day rain)
+ *
+ * Sum-only fallback (mm/day, only when precipitationHours is null):
+ *   > 0      → 'light'
+ *   ≥ 5      → 'moderate'
+ *   ≥ 20     → 'heavy'
+ */
+function dailyIntensity(precipHours: number | null, precipSum: number): WeatherIntensity | undefined {
+  if (precipHours !== null) {
+    if (precipHours === 0) return undefined
+    if (precipHours < 2) return 'light'
+    if (precipHours < 6) return 'moderate'
+    return 'heavy'
+  }
+  // Fallback: sum-based (crude but safe for legacy cache)
+  if (precipSum <= 0) return undefined
+  if (precipSum >= 20) return 'heavy'
+  if (precipSum >= 5) return 'moderate'
+  return 'light'
 }
 
 const days = computed<DayRow[]>(() => {
@@ -37,11 +70,13 @@ const days = computed<DayRow[]>(() => {
     date,
     dayName: formatDayName(date, i),
     dateLabel: formatDate(date),
-    icon: getWeatherIcon(f.weatherCode[i] ?? 0),
+    code: f.weatherCode[i] ?? 0,
     tempMax: Math.round(f.temperatureMax[i] ?? 0),
     tempMin: Math.round(f.temperatureMin[i] ?? 0),
     precipProb: Math.round(f.precipitationProbabilityMax[i] ?? 0),
     precipSum: Math.round((f.precipitationSum[i] ?? 0) * 10) / 10,
+    // precipitationHours is null when absent from older persisted cache shapes
+    precipHours: f.precipitationHours !== null ? (f.precipitationHours[i] ?? null) : null,
   }))
 })
 
@@ -117,9 +152,11 @@ const error = computed(() => weatherStore.error)
         </div>
 
         <!-- Weather icon -->
-        <span class="text-xl leading-none" :title="day.icon" aria-hidden="true">
-          {{ day.icon }}
-        </span>
+        <WeatherIcon
+          :code="day.code"
+          :intensity="dailyIntensity(day.precipHours, day.precipSum)"
+          :size="28"
+        />
 
         <!-- Precipitation info -->
         <div class="flex items-center gap-2 text-xs text-blue-600 dark:text-blue-200">

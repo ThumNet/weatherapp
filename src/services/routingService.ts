@@ -1,9 +1,10 @@
 /**
  * Routing service — seam for fetching cycling route geometry and duration.
  *
- * Uses the OSRM (Open Source Routing Machine) public demo API with the
- * `bike` profile. No API key is required; the demo server is subject to
- * rate limits so production usage should point at a self-hosted instance.
+ * Uses the OSRM (Open Source Routing Machine) bicycle instance hosted by
+ * OpenStreetMap (`routing.openstreetmap.de/routed-bike`). No API key is
+ * required; this is a public service subject to rate limits — production
+ * usage should point at a self-hosted instance.
  *
  * Responsibilities of this module:
  *  - Build request URLs
@@ -29,18 +30,31 @@ import type {
 // ---------------------------------------------------------------------------
 
 /**
- * OSRM public demo endpoint.
+ * OSRM bicycle endpoint hosted by OpenStreetMap.
+ *
+ * `router.project-osrm.org` only exposes the `car` profile; requesting
+ * `/route/v1/bike/` or `/route/v1/bicycle/` on that host silently falls
+ * back to car routing, producing unrealistically short durations (~27 min
+ * for 27 km) and car-oriented geometries.
+ *
+ * `routing.openstreetmap.de/routed-bike` is a dedicated OSRM instance built
+ * with the bicycle profile. Its URL path uses `driving` as the OSRM
+ * *service* keyword (not the transport mode — that is encoded in the host).
+ *
  * Swap this constant for a self-hosted URL in production without touching
  * any other code.
  */
-const OSRM_BASE_URL = 'https://router.project-osrm.org'
+const OSRM_BASE_URL = 'https://routing.openstreetmap.de/routed-bike'
 
 /**
- * OSRM routing profile.
- * The `bike` profile optimises for cycling infrastructure and avoids
- * motorways.
+ * OSRM service path segment for the OpenStreetMap bicycle instance.
+ *
+ * The `routing.openstreetmap.de/routed-bike` host expects the standard OSRM
+ * `driving` service name in the URL even though it routes cyclists, because
+ * `driving` here refers to the OSRM internal routing service, not a car
+ * transport mode.
  */
-const OSRM_PROFILE = 'bike'
+const OSRM_PROFILE = 'driving'
 
 /**
  * Number of intermediate checkpoints to derive from the route geometry

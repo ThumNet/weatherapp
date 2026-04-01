@@ -61,6 +61,9 @@ Why alternatives were rejected:
 7. [ ] Add caching, freshness, and degraded-state handling
    - Files: `vite.config.ts`, relevant stores/services/UI messaging
    - Done when: routing API is cached appropriately, stale recommendation states are handled, and offline/failed fetch behavior is clear
+8. [ ] Validate cycling ETA assumptions from the routing backend
+   - Files: `src/services/routingService.ts`, commute recommendation UI/docs if needed
+   - Done when: the routing backend's cycling time assumptions are understood and any needed user-facing explanation or tuning follow-up is documented
 
 ## Clarity Scores
 - Gate 1 (Problem): 0.89 (Goal: 0.95, Constraint: 0.90, Success Criteria: 0.90, Code Context: 0.85)

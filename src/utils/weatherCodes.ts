@@ -126,6 +126,9 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
   'partly-cloudy-night': `
     <path d="M26 10 Q18 12 15 20 Q12 30 20 35 Q26 38 33 33 Q28 33 24 28 Q20 20 24 14 Q25 10 26 10 Z" fill="#93C5FD"/>
     <path d="M42 46 Q42 34 51 34 Q49 27 42 27 Q40 20 32 22 Q26 15 19 22 Q12 22 12 31 Q12 46 24 46 Z" fill="#CBD5E1"/>`,
+
+  // ── Mainly clear ───────────────────────────────────────────────────────────
+  'mostly-clear': `
     <circle cx="26" cy="26" r="10" fill="#FBBF24"/>
     <g stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round">
       <line x1="26" y1="6"  x2="26" y2="11"/>

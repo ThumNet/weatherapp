@@ -41,10 +41,9 @@ const groups: IconGroup[] = [
   {
     title: 'Night sky conditions',
     icons: [
-      { code: 0,  label: 'Clear night',         isDay: false },
-      { code: 1,  label: 'Mainly clear night',   isDay: false },
-      { code: 2,  label: 'Partly cloudy night',  isDay: false },
-      { code: 3,  label: 'Overcast',             isDay: false },
+      { code: 0, label: 'Clear night',        isDay: false },
+      { code: 1, label: 'Mainly clear night',  isDay: false },
+      { code: 2, label: 'Partly cloudy night', isDay: false },
     ],
   },
   {

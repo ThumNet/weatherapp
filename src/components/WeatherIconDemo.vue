@@ -8,6 +8,7 @@
  */
 import WeatherIcon from '@/components/WeatherIcon.vue'
 import type { WeatherIntensity } from '@/utils/weatherCodes'
+import { getMoonPhaseName, getMoonPhaseIcon } from '@/composables/useMoonPhase'
 
 interface IconEntry {
   /** WMO code to pass to WeatherIcon */
@@ -16,6 +17,8 @@ interface IconEntry {
   label: string
   /** Optional intensity override */
   intensity?: WeatherIntensity
+  /** Pass false to show night variant */
+  isDay?: boolean
 }
 
 interface IconGroup {
@@ -33,6 +36,15 @@ const groups: IconGroup[] = [
       { code: 3,  label: 'Overcast' },
       { code: 45, label: 'Fog' },
       { code: 48, label: 'Icy fog' },
+    ],
+  },
+  {
+    title: 'Night sky conditions',
+    icons: [
+      { code: 0,  label: 'Clear night',         isDay: false },
+      { code: 1,  label: 'Mainly clear night',   isDay: false },
+      { code: 2,  label: 'Partly cloudy night',  isDay: false },
+      { code: 3,  label: 'Overcast',             isDay: false },
     ],
   },
   {
@@ -69,6 +81,14 @@ const groups: IconGroup[] = [
     ],
   },
   {
+    title: 'Rain showers (night) — light → moderate → heavy',
+    icons: [
+      { code: 80, label: 'Showers',  intensity: 'light',    isDay: false },
+      { code: 81, label: 'Showers',  intensity: 'moderate', isDay: false },
+      { code: 82, label: 'Showers',  intensity: 'heavy',    isDay: false },
+    ],
+  },
+  {
     title: 'Snow — light → moderate → heavy',
     icons: [
       { code: 71, label: 'Snow',  intensity: 'light' },
@@ -82,6 +102,13 @@ const groups: IconGroup[] = [
     icons: [
       { code: 85, label: 'Snow showers',  intensity: 'light' },
       { code: 86, label: 'Snow showers',  intensity: 'heavy' },
+    ],
+  },
+  {
+    title: 'Snow showers (night) — light → heavy',
+    icons: [
+      { code: 85, label: 'Snow showers',  intensity: 'light', isDay: false },
+      { code: 86, label: 'Snow showers',  intensity: 'heavy', isDay: false },
     ],
   },
   {
@@ -102,6 +129,23 @@ const groups: IconGroup[] = [
     ],
   },
 ]
+
+// ── Moon phase entries ────────────────────────────────────────────────────────
+// All 8 named phases spread evenly across the synodic month (fractions 0–1).
+const moonPhases = [
+  { fraction: 0.00,  name: 'New Moon' },
+  { fraction: 0.125, name: 'Waxing Crescent' },
+  { fraction: 0.25,  name: 'First Quarter' },
+  { fraction: 0.375, name: 'Waxing Gibbous' },
+  { fraction: 0.50,  name: 'Full Moon' },
+  { fraction: 0.625, name: 'Waning Gibbous' },
+  { fraction: 0.75,  name: 'Last Quarter' },
+  { fraction: 0.875, name: 'Waning Crescent' },
+].map(({ fraction, name }) => ({
+  fraction,
+  name: getMoonPhaseName(fraction),   // derived — sanity-checks the label
+  icon: getMoonPhaseIcon(getMoonPhaseName(fraction)),
+}))
 </script>
 
 <template>
@@ -120,7 +164,7 @@ const groups: IconGroup[] = [
       <span class="text-xs text-slate-500 dark:text-slate-400">(not shown in production)</span>
     </div>
 
-    <!-- Groups -->
+    <!-- Weather icon groups -->
     <div class="flex flex-col gap-6">
       <div
         v-for="group in groups"
@@ -138,6 +182,7 @@ const groups: IconGroup[] = [
             <WeatherIcon
               :code="entry.code"
               :intensity="entry.intensity"
+              :is-day="entry.isDay"
               :size="40"
               :label="entry.label"
             />
@@ -149,6 +194,43 @@ const groups: IconGroup[] = [
               class="rounded-full bg-blue-100 px-1.5 py-0.5 text-[9px] font-medium text-blue-700 dark:bg-blue-900/40 dark:text-blue-300"
             >
               {{ entry.intensity }}
+            </span>
+            <span
+              v-if="entry.isDay === false"
+              class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
+            >
+              night
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Moon phases -->
+      <div>
+        <p class="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+          Moon phases
+        </p>
+        <div class="flex flex-wrap gap-3">
+          <div
+            v-for="phase in moonPhases"
+            :key="phase.name"
+            class="flex flex-col items-center gap-1.5 rounded-xl bg-white/70 px-3 py-2.5 shadow-sm dark:bg-white/5"
+          >
+            <svg
+              width="40"
+              height="40"
+              viewBox="0 0 64 64"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="select-none shrink-0"
+              aria-hidden="true"
+              v-html="phase.icon"
+            />
+            <span class="max-w-[80px] text-center text-[10px] leading-tight text-slate-600 dark:text-slate-300">
+              {{ phase.name }}
+            </span>
+            <span class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+              {{ Math.round(phase.fraction * 100) }}%
             </span>
           </div>
         </div>

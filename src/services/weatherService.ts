@@ -85,7 +85,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     latitude: String(lat),
     longitude: String(lon),
     current:
-      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
+      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation,is_day',
     timezone: 'auto',
   })
 
@@ -108,6 +108,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     windDirection: c.wind_direction_10m,
     time: c.time,
     precipitation: c.precipitation ?? null,
+    isDay: c.is_day !== undefined ? c.is_day === 1 : null,
   }
 }
 

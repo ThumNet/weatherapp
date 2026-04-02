@@ -4,12 +4,14 @@ import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
 import { getWeatherDescription, degreesToCompass } from '@/utils/weatherCodes'
 import type { WeatherIntensity } from '@/utils/weatherCodes'
+import { useMoonPhase } from '@/composables/useMoonPhase'
 import WeatherIcon from '@/components/WeatherIcon.vue'
 
 defineEmits<{ (e: 'open-radar'): void }>()
 
 const weatherStore = useWeatherStore()
 const precipStore = usePrecipitationStore()
+const moonPhase = useMoonPhase()
 
 const weather = computed(() => weatherStore.currentWeather)
 const loading = computed(() => weatherStore.loading)
@@ -160,8 +162,8 @@ const gridLines = computed(() => {
       <!-- Description skeleton -->
       <div class="mb-6 h-5 w-40 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
       <!-- Stats row skeleton -->
-      <div class="grid grid-cols-3 gap-3">
-        <div v-for="i in 3" :key="i" class="h-16 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20" />
+      <div class="grid grid-cols-2 gap-3">
+        <div v-for="i in 4" :key="i" class="h-16 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20" />
       </div>
 
       <!-- Divider skeleton -->
@@ -227,6 +229,7 @@ const gridLines = computed(() => {
         <WeatherIcon
           :code="weather.weatherCode"
           :intensity="currentWeatherIntensity"
+          :is-day="weather.isDay"
           :size="64"
           class="drop-shadow-md transition-all duration-300"
         />
@@ -238,12 +241,14 @@ const gridLines = computed(() => {
       </p>
 
       <!-- Stats grid -->
-      <div class="grid grid-cols-3 gap-3">
+      <div class="grid grid-cols-2 gap-3">
         <!-- Feels like -->
         <div
           class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
-          <span class="text-xl" aria-hidden="true">🌡️</span>
+          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
+          </svg>
           <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Feels like</span>
           <span class="text-base font-semibold">{{ feelsLike }}°C</span>
         </div>
@@ -252,7 +257,9 @@ const gridLines = computed(() => {
         <div
           class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
-          <span class="text-xl" aria-hidden="true">💧</span>
+          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/>
+          </svg>
           <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Humidity</span>
           <span class="text-base font-semibold">{{ weather.humidity }}%</span>
         </div>
@@ -261,13 +268,24 @@ const gridLines = computed(() => {
         <div
           class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
         >
-          <span class="text-xl" aria-hidden="true">💨</span>
+          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+          </svg>
           <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Wind</span>
           <span class="text-base font-semibold">
             {{ Math.round(weather.windSpeed) }}
             <span class="text-xs font-normal text-slate-500 dark:text-white/70">km/h</span>
           </span>
           <span class="text-xs text-slate-500 dark:text-white/60">{{ windCompass }}</span>
+        </div>
+
+        <!-- Moon phase -->
+        <div
+          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
+        >
+          <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
+          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Moon</span>
+          <span class="text-base font-semibold leading-tight">{{ moonPhase.phaseName }}</span>
         </div>
       </div>
 

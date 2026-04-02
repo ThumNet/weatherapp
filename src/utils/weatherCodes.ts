@@ -39,8 +39,11 @@ interface WeatherCodeMeta {
  */
 export type SvgIconKey =
   | 'clear-day'
+  | 'clear-night'
   | 'mostly-clear'
+  | 'mostly-clear-night'
   | 'partly-cloudy'
+  | 'partly-cloudy-night'
   | 'overcast'
   | 'fog'
   | 'drizzle-light'
@@ -52,6 +55,9 @@ export type SvgIconKey =
   | 'showers-light'
   | 'showers-moderate'
   | 'showers-heavy'
+  | 'showers-light-night'
+  | 'showers-moderate-night'
+  | 'showers-heavy-night'
   | 'freezing-drizzle-light'
   | 'freezing-drizzle-heavy'
   | 'freezing-rain-light'
@@ -61,6 +67,8 @@ export type SvgIconKey =
   | 'snow-heavy'
   | 'snow-showers-light'
   | 'snow-showers-heavy'
+  | 'snow-showers-light-night'
+  | 'snow-showers-heavy-night'
   | 'fog-icy'
   | 'thunderstorm'
   | 'thunderstorm-hail'
@@ -101,8 +109,23 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
       <line x1="18" y1="46" x2="14" y2="50"/>
     </g>`,
 
-  // ── Mainly clear ───────────────────────────────────────────────────────────
-  'mostly-clear': `
+  // ── Clear night ────────────────────────────────────────────────────────────
+  'clear-night': `
+    <path d="M38 12 Q24 14 20 28 Q16 44 30 50 Q44 56 54 44 Q46 46 40 40 Q28 34 30 22 Q32 12 38 12 Z" fill="#93C5FD"/>
+    <circle cx="50" cy="16" r="2" fill="#E2E8F0" opacity="0.8"/>
+    <circle cx="14" cy="22" r="1.5" fill="#E2E8F0" opacity="0.6"/>
+    <circle cx="10" cy="42" r="1.5" fill="#E2E8F0" opacity="0.7"/>
+    <circle cx="56" cy="34" r="1" fill="#E2E8F0" opacity="0.5"/>`,
+
+  // ── Mainly clear night ─────────────────────────────────────────────────────
+  'mostly-clear-night': `
+    <path d="M28 8 Q18 10 15 20 Q12 32 22 37 Q30 42 38 35 Q32 36 28 30 Q22 22 26 14 Q27 9 28 8 Z" fill="#93C5FD"/>
+    <path d="M36 40 Q36 30 44 30 Q42 24 36 24 Q34 18 27 20 Q22 14 16 20 Q10 20 10 28 Q10 40 20 40 Z" fill="#CBD5E1"/>`,
+
+  // ── Partly cloudy night ────────────────────────────────────────────────────
+  'partly-cloudy-night': `
+    <path d="M26 10 Q18 12 15 20 Q12 30 20 35 Q26 38 33 33 Q28 33 24 28 Q20 20 24 14 Q25 10 26 10 Z" fill="#93C5FD"/>
+    <path d="M42 46 Q42 34 51 34 Q49 27 42 27 Q40 20 32 22 Q26 15 19 22 Q12 22 12 31 Q12 46 24 46 Z" fill="#CBD5E1"/>`,
     <circle cx="26" cy="26" r="10" fill="#FBBF24"/>
     <g stroke="#FBBF24" stroke-width="2.5" stroke-linecap="round">
       <line x1="26" y1="6"  x2="26" y2="11"/>
@@ -232,6 +255,28 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
     <line x1="40" y1="46" x2="38" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
     <line x1="48" y1="46" x2="46" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
 
+  // ── Night showers (moon + cloud + drops) ──────────────────────────────────
+  'showers-light-night': `
+    <path d="M20 8 Q14 10 12 17 Q10 25 16 29 Q20 32 25 28 Q21 28 18 24 Q15 18 18 12 Q19 8 20 8 Z" fill="#93C5FD"/>
+    <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#CBD5E1"/>
+    <line x1="30" y1="48" x2="28" y2="56" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="40" y1="48" x2="38" y2="56" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+
+  'showers-moderate-night': `
+    <path d="M20 8 Q14 10 12 17 Q10 25 16 29 Q20 32 25 28 Q21 28 18 24 Q15 18 18 12 Q19 8 20 8 Z" fill="#93C5FD"/>
+    <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#94A3B8"/>
+    <line x1="28" y1="47" x2="26" y2="55" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="38" y1="47" x2="36" y2="55" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="48" y1="47" x2="46" y2="55" stroke="#60A5FA" stroke-width="2.5" stroke-linecap="round"/>`,
+
+  'showers-heavy-night': `
+    <path d="M20 8 Q14 10 12 17 Q10 25 16 29 Q20 32 25 28 Q21 28 18 24 Q15 18 18 12 Q19 8 20 8 Z" fill="#93C5FD"/>
+    <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#64748B"/>
+    <line x1="24" y1="46" x2="22" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="32" y1="46" x2="30" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="40" y1="46" x2="38" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+    <line x1="48" y1="46" x2="46" y2="54" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>`,
+
   // ── Freezing drizzle (WMO 56 = light, 57 = heavy) ────────────────────────
   // Short, fine strokes in ice-blue (#BAE6FD, length ≈5, stroke-width 1.5)
   // mirror the drizzle stroke language; terminal frozen circles mark the freeze
@@ -334,6 +379,26 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
       <line x1="8"  y1="8"  x2="11" y2="11"/>
       <line x1="32" y1="8"  x2="29" y2="11"/>
     </g>
+    <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#64748B"/>
+    <g fill="#BAE6FD">
+      <circle cx="28" cy="48" r="3"/>
+      <circle cx="38" cy="48" r="3"/>
+      <circle cx="48" cy="48" r="3"/>
+      <circle cx="33" cy="57" r="3"/>
+      <circle cx="43" cy="57" r="3"/>
+    </g>`,
+
+  // ── Night snow showers (moon + cloud + snow) ───────────────────────────────
+  'snow-showers-light-night': `
+    <path d="M20 8 Q14 10 12 17 Q10 25 16 29 Q20 32 25 28 Q21 28 18 24 Q15 18 18 12 Q19 8 20 8 Z" fill="#93C5FD"/>
+    <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#CBD5E1"/>
+    <g fill="#BAE6FD">
+      <circle cx="30" cy="50" r="3"/>
+      <circle cx="42" cy="50" r="3"/>
+    </g>`,
+
+  'snow-showers-heavy-night': `
+    <path d="M20 8 Q14 10 12 17 Q10 25 16 29 Q20 32 25 28 Q21 28 18 24 Q15 18 18 12 Q19 8 20 8 Z" fill="#93C5FD"/>
     <path d="M50 40 Q50 30 57 30 Q55 23 49 23 Q47 17 40 19 Q35 13 28 19 Q22 19 22 27 Q22 40 33 40 Z" fill="#64748B"/>
     <g fill="#BAE6FD">
       <circle cx="28" cy="48" r="3"/>
@@ -468,21 +533,45 @@ const SVG_INTENSITY_OVERRIDE: Record<number, IntensityIconMap> = {
 }
 
 /**
+ * Night-mode overrides: WMO codes whose base daytime icon contains a sun
+ * are mapped to the equivalent night variant when `isDay === false`.
+ *
+ * Rain, drizzle, snow, and fog icons are neutral (no sun) and need no
+ * night override — only clear-sky and shower codes change.
+ */
+const NIGHT_KEY_MAP: Partial<Record<SvgIconKey, SvgIconKey>> = {
+  'clear-day':           'clear-night',
+  'mostly-clear':        'mostly-clear-night',
+  'partly-cloudy':       'partly-cloudy-night',
+  'showers-light':       'showers-light-night',
+  'showers-moderate':    'showers-moderate-night',
+  'showers-heavy':       'showers-heavy-night',
+  'snow-showers-light':  'snow-showers-light-night',
+  'snow-showers-heavy':  'snow-showers-heavy-night',
+}
+
+/**
  * Return the SVG icon markup (inner `<svg>` content) for `code`, optionally
- * biased by an intensity hint.
+ * biased by an intensity hint and day/night state.
  *
  * For codes that support intensity differentiation (rain, drizzle, snow,
  * showers) the returned SVG may differ from the base icon when `intensity`
  * is provided. For all other codes (clear, clouds, fog, thunderstorms,
  * freezing precipitation) the base icon is returned unchanged.
  *
+ * When `isDay` is explicitly `false`, sun-bearing icons (clear, partly
+ * cloudy, showers) are replaced with their night equivalents.
+ *
  * @param code      WMO weather code
  * @param intensity Optional severity hint (`'light' | 'moderate' | 'heavy'`).
  *                  Omit (or pass `undefined`) to use the code's natural icon.
+ * @param isDay     Pass `false` to use night icon variants. `true` or omitted
+ *                  keeps the default daytime icon.
  */
 export function getWeatherSvgIcon(
   code: number,
   intensity?: WeatherIntensity,
+  isDay?: boolean | null,
 ): string {
   let key: SvgIconKey
   if (intensity !== undefined) {
@@ -490,6 +579,10 @@ export function getWeatherSvgIcon(
     key = override ? override[intensity] : lookup(code).svgKey
   } else {
     key = lookup(code).svgKey
+  }
+  // Apply night substitution if it's explicitly nighttime
+  if (isDay === false) {
+    key = NIGHT_KEY_MAP[key] ?? key
   }
   return SVG_ICONS[key]
 }

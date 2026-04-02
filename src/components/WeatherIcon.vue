@@ -13,6 +13,8 @@
  *             When provided, codes that support intensity differentiation
  *             (rain, drizzle, snow, showers) may return a distinct SVG variant.
  *             Omit to use the code's natural icon.
+ * isDay       (optional) — pass `false` to use night icon variants (moon
+ *             instead of sun for clear/partly-cloudy/shower codes).
  * size        (optional) — pixel size for the SVG (width & height). Defaults to 32.
  * label       (optional) — Accessible label string. When omitted the element
  *             is marked aria-hidden="true" (decorative).
@@ -24,6 +26,9 @@
  *
  * <!-- With intensity hint -->
  * <WeatherIcon :code="63" intensity="heavy" />
+ *
+ * <!-- Night mode -->
+ * <WeatherIcon :code="0" :is-day="false" />
  *
  * <!-- Custom size + accessible label -->
  * <WeatherIcon :code="0" :size="64" label="Clear sky" />
@@ -38,6 +43,8 @@ const props = withDefaults(
     code: number
     /** Optional precipitation / severity intensity hint */
     intensity?: WeatherIntensity
+    /** Whether it is daytime. Pass false to use night icon variants. */
+    isDay?: boolean | null
     /** SVG size in pixels (width & height, default: 32) */
     size?: number
     /** Accessible label — omit for decorative icons */
@@ -45,12 +52,13 @@ const props = withDefaults(
   }>(),
   {
     intensity: undefined,
+    isDay: undefined,
     size: 32,
     label: undefined,
   },
 )
 
-const svgPath = computed(() => getWeatherSvgIcon(props.code, props.intensity))
+const svgPath = computed(() => getWeatherSvgIcon(props.code, props.intensity, props.isDay))
 const ariaLabel = computed(() => props.label ?? getWeatherDescription(props.code))
 const isDecorative = computed(() => props.label === undefined)
 </script>

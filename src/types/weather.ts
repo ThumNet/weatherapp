@@ -71,6 +71,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     wind_direction_10m: string
     /** Present only when precipitation is requested */
     precipitation?: string
+    /** Present only when is_day is requested */
+    is_day?: string
   }
   current: {
     time: string
@@ -82,6 +84,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     wind_direction_10m: number
     /** Precipitation amount in mm for the current hour; absent in older cached shapes */
     precipitation?: number
+    /** 1 = daytime, 0 = nighttime */
+    is_day?: number
   }
 }
 
@@ -100,6 +104,11 @@ export interface CurrentWeather {
    * Null when the value is missing (e.g. older persisted cache shapes).
    */
   precipitation: number | null
+  /**
+   * Whether it is currently daytime (true) or nighttime (false).
+   * Null when the value is missing (e.g. older persisted cache shapes).
+   */
+  isDay: boolean | null
 }
 
 // ---------------------------------------------------------------------------

@@ -14,8 +14,22 @@ const precipStore = usePrecipitationStore()
 const moonPhase = useMoonPhase()
 
 const weather = computed(() => weatherStore.currentWeather)
+const daily = computed(() => weatherStore.dailyForecast)
 const loading = computed(() => weatherStore.loading)
 const error = computed(() => weatherStore.error)
+
+/** Format an ISO datetime string (e.g. "2026-04-02T06:14") to "HH:MM" */
+function formatTime(iso: string): string {
+  const d = new Date(iso)
+  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', hour12: false })
+}
+
+const todaySunrise = computed<string | null>(() =>
+  daily.value?.sunrise?.[0] ? formatTime(daily.value.sunrise[0]) : null,
+)
+const todaySunset = computed<string | null>(() =>
+  daily.value?.sunset?.[0] ? formatTime(daily.value.sunset[0]) : null,
+)
 
 const temperature = computed(() =>
   weather.value !== null ? Math.round(weather.value.temperature) : null,
@@ -286,6 +300,44 @@ const gridLines = computed(() => {
           <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
           <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Moon</span>
           <span class="text-base font-semibold leading-tight">{{ moonPhase.phaseName }}</span>
+        </div>
+      </div>
+
+      <!-- Sunrise / Sunset tile -->
+      <div
+        v-if="todaySunrise || todaySunset"
+        class="mt-3 flex items-center justify-around rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-4 py-3"
+      >
+        <!-- Sunrise -->
+        <div class="flex items-center gap-2">
+          <!-- Sunrise icon: sun rising above horizon line -->
+          <svg class="size-5 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
+            <path d="M5 17a7 7 0 0 1 14 0"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+          </svg>
+          <div class="text-center">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Sunrise</p>
+            <p class="text-base font-semibold">{{ todaySunrise }}</p>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="h-8 w-px bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+
+        <!-- Sunset -->
+        <div class="flex items-center gap-2">
+          <!-- Sunset icon: sun setting below horizon line -->
+          <svg class="size-5 shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 10v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
+            <path d="M5 17a7 7 0 0 1 14 0"/>
+            <line x1="2" y1="20" x2="22" y2="20"/>
+            <path d="M12 6l-1.5 2h3L12 6z" fill="currentColor" stroke="none"/>
+          </svg>
+          <div class="text-center">
+            <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Sunset</p>
+            <p class="text-base font-semibold">{{ todaySunset }}</p>
+          </div>
         </div>
       </div>
 

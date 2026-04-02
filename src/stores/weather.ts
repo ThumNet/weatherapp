@@ -34,6 +34,8 @@ function loadFromStorage(): WeatherCache | null {
     }
     if (parsed.dailyForecast) {
       parsed.dailyForecast.precipitationHours = parsed.dailyForecast.precipitationHours ?? null
+      parsed.dailyForecast.sunrise = parsed.dailyForecast.sunrise ?? null
+      parsed.dailyForecast.sunset = parsed.dailyForecast.sunset ?? null
     }
 
     return parsed

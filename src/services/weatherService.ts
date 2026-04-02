@@ -152,7 +152,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     latitude: String(lat),
     longitude: String(lon),
     daily:
-      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours',
+      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours,sunrise,sunset',
     timezone: 'auto',
   })
 
@@ -174,5 +174,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     precipitationSum: d.precipitation_sum,
     precipitationProbabilityMax: d.precipitation_probability_max,
     precipitationHours: d.precipitation_hours ?? null,
+    sunrise: d.sunrise ?? null,
+    sunset: d.sunset ?? null,
   }
 }

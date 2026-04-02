@@ -167,6 +167,12 @@ export interface DailyForecast {
    * Null when the value is missing (e.g. older persisted cache shapes).
    */
   precipitationHours: number[] | null
+  /**
+   * ISO 8601 datetime strings for sunrise/sunset per day.
+   * Null when absent from older persisted cache shapes.
+   */
+  sunrise: string[] | null
+  sunset: string[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (daily fields only) */
@@ -184,6 +190,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_probability_max: string
     /** Present only when precipitation_hours is requested */
     precipitation_hours?: string
+    sunrise?: string
+    sunset?: string
   }
   daily: {
     time: string[]
@@ -194,6 +202,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_probability_max: number[]
     /** Absent in older cached shapes */
     precipitation_hours?: number[]
+    sunrise?: string[]
+    sunset?: string[]
   }
 }
 

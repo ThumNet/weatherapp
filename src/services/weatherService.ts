@@ -85,7 +85,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     latitude: String(lat),
     longitude: String(lon),
     current:
-      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation',
+      'temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation,is_day',
     timezone: 'auto',
   })
 
@@ -108,6 +108,7 @@ export async function fetchCurrentWeather(lat: number, lon: number): Promise<Cur
     windDirection: c.wind_direction_10m,
     time: c.time,
     precipitation: c.precipitation ?? null,
+    isDay: c.is_day !== undefined ? c.is_day === 1 : null,
   }
 }
 
@@ -118,7 +119,7 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lon),
-    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code',
+    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,is_day',
     timezone: 'auto',
     forecast_hours: '24',
   })
@@ -139,6 +140,7 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
     precipitationProbability: h.precipitation_probability,
     precipitation: h.precipitation,
     weatherCode: h.weather_code,
+    isDay: h.is_day ?? null,
   }
 }
 
@@ -150,7 +152,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     latitude: String(lat),
     longitude: String(lon),
     daily:
-      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours',
+      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours,sunrise,sunset',
     timezone: 'auto',
   })
 
@@ -172,5 +174,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     precipitationSum: d.precipitation_sum,
     precipitationProbabilityMax: d.precipitation_probability_max,
     precipitationHours: d.precipitation_hours ?? null,
+    sunrise: d.sunrise ?? null,
+    sunset: d.sunset ?? null,
   }
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useGeolocation } from '@/composables/useGeolocation'
 import { useOnlineStatus } from '@/composables/useOnlineStatus'
 import { usePullToRefresh } from '@/composables/usePullToRefresh'
@@ -47,6 +47,27 @@ const themeIcon = computed(() => {
   return '⚙️'
 })
 
+// ── Stale data auto-refresh ──────────────────────────────────────────────────
+const STALE_THRESHOLD_MS = 30 * 60 * 1000 // 30 minutes
+
+function isDataStale(): boolean {
+  const last = weatherStore.lastUpdated
+  if (!last) return true
+  return Date.now() - last.getTime() > STALE_THRESHOLD_MS
+}
+
+function refreshIfStale(): void {
+  if (isDataStale()) {
+    void refreshAll()
+  }
+}
+
+function onVisibilityChange(): void {
+  if (document.visibilityState === 'visible') {
+    refreshIfStale()
+  }
+}
+
 // ── Refresh all data for the current location ───────────────────────────────
 async function refreshAll(): Promise<void> {
   const lat = locationStore.latitude
@@ -72,6 +93,10 @@ const isLoading = computed(() => weatherStore.loading || precipitationStore.load
 const isEditingLocation = ref(false)
 
 onMounted(async () => {
+  // Register visibility-change handler to auto-refresh stale data when the
+  // user returns to the tab after 30+ minutes away.
+  document.addEventListener('visibilitychange', onVisibilityChange)
+
   // Fetch weather + precipitation for the initial/persisted location immediately
   void weatherStore.fetchWeather(locationStore.latitude, locationStore.longitude)
   void precipitationStore.fetchPrecipitation(locationStore.latitude, locationStore.longitude)
@@ -91,6 +116,10 @@ onMounted(async () => {
     }
   }
   // On failure the store already holds Amsterdam (or last persisted location)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange)
 })
 
 // Re-fetch weather + precipitation whenever the location changes (e.g. user picks a city)

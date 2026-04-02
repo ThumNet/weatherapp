@@ -27,9 +27,15 @@ function loadFromStorage(): WeatherCache | null {
     // rest of the app always receives a known type (number | null).
     if (parsed.currentWeather) {
       parsed.currentWeather.precipitation = parsed.currentWeather.precipitation ?? null
+      parsed.currentWeather.isDay = parsed.currentWeather.isDay ?? null
+    }
+    if (parsed.hourlyForecast) {
+      parsed.hourlyForecast.isDay = parsed.hourlyForecast.isDay ?? null
     }
     if (parsed.dailyForecast) {
       parsed.dailyForecast.precipitationHours = parsed.dailyForecast.precipitationHours ?? null
+      parsed.dailyForecast.sunrise = parsed.dailyForecast.sunrise ?? null
+      parsed.dailyForecast.sunset = parsed.dailyForecast.sunset ?? null
     }
 
     return parsed

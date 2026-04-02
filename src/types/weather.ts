@@ -71,6 +71,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     wind_direction_10m: string
     /** Present only when precipitation is requested */
     precipitation?: string
+    /** Present only when is_day is requested */
+    is_day?: string
   }
   current: {
     time: string
@@ -82,6 +84,8 @@ export interface OpenMeteoCurrentWeatherResponse {
     wind_direction_10m: number
     /** Precipitation amount in mm for the current hour; absent in older cached shapes */
     precipitation?: number
+    /** 1 = daytime, 0 = nighttime */
+    is_day?: number
   }
 }
 
@@ -100,6 +104,11 @@ export interface CurrentWeather {
    * Null when the value is missing (e.g. older persisted cache shapes).
    */
   precipitation: number | null
+  /**
+   * Whether it is currently daytime (true) or nighttime (false).
+   * Null when the value is missing (e.g. older persisted cache shapes).
+   */
+  isDay: boolean | null
 }
 
 // ---------------------------------------------------------------------------
@@ -113,6 +122,8 @@ export interface HourlyForecast {
   precipitationProbability: number[]
   precipitation: number[]
   weatherCode: number[]
+  /** 1 = daytime, 0 = nighttime per hour. Null array when absent from older cached shapes. */
+  isDay: number[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (hourly fields) */
@@ -127,6 +138,7 @@ export interface OpenMeteoHourlyResponse {
     precipitation_probability: string
     precipitation: string
     weather_code: string
+    is_day?: string
   }
   hourly: {
     time: string[]
@@ -134,6 +146,7 @@ export interface OpenMeteoHourlyResponse {
     precipitation_probability: number[]
     precipitation: number[]
     weather_code: number[]
+    is_day?: number[]
   }
 }
 
@@ -154,6 +167,12 @@ export interface DailyForecast {
    * Null when the value is missing (e.g. older persisted cache shapes).
    */
   precipitationHours: number[] | null
+  /**
+   * ISO 8601 datetime strings for sunrise/sunset per day.
+   * Null when absent from older persisted cache shapes.
+   */
+  sunrise: string[] | null
+  sunset: string[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (daily fields only) */
@@ -171,6 +190,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_probability_max: string
     /** Present only when precipitation_hours is requested */
     precipitation_hours?: string
+    sunrise?: string
+    sunset?: string
   }
   daily: {
     time: string[]
@@ -181,6 +202,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_probability_max: number[]
     /** Absent in older cached shapes */
     precipitation_hours?: number[]
+    sunrise?: string[]
+    sunset?: string[]
   }
 }
 

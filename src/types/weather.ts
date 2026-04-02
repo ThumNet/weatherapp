@@ -122,6 +122,8 @@ export interface HourlyForecast {
   precipitationProbability: number[]
   precipitation: number[]
   weatherCode: number[]
+  /** 1 = daytime, 0 = nighttime per hour. Null array when absent from older cached shapes. */
+  isDay: number[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (hourly fields) */
@@ -136,6 +138,7 @@ export interface OpenMeteoHourlyResponse {
     precipitation_probability: string
     precipitation: string
     weather_code: string
+    is_day?: string
   }
   hourly: {
     time: string[]
@@ -143,6 +146,7 @@ export interface OpenMeteoHourlyResponse {
     precipitation_probability: number[]
     precipitation: number[]
     weather_code: number[]
+    is_day?: number[]
   }
 }
 

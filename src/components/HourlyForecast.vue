@@ -21,6 +21,7 @@ interface HourlyCard {
   temp: number
   precip: number
   precipProb: number
+  isDay: boolean | null
 }
 
 const hourlyCards = computed<HourlyCard[]>(() => {
@@ -31,6 +32,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     temp: Math.round(forecast.value!.temperature[i] ?? 0),
     precip: forecast.value!.precipitation[i] ?? 0,
     precipProb: forecast.value!.precipitationProbability[i] ?? 0,
+    isDay: forecast.value!.isDay !== null ? (forecast.value!.isDay[i] === 1) : null,
   }))
 })
 </script>
@@ -108,6 +110,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
           <WeatherIcon
             :code="card.code"
             :intensity="card.precip > 7.6 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
+            :is-day="card.isDay"
             :size="28"
           />
           <!-- Temperature -->

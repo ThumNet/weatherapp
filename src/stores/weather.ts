@@ -29,6 +29,9 @@ function loadFromStorage(): WeatherCache | null {
       parsed.currentWeather.precipitation = parsed.currentWeather.precipitation ?? null
       parsed.currentWeather.isDay = parsed.currentWeather.isDay ?? null
     }
+    if (parsed.hourlyForecast) {
+      parsed.hourlyForecast.isDay = parsed.hourlyForecast.isDay ?? null
+    }
     if (parsed.dailyForecast) {
       parsed.dailyForecast.precipitationHours = parsed.dailyForecast.precipitationHours ?? null
     }

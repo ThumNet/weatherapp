@@ -119,7 +119,7 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lon),
-    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code',
+    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,is_day',
     timezone: 'auto',
     forecast_hours: '24',
   })
@@ -140,6 +140,7 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
     precipitationProbability: h.precipitation_probability,
     precipitation: h.precipitation,
     weatherCode: h.weather_code,
+    isDay: h.is_day ?? null,
   }
 }
 

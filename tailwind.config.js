@@ -7,6 +7,10 @@ export default {
   darkMode: 'class',
   theme: {
     extend: {
+      fontFamily: {
+        display: ['Fraunces', 'Georgia', 'serif'],
+        sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+      },
       colors: {
         'dutch-blue': {
           50: '#eff6ff',
@@ -28,12 +32,59 @@ export default {
           storm:  '#1e3a8a',
           clear:  '#fbbf24',
         },
+        'sea-mist': {
+          50: '#f4f8fb',
+          100: '#e8f0f5',
+          200: '#d4e1ea',
+          300: '#aec4d3',
+          400: '#7f9faf',
+          500: '#617f90',
+          600: '#4c6676',
+          700: '#3e5361',
+          800: '#31414c',
+          900: '#243039',
+        },
+        horizon: {
+          50: '#f6fbff',
+          100: '#edf6ff',
+          200: '#d9ebfb',
+          300: '#b7d8f0',
+          400: '#8fc0e1',
+          500: '#669fc4',
+          600: '#4e7ea1',
+          700: '#406481',
+          800: '#365169',
+          900: '#2d4357',
+        },
+        'storm-water': {
+          50: '#edf3f7',
+          100: '#d7e4ec',
+          200: '#b1cad8',
+          300: '#7fa7bb',
+          400: '#58839b',
+          500: '#40657c',
+          600: '#315165',
+          700: '#294252',
+          800: '#223443',
+          900: '#1b2a36',
+        },
+        'deep-current': '#14232d',
+        'dune-foam': '#f6f1e7',
+        'sun-glow': '#d8a55a',
       },
       spacing: {
         safe: 'env(safe-area-inset-bottom)',
       },
       screens: {
         xs: '390px',
+      },
+      borderRadius: {
+        hero: '2rem',
+        panel: '1.5rem',
+      },
+      boxShadow: {
+        mist: '0 18px 50px rgba(31, 58, 74, 0.14)',
+        storm: '0 22px 60px rgba(9, 20, 28, 0.34)',
       },
     }
   },

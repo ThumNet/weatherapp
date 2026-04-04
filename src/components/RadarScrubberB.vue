@@ -197,22 +197,22 @@ function onPointerDown(event: PointerEvent): void {
       @pointerdown="onPointerDown"
     >
       <!-- ── Track ───────────────────────────────────────────────────── -->
-      <div class="relative h-1.5 w-full rounded-full bg-white/15">
+      <div class="relative h-1.5 w-full rounded-full bg-slate-700">
         <!-- Past fill (blue) -->
         <div
           v-if="currentFrameIndex < nowcastStartIndex || !hasNowcast"
-          class="absolute inset-y-0 left-0 rounded-full bg-blue-400"
+          class="absolute inset-y-0 left-0 rounded-full bg-[#7b95a5]"
           :style="{ width: `${filledWidth}%` }"
         />
 
         <!-- Forecast zone: full blue past + amber forecast portion -->
         <template v-else>
           <div
-            class="absolute inset-y-0 left-0 rounded-l-full bg-blue-400"
+            class="absolute inset-y-0 left-0 rounded-l-full bg-[#7b95a5]"
             :style="{ width: `${nowPosition}%` }"
           />
           <div
-            class="absolute inset-y-0 bg-amber-400"
+            class="absolute inset-y-0 bg-[#d4a261]"
             :style="{
               left: `${nowPosition}%`,
               width: `${filledWidth - nowPosition}%`,
@@ -223,7 +223,7 @@ function onPointerDown(event: PointerEvent): void {
         <!-- "Now" divider line on track -->
         <div
           v-if="frames.length > 0"
-          class="absolute top-1/2 z-10 h-3 w-0.5 -translate-y-1/2 rounded-full bg-white/80"
+          class="absolute top-1/2 z-10 h-3 w-0.5 -translate-y-1/2 rounded-full bg-dune-foam/75"
           :style="{ left: `${nowPosition}%` }"
         />
       </div>
@@ -235,8 +235,8 @@ function onPointerDown(event: PointerEvent): void {
       >
         <div class="flex size-[44px] items-center justify-center">
           <div
-            class="size-5 rounded-full ring-2 ring-white/80 transition-colors duration-150"
-            :class="isNowcast ? 'bg-amber-400' : 'bg-blue-400'"
+            class="size-5 rounded-full ring-2 ring-dune-foam/70 transition-colors duration-150"
+            :class="isNowcast ? 'bg-[#d4a261]' : 'bg-[#7192a4]'"
           />
         </div>
       </div>

@@ -41,11 +41,6 @@ const themeLabel = computed(() => {
   if (themeStore.theme === 'light') return 'Switch to system theme'
   return 'Switch to dark mode'
 })
-const themeIcon = computed(() => {
-  if (themeStore.theme === 'dark') return '☀️'
-  if (themeStore.theme === 'light') return '🌙'
-  return '⚙️'
-})
 
 // ── Stale data auto-refresh ──────────────────────────────────────────────────
 const STALE_THRESHOLD_MS = 30 * 60 * 1000 // 30 minutes
@@ -133,12 +128,12 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-dvh text-slate-800 dark:text-white">
+  <div class="min-h-dvh text-storm-water-800 dark:text-slate-50">
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div
         v-if="isPulling || isRefreshing"
-        class="flex items-center justify-center py-3 text-sm text-blue-600 dark:text-blue-300"
+        class="flex items-center justify-center py-3 text-sm text-storm-water-700 dark:text-sea-mist-200"
         :style="{ opacity: isRefreshing ? 1 : pullProgress }"
       >
         <svg
@@ -165,7 +160,7 @@ watch(
     <Transition name="slide-down">
       <div
         v-if="!isOnline"
-        class="flex items-center justify-center gap-2 bg-amber-500/90 px-4 py-2.5 text-center text-sm font-medium text-amber-950 backdrop-blur-sm"
+        class="flex items-center justify-center gap-2 border-b border-white/30 bg-gradient-to-r from-[#c7924b]/90 via-[#d6aa70]/90 to-[#c68a46]/90 px-4 py-2.5 text-center text-sm font-medium text-[#2f2316] backdrop-blur-sm"
         role="status"
         aria-live="polite"
       >
@@ -190,17 +185,21 @@ watch(
     </Transition>
 
     <!-- Compact header bar — sticky, full-width, with inner centering -->
-    <header class="sticky top-0 z-40 bg-sky-100 dark:bg-[#0f2027] backdrop-blur-md border-b border-slate-300/50 dark:border-white/10">
-      <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-2 pt-safe pt-4">
+    <header class="sticky top-0 z-40 border-b border-slate-300/80 bg-[#f4f7f8]/96 backdrop-blur-md dark:border-slate-700 dark:bg-[#17222b]/96">
+      <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-3 pt-safe pt-4">
         <!-- Header row -->
-        <div class="flex items-center gap-2">
-          <!-- Brand emoji -->
-          <span class="text-xl" aria-hidden="true">🌤️</span>
+        <div class="flex items-center gap-3 rounded-[1.2rem] border border-slate-300 bg-white px-3 py-2.5 shadow-[0_8px_24px_rgba(36,48,57,0.05)] dark:border-slate-700 dark:bg-[#1b2731] dark:shadow-none">
+          <span class="flex size-10 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-700 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam" aria-hidden="true">
+            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 15.5A4.5 4.5 0 0 1 8.5 11H9a5 5 0 1 1 9.7 1.8A3.5 3.5 0 1 1 18 19H8a4 4 0 0 1-4-3.5Z" />
+              <path d="M8 19l1.2-2.1M12 19l1.2-2.1M16 19l1.2-2.1" />
+            </svg>
+          </span>
 
           <!-- Location: detecting state or city name + edit button -->
           <template v-if="geoLoading">
             <svg
-              class="size-4 animate-spin text-blue-600 dark:text-blue-200"
+              class="size-4 animate-spin text-storm-water-700 dark:text-sea-mist-200"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
@@ -220,12 +219,15 @@ watch(
                 d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            <span class="text-sm text-blue-600 dark:text-blue-200">Detecting…</span>
+            <span class="text-sm text-storm-water-700 dark:text-sea-mist-200">Detecting…</span>
           </template>
           <template v-else>
-            <span class="text-sm font-semibold text-slate-800 dark:text-white">{{ locationStore.cityName }}</span>
+            <div class="min-w-0">
+              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">Forecast</span>
+              <span class="block truncate text-lg font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ locationStore.cityName }}</span>
+            </div>
             <button
-              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white"
+              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white"
               aria-label="Change location"
               @click="isEditingLocation = !isEditingLocation"
             >
@@ -249,24 +251,64 @@ watch(
           <!-- Right side: last updated + theme toggle + refresh -->
           <div class="ml-auto flex items-center gap-1">
             <Transition name="fade">
-              <span v-if="isOnline && lastUpdatedLabel" class="text-xs text-blue-600/60 dark:text-blue-300/60">
+              <span v-if="isOnline && lastUpdatedLabel" class="hidden text-[11px] tracking-wide text-storm-water-500 md:inline dark:text-sea-mist-300/60">
                 Last updated {{ lastUpdatedLabel }}
               </span>
             </Transition>
 
             <!-- Theme toggle button — cycles dark → light → system -->
             <button
-              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white active:bg-black/10 dark:active:bg-white/20"
+              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
               :title="themeLabel"
               :aria-label="themeLabel"
               @click="cycleTheme"
             >
-              <span class="text-sm leading-none" aria-hidden="true">{{ themeIcon }}</span>
+              <svg
+                v-if="themeStore.theme === 'dark'"
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+              </svg>
+              <svg
+                v-else-if="themeStore.theme === 'light'"
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M21 12.79A9 9 0 1 1 11.21 3c0 5 4 9 9 9 .27 0 .53-.01.79-.05Z" />
+              </svg>
+              <svg
+                v-else
+                class="size-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.52 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c0 .66.39 1.26 1 1.5H21a2 2 0 1 1 0 4h-.09c-.61.24-1.01.84-1.51 1.5Z" />
+              </svg>
             </button>
 
             <!-- Refresh button — min 44px tap target -->
             <button
-              class="flex size-8 items-center justify-center rounded-full text-blue-600/60 dark:text-blue-200/60 transition-colors hover:bg-black/5 dark:hover:bg-white/10 hover:text-slate-800 dark:hover:text-white active:bg-black/10 dark:active:bg-white/20 disabled:opacity-40"
+              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 disabled:opacity-40 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
               :disabled="isLoading"
               :title="isLoading ? 'Refreshing…' : 'Refresh weather data'"
               aria-label="Refresh weather data"
@@ -294,7 +336,7 @@ watch(
 
         <!-- Search row: visible when editing -->
         <Transition name="fade">
-          <div v-if="isEditingLocation" class="mt-2">
+          <div v-if="isEditingLocation" class="mt-3">
             <LocationSearch
               @select="isEditingLocation = false"
               @cancel="isEditingLocation = false"
@@ -304,7 +346,7 @@ watch(
 
         <!-- Geolocation error notice -->
         <Transition name="fade">
-          <p v-if="geoError" class="mt-2 text-xs text-yellow-600 dark:text-yellow-300">
+          <p v-if="geoError" class="mt-3 text-xs text-[#7a5422] dark:text-[#e7c48b]">
             {{ geoError }}
           </p>
         </Transition>
@@ -314,7 +356,7 @@ watch(
     <!-- Page shell: centred column, mobile-first -->
     <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl">
       <!-- Main content: each component fills the column width -->
-      <main class="mt-6 flex flex-col gap-5 pb-safe">
+      <main class="mt-7 flex flex-col gap-6 pb-safe md:mt-8 md:gap-7">
         <Transition name="content-fade" appear>
           <CurrentWeather @open-radar="openRadar" />
         </Transition>

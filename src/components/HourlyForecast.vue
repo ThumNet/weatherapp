@@ -44,7 +44,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-if="loading && !forecast"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-slate-100 dark:bg-white/10 shadow-2xl backdrop-blur-md"
+    class="surface-panel w-full max-w-md overflow-hidden"
     aria-busy="true"
     aria-label="Loading hourly forecast"
   >
@@ -66,7 +66,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-else-if="error && !forecast"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-red-400/30 bg-red-500/20 p-6 shadow-2xl backdrop-blur-md"
+    class="w-full max-w-md overflow-hidden rounded-panel border border-[#a96f61]/30 bg-[#b97a6a]/18 p-6 shadow-mist backdrop-blur-xl dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18 dark:shadow-storm"
     role="alert"
   >
     <div class="flex items-start gap-3">
@@ -83,17 +83,17 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-else-if="forecast"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-gradient-to-br from-white/70 via-white/60 to-white/50 dark:from-slate-700/40 dark:via-slate-800/30 dark:to-slate-900/20 shadow-2xl backdrop-blur-md transition-all duration-500"
+    class="surface-panel relative w-full max-w-md overflow-hidden transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing -->
     <div
       v-if="loading"
-      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-slate-400/60 dark:via-white/60 to-transparent"
+      class="relative z-10 h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-storm-water-500/50 to-transparent dark:via-sea-mist-300/45"
     />
 
-    <div class="p-5">
+    <div class="relative z-10 p-5">
       <!-- Section title -->
-      <h2 class="mb-3 text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-white/60">
+      <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
         24-Hour Forecast
       </h2>
 
@@ -102,10 +102,10 @@ const hourlyCards = computed<HourlyCard[]>(() => {
         <div
           v-for="card in hourlyCards"
           :key="card.time"
-          class="flex-shrink-0 w-16 flex flex-col items-center gap-1 rounded-xl py-2 px-1 snap-start bg-slate-100/80 dark:bg-white/10"
+          class="surface-inset flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 rounded-[1rem] px-1.5 py-2.5"
         >
           <!-- Time -->
-          <span class="text-xs text-slate-500 dark:text-white/60">{{ card.time }}</span>
+          <span class="text-[11px] uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ card.time }}</span>
           <!-- Weather icon -->
           <WeatherIcon
             :code="card.code"
@@ -114,19 +114,19 @@ const hourlyCards = computed<HourlyCard[]>(() => {
             :size="28"
           />
           <!-- Temperature -->
-          <span class="text-sm font-semibold text-slate-800 dark:text-white">{{ card.temp }}°</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
           <!-- Precipitation mm (only if > 0) -->
           <span
             v-if="card.precip > 0"
-            class="text-xs text-blue-500 dark:text-blue-300"
+            class="text-[11px] font-medium text-storm-water-600 dark:text-sea-mist-200/90"
           >{{ card.precip }}mm</span>
           <!-- Precipitation probability -->
-          <span class="text-[10px] text-slate-400 dark:text-blue-200/60">{{ card.precipProb }}%</span>
+          <span class="text-[10px] text-storm-water-400 dark:text-[#d7b07c]/70">{{ card.precipProb }}%</span>
         </div>
       </div>
 
       <!-- Inline error when refresh fails but old data is shown -->
-      <p v-if="error" class="mt-3 text-center text-xs text-yellow-600 dark:text-yellow-300" role="alert">
+      <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
         ⚠️ Refresh failed — showing last known data
       </p>
     </div>

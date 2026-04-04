@@ -114,7 +114,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
             :size="28"
           />
           <!-- Temperature -->
-          <span class="font-display text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
           <!-- Precipitation mm (only if > 0) -->
           <span
             v-if="card.precip > 0"

@@ -223,8 +223,8 @@ watch(
           </template>
           <template v-else>
             <div class="min-w-0">
-              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">North Sea forecast</span>
-              <span class="block truncate font-display text-xl leading-tight text-storm-water-800 dark:text-dune-foam">{{ locationStore.cityName }}</span>
+              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">Forecast</span>
+              <span class="block truncate text-lg font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ locationStore.cityName }}</span>
             </div>
             <button
               class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white"

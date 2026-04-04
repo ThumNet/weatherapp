@@ -37,12 +37,66 @@ const temperature = computed(() =>
 const feelsLike = computed(() =>
   weather.value !== null ? Math.round(weather.value.apparentTemperature) : null,
 )
-const description = computed(() =>
-  weather.value !== null ? getWeatherDescription(weather.value.weatherCode) : '',
-)
 const windCompass = computed(() =>
   weather.value !== null ? degreesToCompass(weather.value.windDirection) : '',
 )
+const todayMaxTemp = computed(() =>
+  daily.value?.temperatureMax?.[0] != null ? Math.round(daily.value.temperatureMax[0]) : null,
+)
+const todayMinTemp = computed(() =>
+  daily.value?.temperatureMin?.[0] != null ? Math.round(daily.value.temperatureMin[0]) : null,
+)
+const todayPrecipProb = computed(() => daily.value?.precipitationProbabilityMax?.[0] ?? null)
+const todayPrecipHours = computed(() => daily.value?.precipitationHours?.[0] ?? null)
+const todayPrecipSum = computed(() => daily.value?.precipitationSum?.[0] ?? null)
+const todayCondition = computed(() =>
+  weather.value !== null ? getWeatherDescription(weather.value.weatherCode) : '',
+)
+
+const humidityRainDetail = computed(() => {
+  const precip = todayPrecipSum.value
+  if (precip == null) return ''
+  if (precip < 0.1) return 'No rain expected'
+  if (precip < 1) return `${precip.toFixed(1)} mm expected`
+  return `${Math.round(precip * 10) / 10} mm expected`
+})
+
+const windSummary = computed(() => {
+  const speed = weather.value?.windSpeed
+  if (speed == null) return ''
+  const tone = speed < 8 ? 'Calm' : speed < 18 ? 'Light breeze' : speed < 28 ? 'Breezy' : 'Windy'
+  return `${tone} ${windCompass.value}`
+})
+
+const rainSummary = computed(() => {
+  const mins = precipStore.minutesUntilRain
+  if (mins === null) {
+    if ((todayPrecipProb.value ?? 0) >= 45) return 'Showers possible later'
+    return 'Mostly dry today'
+  }
+  if (mins === 0) return `${rainIntensityLabel.value} now`
+  return `${rainIntensityLabel.value} in ${mins} min`
+})
+
+const todayOutlook = computed(() => {
+  const condition = todayCondition.value
+  const precipProb = todayPrecipProb.value ?? 0
+  const precipHours = todayPrecipHours.value ?? 0
+  const max = todayMaxTemp.value
+  const min = todayMinTemp.value
+  const wind = windSummary.value.toLowerCase()
+
+  let rainPhrase = 'staying mostly dry'
+  if (precipProb >= 70 && precipHours >= 4) rainPhrase = 'with rain likely for much of the day'
+  else if (precipProb >= 55) rainPhrase = 'with showers likely later on'
+  else if (precipProb >= 30) rainPhrase = 'with a slight chance of rain later'
+
+  let rangePhrase = ''
+  if (max !== null && min !== null) rangePhrase = `High ${max}°, low ${min}°.`
+  else if (max !== null) rangePhrase = `High near ${max}°.`
+
+  return `${condition}, ${wind}, ${rainPhrase}. ${rangePhrase}`.replace(/\s+/g, ' ').trim()
+})
 
 // ── Current-hour icon intensity ──────────────────────────────────────────────
 
@@ -227,33 +281,33 @@ const gridLines = computed(() => {
     />
 
     <div class="relative z-10 p-6">
-      <!-- Top row: temperature + big icon -->
-      <div class="mb-3 flex items-start justify-between gap-4">
-        <!-- Temperature -->
-        <div>
-          <p class="mb-2 text-[11px] uppercase tracking-[0.28em] text-storm-water-500 dark:text-sea-mist-300/70">Current conditions</p>
-          <div class="flex items-start leading-none">
-            <span data-display="true" class="font-display text-[5rem] font-medium tracking-[-0.06em] text-storm-water-800 dark:text-dune-foam">
-              {{ temperature }}
-            </span>
-            <span class="mt-3 text-3xl font-light text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
+      <!-- Hero overview -->
+      <div class="mb-4 grid gap-4 sm:grid-cols-[minmax(0,0.6fr)_minmax(0,1.15fr)_auto] sm:items-center">
+        <div class="min-w-0 sm:self-center">
+          <div class="min-w-0">
+            <div class="flex items-start gap-1 leading-none">
+              <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-storm-water-800 dark:text-dune-foam sm:text-[4.75rem]">
+                {{ temperature }}
+              </span>
+              <span class="mt-2.5 text-[1.7rem] font-normal text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
+            </div>
           </div>
         </div>
 
-        <!-- Weather icon (large) -->
+        <div class="px-1 py-1 sm:self-center">
+          <p class="mb-2 text-[10px] uppercase tracking-[0.3em] text-storm-water-500 dark:text-sea-mist-300/70">
+            {{ todayOutlook }}
+          </p>
+        </div>
+
         <WeatherIcon
           :code="weather.weatherCode"
           :intensity="currentWeatherIntensity"
           :is-day="weather.isDay"
-          :size="64"
-          class="mt-1 rounded-full border border-slate-300 bg-slate-50 p-2 transition-all duration-300 dark:border-slate-600 dark:bg-[#22313d]"
+          :size="78"
+          class="self-center justify-self-start transition-all duration-300 sm:justify-self-end"
         />
       </div>
-
-      <!-- Description -->
-      <p class="mb-6 max-w-[14rem] text-lg font-medium text-storm-water-700 dark:text-dune-foam/92">
-        {{ description }}
-      </p>
 
       <!-- Stats grid -->
       <div class="grid grid-cols-2 gap-3">
@@ -265,7 +319,13 @@ const gridLines = computed(() => {
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
           </svg>
           <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Feels like</span>
-          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ feelsLike }}°C</span>
+          <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ feelsLike }}°C</span>
+          <span
+            v-if="todayMaxTemp !== null && todayMinTemp !== null"
+            class="text-[11px] text-storm-water-500 dark:text-sea-mist-300/65"
+          >
+            H {{ todayMaxTemp }}° / L {{ todayMinTemp }}°
+          </span>
         </div>
 
         <!-- Humidity -->
@@ -276,7 +336,13 @@ const gridLines = computed(() => {
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/>
           </svg>
           <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Humidity</span>
-          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ weather.humidity }}%</span>
+          <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ weather.humidity }}%</span>
+          <span
+            v-if="humidityRainDetail"
+            class="text-[11px] text-storm-water-500 dark:text-sea-mist-300/65"
+          >
+            {{ humidityRainDetail }}
+          </span>
         </div>
 
         <!-- Wind -->
@@ -287,11 +353,11 @@ const gridLines = computed(() => {
             <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
           </svg>
           <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Wind</span>
-          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">
+          <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">
             {{ Math.round(weather.windSpeed) }}
             <span class="text-xs font-normal text-storm-water-500 dark:text-sea-mist-300/70">km/h</span>
+            {{ windCompass }}
           </span>
-          <span class="text-xs text-storm-water-500 dark:text-sea-mist-300/65">{{ windCompass }}</span>
         </div>
 
         <!-- Moon phase -->
@@ -300,7 +366,7 @@ const gridLines = computed(() => {
         >
           <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
           <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Moon</span>
-          <span class="text-base font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ moonPhase.phaseName }}</span>
+          <span class="text-[15px] font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ moonPhase.phaseName }}</span>
         </div>
       </div>
 
@@ -319,7 +385,7 @@ const gridLines = computed(() => {
           </svg>
           <div class="text-center">
             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunrise</p>
-            <p class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</p>
+            <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</p>
           </div>
         </div>
 
@@ -337,7 +403,7 @@ const gridLines = computed(() => {
           </svg>
           <div class="text-center">
             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunset</p>
-            <p class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</p>
+            <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</p>
           </div>
         </div>
       </div>

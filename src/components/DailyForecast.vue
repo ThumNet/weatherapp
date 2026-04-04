@@ -173,7 +173,7 @@ const error = computed(() => weatherStore.error)
         <div class="w-16 shrink-0">
           <span
             class="block text-sm font-semibold"
-            :class="index === 0 ? 'font-display text-storm-water-800 dark:text-dune-foam' : 'text-storm-water-700 dark:text-sea-mist-100'"
+            :class="index === 0 ? 'text-storm-water-800 dark:text-dune-foam' : 'text-storm-water-700 dark:text-sea-mist-100'"
           >
             {{ day.dayName }}
           </span>
@@ -200,7 +200,7 @@ const error = computed(() => weatherStore.error)
 
         <!-- Temperature range (pushed to the right) -->
         <div class="ml-auto flex items-baseline gap-1 tabular-nums">
-          <span class="font-display text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ day.tempMax }}°</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ day.tempMax }}°</span>
           <span class="text-xs text-storm-water-400 dark:text-sea-mist-300/55">/ {{ day.tempMin }}°</span>
         </div>
       </div>

@@ -216,7 +216,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             </span>
             <div>
               <p class="text-[11px] uppercase tracking-[0.24em] text-sea-mist-300/55">Live precipitation</p>
-              <h2 class="font-display text-lg text-dune-foam">Rain Radar</h2>
+              <h2 class="text-lg font-semibold text-dune-foam">Rain Radar</h2>
             </div>
           </div>
           <!-- Close button — min 44px tap target -->

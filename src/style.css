@@ -15,12 +15,11 @@
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
     /* Safari website tinting samples html, not body */
-    /* Light mode default */
-    background-color: #bae6fd;
+    background-color: #eef3f6;
   }
 
   html.dark {
-    background-color: #0f2027;
+    background-color: #17222b;
   }
 
   body {
@@ -28,29 +27,37 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-family: Manrope, ui-sans-serif, system-ui, sans-serif;
 
-    /* Light mode default: soft daylight sky gradient */
-    background-color: #bae6fd;
+    background-color: #eef3f6;
     background: linear-gradient(
-      to bottom,
-      #bae6fd 0%,   /* sky-200 */
-      #e0f2fe 35%,  /* sky-100 */
-      #f0f9ff 70%,  /* sky-50 */
-      #f8fafc 100%  /* slate-50 */
+      180deg,
+      #f4f7f8 0%,
+      #eef3f6 28%,
+      #e6edf1 100%
     );
     min-height: 100dvh;
     overflow-x: clip;
+    color: #223443;
   }
 
-  /* Dark mode: deep night-sky gradient */
   html.dark body {
-    background-color: #0f2027;
+    background-color: #17222b;
     background: linear-gradient(
-      to bottom,
-      #0f2027 0%,
-      #1a3a5c 40%,
-      #1e3a8a 100%
+      180deg,
+      #1b2933 0%,
+      #17222b 45%,
+      #121920 100%
     );
+    color: #f2f5f7;
+  }
+
+  h1,
+  h2,
+  h3,
+  [data-display='true'] {
+    font-family: Fraunces, Georgia, serif;
+    font-feature-settings: 'ss01' 1;
   }
 }
 
@@ -84,6 +91,22 @@
 
 /* ── Safe-area utility ────────────────────────────────────────────────────── */
 @layer utilities {
+  .surface-hero {
+    @apply rounded-3xl border border-slate-300/80 bg-white shadow-[0_12px_34px_rgba(36,48,57,0.08)] dark:border-slate-700 dark:bg-[#1b2731] dark:shadow-[0_16px_40px_rgba(0,0,0,0.22)];
+  }
+
+  .surface-panel {
+    @apply rounded-[1.4rem] border border-slate-300/75 bg-white shadow-[0_10px_26px_rgba(36,48,57,0.06)] dark:border-slate-700 dark:bg-[#1b2731] dark:shadow-[0_14px_34px_rgba(0,0,0,0.18)];
+  }
+
+  .surface-inset {
+    @apply border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-[#22313d];
+  }
+
+  .atmospheric-rule {
+    @apply border-slate-200 dark:border-slate-700;
+  }
+
   .pb-safe {
     padding-bottom: max(1.5rem, env(safe-area-inset-bottom));
   }

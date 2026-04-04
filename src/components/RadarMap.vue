@@ -200,20 +200,28 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
     <Transition name="radar-overlay">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex flex-col bg-slate-900"
+        class="fixed inset-0 z-50 flex flex-col bg-[#17222b] text-dune-foam"
         role="dialog"
         aria-modal="true"
         aria-label="Rain Radar"
       >
         <!-- Top bar -->
-        <div class="flex shrink-0 items-center justify-between border-b border-white/10 px-5 py-3">
+        <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-700 bg-[#1b2731] px-5 py-3">
           <div class="flex items-center gap-2">
-            <span class="text-lg" aria-hidden="true">🌧️</span>
-            <h2 class="text-sm font-semibold uppercase tracking-wide text-white/80">Rain Radar</h2>
+            <span class="flex size-9 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100" aria-hidden="true">
+              <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 15.5A4.5 4.5 0 0 1 8.5 11H9a5 5 0 1 1 9.7 1.8A3.5 3.5 0 1 1 18 19H8a4 4 0 0 1-4-3.5Z" />
+                <path d="M9 18.5l1-2M13 18.5l1-2M17 18.5l1-2" />
+              </svg>
+            </span>
+            <div>
+              <p class="text-[11px] uppercase tracking-[0.24em] text-sea-mist-300/55">Live precipitation</p>
+              <h2 class="font-display text-lg text-dune-foam">Rain Radar</h2>
+            </div>
           </div>
           <!-- Close button — min 44px tap target -->
           <button
-            class="flex size-11 items-center justify-center rounded-full text-white/60 transition hover:bg-white/10 hover:text-white active:bg-white/20"
+            class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-200/70 transition hover:bg-[#2a3a47] hover:text-white active:bg-[#2a3a47]"
             aria-label="Close Rain Radar"
             @click="closeOverlay"
           >
@@ -242,7 +250,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             aria-busy="true"
             aria-label="Loading radar map"
           >
-            <div class="flex flex-col items-center gap-3 text-blue-200/70">
+            <div class="flex flex-col items-center gap-3 text-sea-mist-200/75">
               <svg
                 class="size-8 animate-spin"
                 xmlns="http://www.w3.org/2000/svg"
@@ -267,11 +275,11 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             class="flex h-full items-center justify-center px-6"
             role="alert"
           >
-            <div class="text-center text-sm text-yellow-300">
+            <div class="rounded-[1.1rem] border border-slate-700 bg-[#1b2731] px-5 py-4 text-center text-sm text-[#efcb9a]">
               <span class="mb-1 block text-2xl">⚠️</span>
               {{ error }}
               <button
-                class="mt-3 block w-full rounded-xl bg-white/10 px-4 py-2 text-xs font-medium text-white transition hover:bg-white/20"
+                class="mt-3 block w-full rounded-xl border border-slate-600 bg-[#22313d] px-4 py-2 text-xs font-medium text-dune-foam transition hover:bg-[#2a3a47]"
                 @click="loadFrames"
               >
                 Retry
@@ -310,7 +318,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
         </div>
 
         <!-- Animation controls -->
-        <div class="shrink-0 border-t border-white/10 bg-black/30 px-5 py-4 backdrop-blur-sm">
+        <div class="relative z-10 shrink-0 border-t border-slate-700 bg-[#1b2731] px-5 py-4">
           <!-- Timeline scrubber -->
           <div class="mb-3">
             <RadarScrubberB
@@ -327,7 +335,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           <div class="flex items-center justify-center gap-4">
             <!-- Step back — 44px min tap target -->
             <button
-              class="flex size-11 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/25 active:bg-white/30 disabled:opacity-30"
+              class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
               :disabled="currentFrameIndex === 0 || frames.length === 0"
               aria-label="Previous frame"
               @click="stepBack"
@@ -339,7 +347,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
             <!-- Play / Pause — 48px to make it the obvious CTA -->
             <button
-              class="flex size-12 items-center justify-center rounded-full bg-blue-500/70 text-white shadow-lg transition hover:bg-blue-500/90 active:bg-blue-500 disabled:opacity-40"
+              class="flex size-12 items-center justify-center rounded-full bg-[#d1a56d] text-[#1f160d] transition hover:brightness-105 active:brightness-95 disabled:opacity-40"
               :aria-label="isPlaying ? 'Pause animation' : 'Play animation'"
               :disabled="frames.length === 0"
               @click="togglePlay"
@@ -368,7 +376,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
             <!-- Step forward — 44px min tap target -->
             <button
-              class="flex size-11 items-center justify-center rounded-full bg-white/10 text-white/80 transition hover:bg-white/25 active:bg-white/30 disabled:opacity-30"
+              class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
               :disabled="currentFrameIndex === frameCount - 1 || frames.length === 0"
               aria-label="Next frame"
               @click="stepForward"
@@ -380,7 +388,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           </div>
 
           <!-- Attribution note -->
-          <p class="mt-2 text-center text-[10px] text-blue-200/40">
+          <p class="mt-2 text-center text-[10px] tracking-[0.16em] text-sea-mist-300/35">
             Radar data by RainViewer
           </p>
         </div>

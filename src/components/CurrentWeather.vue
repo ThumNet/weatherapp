@@ -88,11 +88,11 @@ function barHeightPercent(mmPerHour: number): number {
 
 /** Color class for a precipitation bar based on intensity */
 function barColorClass(mmPerHour: number): string {
-  if (mmPerHour <= 0) return 'bg-slate-200 dark:bg-white/10'
-  if (mmPerHour < 0.5) return 'bg-blue-300/60 dark:bg-blue-300/50'   // drizzle
-  if (mmPerHour <= 2.5) return 'bg-blue-400/80 dark:bg-blue-400/70'  // light
-  if (mmPerHour <= 7.6) return 'bg-blue-600/85 dark:bg-blue-500/80'  // moderate
-  return 'bg-purple-500/90 dark:bg-purple-400/85'                     // heavy
+  if (mmPerHour <= 0) return 'bg-storm-water-200/50 dark:bg-white/10'
+  if (mmPerHour < 0.5) return 'bg-[#adc2cf]/80 dark:bg-[#8ea8b7]/55'   // drizzle
+  if (mmPerHour <= 2.5) return 'bg-[#7e9eb1]/85 dark:bg-[#6b8a9d]/75'  // light
+  if (mmPerHour <= 7.6) return 'bg-storm-water-600/85 dark:bg-storm-water-500/80'  // moderate
+  return 'bg-[#d19a5f]/90 dark:bg-[#c88a47]/85'                        // heavy
 }
 
 /** Describes the intensity of the first upcoming rain */
@@ -163,7 +163,7 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-if="loading && !weather"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-slate-100 dark:bg-white/10 shadow-2xl backdrop-blur-md"
+    class="surface-hero w-full max-w-md overflow-hidden"
     aria-busy="true"
     aria-label="Loading weather data"
   >
@@ -201,7 +201,7 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-else-if="error && !weather"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-red-400/30 bg-red-500/20 p-6 shadow-2xl backdrop-blur-md"
+    class="w-full max-w-md overflow-hidden rounded-hero border border-[#a96f61]/30 bg-[#b97a6a]/18 p-6 shadow-mist backdrop-blur-xl dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18 dark:shadow-storm"
     role="alert"
   >
     <div class="flex items-start gap-3">
@@ -218,24 +218,25 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-else-if="weather"
-    class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-300/50 dark:border-white/20 bg-gradient-to-br from-white/70 via-white/60 to-white/50 dark:from-slate-700/40 dark:via-slate-800/30 dark:to-slate-900/20 shadow-2xl backdrop-blur-md transition-all duration-500"
+    class="surface-hero relative w-full max-w-md overflow-hidden transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing -->
     <div
       v-if="loading"
-      class="h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-slate-400/60 dark:via-white/60 to-transparent"
+      class="relative z-10 h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-storm-water-500/50 to-transparent dark:via-sea-mist-300/50"
     />
 
-    <div class="p-6">
+    <div class="relative z-10 p-6">
       <!-- Top row: temperature + big icon -->
-      <div class="mb-2 flex items-start justify-between">
+      <div class="mb-3 flex items-start justify-between gap-4">
         <!-- Temperature -->
         <div>
+          <p class="mb-2 text-[11px] uppercase tracking-[0.28em] text-storm-water-500 dark:text-sea-mist-300/70">Current conditions</p>
           <div class="flex items-start leading-none">
-            <span class="text-7xl font-thin tracking-tighter drop-shadow-lg">
+            <span data-display="true" class="font-display text-[5rem] font-medium tracking-[-0.06em] text-storm-water-800 dark:text-dune-foam">
               {{ temperature }}
             </span>
-            <span class="mt-3 text-3xl font-light text-slate-600 dark:text-white/80">°C</span>
+            <span class="mt-3 text-3xl font-light text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
           </div>
         </div>
 
@@ -245,12 +246,12 @@ const gridLines = computed(() => {
           :intensity="currentWeatherIntensity"
           :is-day="weather.isDay"
           :size="64"
-          class="drop-shadow-md transition-all duration-300"
+          class="mt-1 rounded-full border border-slate-300 bg-slate-50 p-2 transition-all duration-300 dark:border-slate-600 dark:bg-[#22313d]"
         />
       </div>
 
       <!-- Description -->
-      <p class="mb-6 text-lg font-medium text-slate-700 dark:text-white/90">
+      <p class="mb-6 max-w-[14rem] text-lg font-medium text-storm-water-700 dark:text-dune-foam/92">
         {{ description }}
       </p>
 
@@ -258,55 +259,55 @@ const gridLines = computed(() => {
       <div class="grid grid-cols-2 gap-3">
         <!-- Feels like -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
+          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
         >
-          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Feels like</span>
-          <span class="text-base font-semibold">{{ feelsLike }}°C</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Feels like</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ feelsLike }}°C</span>
         </div>
 
         <!-- Humidity -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
+          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
         >
-          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Humidity</span>
-          <span class="text-base font-semibold">{{ weather.humidity }}%</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Humidity</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ weather.humidity }}%</span>
         </div>
 
         <!-- Wind -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
+          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
         >
-          <svg class="size-5 text-slate-500 dark:text-white/60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Wind</span>
-          <span class="text-base font-semibold">
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Wind</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">
             {{ Math.round(weather.windSpeed) }}
-            <span class="text-xs font-normal text-slate-500 dark:text-white/70">km/h</span>
+            <span class="text-xs font-normal text-storm-water-500 dark:text-sea-mist-300/70">km/h</span>
           </span>
-          <span class="text-xs text-slate-500 dark:text-white/60">{{ windCompass }}</span>
+          <span class="text-xs text-storm-water-500 dark:text-sea-mist-300/65">{{ windCompass }}</span>
         </div>
 
         <!-- Moon phase -->
         <div
-          class="flex flex-col items-center gap-1 rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-2 py-3 text-center"
+          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
         >
           <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
-          <span class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Moon</span>
-          <span class="text-base font-semibold leading-tight">{{ moonPhase.phaseName }}</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Moon</span>
+          <span class="text-base font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ moonPhase.phaseName }}</span>
         </div>
       </div>
 
       <!-- Sunrise / Sunset tile -->
       <div
         v-if="todaySunrise || todaySunset"
-        class="mt-3 flex items-center justify-around rounded-2xl border border-slate-200 dark:border-white/10 bg-white/50 dark:bg-white/10 px-4 py-3"
+        class="surface-inset mt-3 flex items-center justify-around rounded-[1.1rem] px-4 py-3"
       >
         <!-- Sunrise -->
         <div class="flex items-center gap-2">
@@ -317,13 +318,13 @@ const gridLines = computed(() => {
             <line x1="2" y1="20" x2="22" y2="20"/>
           </svg>
           <div class="text-center">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Sunrise</p>
-            <p class="text-base font-semibold">{{ todaySunrise }}</p>
+            <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunrise</p>
+            <p class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</p>
           </div>
         </div>
 
         <!-- Divider -->
-        <div class="h-8 w-px bg-slate-200 dark:bg-white/10" aria-hidden="true" />
+        <div class="h-8 w-px bg-slate-200 dark:bg-slate-600" aria-hidden="true" />
 
         <!-- Sunset -->
         <div class="flex items-center gap-2">
@@ -335,21 +336,21 @@ const gridLines = computed(() => {
             <path d="M12 6l-1.5 2h3L12 6z" fill="currentColor" stroke="none"/>
           </svg>
           <div class="text-center">
-            <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/60">Sunset</p>
-            <p class="text-base font-semibold">{{ todaySunset }}</p>
+            <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunset</p>
+            <p class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</p>
           </div>
         </div>
       </div>
 
       <!-- Inline error when a refresh fails (but old weather data is still shown) -->
-      <p v-if="error" class="mt-3 text-center text-xs text-yellow-600 dark:text-yellow-300" role="alert">
+      <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
         ⚠️ Refresh failed — showing last known data
       </p>
 
       <!-- ---------------------------------------------------------------- -->
       <!-- Precipitation section                                              -->
       <!-- ---------------------------------------------------------------- -->
-      <hr class="my-4 border-slate-200 dark:border-white/10" />
+      <hr class="my-5 border atmospheric-rule" />
 
       <!-- Precipitation loading skeleton (weather card already visible) -->
       <template v-if="precipStore.loading && precipStore.entries.length === 0">
@@ -380,18 +381,18 @@ const gridLines = computed(() => {
               <div
                 v-for="line in gridLines"
                 :key="line.mmPerHour"
-                class="pointer-events-none absolute left-0 right-0 z-10"
-                :style="{ bottom: `${line.percent}%` }"
-              >
-                <div class="border-t border-dashed border-slate-300/40 dark:border-white/20" />
-              </div>
+                 class="pointer-events-none absolute left-0 right-0 z-10"
+                 :style="{ bottom: `${line.percent}%` }"
+               >
+                 <div class="border-t border-dashed border-storm-water-300/35 dark:border-white/10" />
+               </div>
 
               <!-- Bar columns -->
               <div class="flex h-full items-end gap-px">
               <div
                 v-for="(entry, idx) in precipStore.entries"
                 :key="entry.time"
-                class="relative flex-1 rounded-t transition-all duration-300"
+                 class="relative flex-1 rounded-t transition-all duration-300"
                 :class="barColorClass(entry.mmPerHour)"
                 :style="{ height: `${barHeightPercent(entry.mmPerHour)}%` }"
                 :title="`${entry.time} — ${entry.mmPerHour > 0 ? entry.mmPerHour.toFixed(2) + ' mm/h (' + (entry.mmPerHour < 0.5 ? 'drizzle' : entry.mmPerHour <= 2.5 ? 'light' : entry.mmPerHour <= 7.6 ? 'moderate' : 'heavy') + ')' : 'dry'}`"
@@ -411,7 +412,7 @@ const gridLines = computed(() => {
               <span
                 v-for="line in gridLines"
                 :key="'label-' + line.mmPerHour"
-                class="pointer-events-none absolute right-0 -translate-y-1/2 text-[9px] leading-none text-slate-400 dark:text-white/40"
+                 class="pointer-events-none absolute right-0 -translate-y-1/2 text-[9px] leading-none text-storm-water-400 dark:text-sea-mist-300/35"
                 :style="{ bottom: `${line.percent}%` }"
               >
                 {{ line.label }}
@@ -428,22 +429,22 @@ const gridLines = computed(() => {
             >
               <span
                 v-if="idx % labelInterval === 0"
-                class="text-[10px] leading-tight text-slate-600 dark:text-blue-200/60"
+                class="text-[10px] leading-tight text-storm-water-600 dark:text-sea-mist-200/60"
               >
                 {{ entry.time }}
               </span>
             </div>
-            <span class="shrink-0 text-[9px] leading-tight text-slate-400 dark:text-blue-200/40 pl-1">mm/h</span>
+            <span class="shrink-0 pl-1 text-[9px] leading-tight text-storm-water-400 dark:text-sea-mist-300/35">mm/h</span>
           </div>
         </div>
 
         <!-- Alert banner — tappable button to open radar -->
         <button
-          class="mt-4 w-full flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold shadow-inner transition-colors"
+          class="mt-5 flex w-full items-center gap-3 rounded-[1.1rem] border px-4 py-3 text-sm font-semibold transition-colors"
           :class="{
-            'bg-blue-500/70 text-white': alertStyle === 'rain',
-            'bg-yellow-400/80 text-yellow-900': alertStyle === 'soon',
-            'bg-green-500/60 text-white': alertStyle === 'clear',
+            'border-storm-water-700 bg-storm-water-700 text-dune-foam': alertStyle === 'rain',
+            'border-[#d1a56d] bg-[#efe1cd] text-[#352516] dark:bg-[#56422c] dark:text-[#f3dfbf]': alertStyle === 'soon',
+            'border-slate-300 bg-slate-50 text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam': alertStyle === 'clear',
           }"
           @click="$emit('open-radar')"
         >
@@ -504,7 +505,7 @@ const gridLines = computed(() => {
         </button>
 
         <!-- Non-blocking precipitation error notice -->
-        <p v-if="precipStore.error" class="mt-3 text-center text-xs text-yellow-600/80 dark:text-yellow-300/80">
+        <p v-if="precipStore.error" class="mt-3 text-center text-xs text-[#7a5422]/90 dark:text-[#e7c48b]/85">
           ⚠️ {{ precipStore.error }}
         </p>
       </template>

@@ -116,11 +116,11 @@ function getCitySubtitle(city: CitySearchResult): string {
   <div ref="containerRef" class="relative w-full max-w-md">
     <!-- Search input -->
     <div
-      class="flex items-center gap-2 rounded-xl border border-slate-300 bg-white/60 px-4 py-2.5 shadow-sm backdrop-blur-sm transition-all focus-within:border-blue-400 focus-within:bg-white/80 dark:border-white/20 dark:bg-white/10 dark:focus-within:border-white/60 dark:focus-within:bg-white/20"
+      class="flex items-center gap-3 rounded-[1.1rem] border border-slate-300 bg-white px-4 py-3 shadow-[0_8px_22px_rgba(36,48,57,0.05)] transition-all focus-within:border-storm-water-500 dark:border-slate-700 dark:bg-[#1b2731] dark:focus-within:border-sea-mist-300"
     >
       <!-- Magnifying glass icon -->
       <svg
-        class="size-5 shrink-0 text-blue-500 dark:text-blue-300"
+        class="size-5 shrink-0 text-storm-water-600 dark:text-sea-mist-300"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -142,7 +142,7 @@ function getCitySubtitle(city: CitySearchResult): string {
         placeholder="Search a city…"
         autocomplete="off"
         spellcheck="false"
-        class="flex-1 bg-transparent text-sm text-slate-800 placeholder-slate-400 outline-none dark:text-white dark:placeholder-blue-300"
+        class="flex-1 bg-transparent text-sm text-storm-water-800 placeholder-storm-water-400 outline-none dark:text-dune-foam dark:placeholder-sea-mist-300/55"
         aria-label="Search for a city"
         aria-autocomplete="list"
         :aria-expanded="isOpen"
@@ -153,7 +153,7 @@ function getCitySubtitle(city: CitySearchResult): string {
       <!-- Loading spinner -->
       <svg
         v-if="isLoading"
-        class="size-4 shrink-0 animate-spin text-blue-500 dark:text-blue-200"
+        class="size-4 shrink-0 animate-spin text-storm-water-600 dark:text-sea-mist-200"
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         viewBox="0 0 24 24"
@@ -170,7 +170,7 @@ function getCitySubtitle(city: CitySearchResult): string {
       <!-- Clear button -->
       <button
         v-else-if="query"
-        class="shrink-0 text-slate-400 transition-colors hover:text-slate-800 dark:text-blue-200 dark:hover:text-white"
+        class="shrink-0 text-storm-water-400 transition-colors hover:text-storm-water-800 dark:text-sea-mist-300/70 dark:hover:text-white"
         aria-label="Clear search"
         @click="
           () => {
@@ -195,7 +195,7 @@ function getCitySubtitle(city: CitySearchResult): string {
     </div>
 
     <!-- Error message -->
-    <p v-if="errorMessage" class="mt-1.5 text-xs text-red-500 dark:text-red-300">
+    <p v-if="errorMessage" class="mt-2 text-xs text-[#8d4a3f] dark:text-[#efb4a7]">
       {{ errorMessage }}
     </p>
 
@@ -204,18 +204,18 @@ function getCitySubtitle(city: CitySearchResult): string {
       v-if="isOpen && results.length > 0"
       id="city-dropdown"
       role="listbox"
-      class="absolute z-50 mt-1.5 w-full overflow-hidden rounded-xl border border-slate-200 dark:border-white/20 bg-white/95 dark:bg-slate-800/95 shadow-xl backdrop-blur-md"
+      class="absolute z-50 mt-2 w-full overflow-hidden rounded-[1.1rem] border border-slate-300 bg-white shadow-[0_12px_28px_rgba(36,48,57,0.08)] dark:border-slate-700 dark:bg-[#1b2731]"
     >
       <li
         v-for="(city, index) in results"
         :key="`${city.name}-${city.latitude}-${city.longitude}`"
         role="option"
         :aria-selected="index === activeIndex"
-        class="flex cursor-pointer items-center gap-3 px-4 py-2.5 transition-colors"
+        class="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors"
         :class="
           index === activeIndex
-            ? 'bg-blue-600/80 text-white'
-            : 'text-slate-700 hover:bg-blue-100 dark:text-blue-100 dark:hover:bg-blue-700/60'
+            ? 'bg-storm-water-700 text-dune-foam'
+            : 'text-storm-water-700 hover:bg-slate-50 dark:text-sea-mist-100 dark:hover:bg-[#22313d]'
         "
         @mousedown.prevent="selectCity(city)"
         @mouseover="activeIndex = index"

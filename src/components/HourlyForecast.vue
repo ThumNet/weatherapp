@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
 
 const weatherStore = useWeatherStore()
+const languageStore = useLanguageStore()
 
 const forecast = computed(() => weatherStore.hourlyForecast)
 const loading = computed(() => weatherStore.loading)
@@ -46,7 +48,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     v-if="loading && !forecast"
     class="surface-panel w-full max-w-md overflow-hidden"
     aria-busy="true"
-    aria-label="Loading hourly forecast"
+    :aria-label="languageStore.t('hourly.loading')"
   >
     <div class="p-5">
       <div class="mb-4 h-4 w-36 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
@@ -72,7 +74,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold">Could not load hourly forecast</p>
+        <p class="font-semibold">{{ languageStore.t('hourly.error') }}</p>
         <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
@@ -94,7 +96,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     <div class="relative z-10 p-5">
       <!-- Section title -->
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
-        24-Hour Forecast
+        {{ languageStore.t('hourly.title') }}
       </h2>
 
       <!-- Horizontally scrollable card strip -->
@@ -127,7 +129,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
 
       <!-- Inline error when refresh fails but old data is shown -->
       <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
-        ⚠️ Refresh failed — showing last known data
+        ⚠️ {{ languageStore.t('common.refreshFailed') }}
       </p>
     </div>
   </div>

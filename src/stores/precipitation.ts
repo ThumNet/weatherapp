@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { translate } from '@/utils/i18n'
 import { fetchPrecipitationForecast } from '@/services/buienradarService'
 import type { PrecipitationEntry } from '@/types/weather'
 
@@ -42,6 +43,11 @@ export const usePrecipitationStore = defineStore('precipitation', () => {
     cached?.lastUpdated ? new Date(cached.lastUpdated) : null,
   )
 
+  function currentLanguage(): 'nl' | 'en' {
+    if (typeof document === 'undefined') return 'nl'
+    return document.documentElement.lang === 'en' ? 'en' : 'nl'
+  }
+
   async function fetchPrecipitation(lat: number, lon: number): Promise<void> {
     loading.value = true
     error.value = null
@@ -59,7 +65,7 @@ export const usePrecipitationStore = defineStore('precipitation', () => {
       error.value =
         err instanceof Error
           ? err.message
-          : 'Failed to fetch precipitation data. Please try again.'
+          : translate(currentLanguage(), 'precipitation.fetchError')
       // Keep previous entries visible while showing the error
     } finally {
       loading.value = false

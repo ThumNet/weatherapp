@@ -1,4 +1,5 @@
 import { ref } from 'vue'
+import { translate, type AppLanguage } from '@/utils/i18n'
 
 export interface GeolocationState {
   latitude: ReturnType<typeof ref<number | null>>
@@ -14,10 +15,16 @@ export function useGeolocation() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
+  function currentLanguage(): AppLanguage {
+    if (typeof window === 'undefined') return 'nl'
+    const lang = document.documentElement.lang
+    return lang === 'en' ? 'en' : 'nl'
+  }
+
   function requestPosition(): Promise<{ lat: number; lon: number } | null> {
     return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        error.value = 'Geolocation is not supported by your browser'
+        error.value = translate(currentLanguage(), 'geolocation.unsupported')
         resolve(null)
         return
       }
@@ -42,10 +49,10 @@ export function useGeolocation() {
               // Silently fall back to default location — no need to surface this to the user
               break
             case err.TIMEOUT:
-              error.value = 'Location request timed out.'
+              error.value = translate(currentLanguage(), 'geolocation.timeout')
               break
             default:
-              error.value = 'An unknown error occurred while fetching location.'
+              error.value = translate(currentLanguage(), 'geolocation.unknown')
           }
           resolve(null)
         },

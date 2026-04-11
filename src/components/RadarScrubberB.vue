@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { formatFrameTime } from '@/services/rainviewerService'
 import type { RadarFrame } from '@/services/rainviewerService'
 
@@ -17,6 +18,8 @@ const emit = defineEmits<{
   'update:currentFrameIndex': [index: number]
   'scrub-start': []
 }>()
+
+const languageStore = useLanguageStore()
 
 // ---------------------------------------------------------------------------
 // Computed helpers
@@ -193,7 +196,7 @@ function onPointerDown(event: PointerEvent): void {
       :aria-valuemin="0"
       :aria-valuemax="frameCount - 1"
       :aria-valuenow="currentFrameIndex"
-      aria-label="Radar timeline"
+       :aria-label="languageStore.t('scrubber.timeline')"
       @pointerdown="onPointerDown"
     >
       <!-- ── Track ───────────────────────────────────────────────────── -->
@@ -279,13 +282,13 @@ function onPointerDown(event: PointerEvent): void {
         v-if="isNowcast"
         class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-amber-400/70"
       >
-        forecast
+         {{ languageStore.t('scrubber.forecast') }}
       </span>
       <span
         v-else-if="ticks.find(t => t.isNow && t.isCurrent)"
         class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-white/50"
       >
-        now
+         {{ languageStore.t('scrubber.now') }}
       </span>
     </div>
 
@@ -294,7 +297,7 @@ function onPointerDown(event: PointerEvent): void {
       v-if="framesLoaded && !hasNowcast"
       class="mt-1 text-center text-[10px] text-white/40"
     >
-      No forecast available
+       {{ languageStore.t('scrubber.noForecast') }}
     </p>
   </div>
 </template>

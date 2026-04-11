@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useLocationStore } from '@/stores/location'
 import { searchCities } from '@/services/weatherService'
 import type { CitySearchResult } from '@/types/weather'
@@ -10,6 +11,7 @@ const emit = defineEmits<{
 }>()
 
 const locationStore = useLocationStore()
+const languageStore = useLanguageStore()
 
 const query = ref('')
 const results = ref<CitySearchResult[]>([])
@@ -39,7 +41,7 @@ async function performSearch(value: string): Promise<void> {
     isOpen.value = results.value.length > 0
     activeIndex.value = -1
   } catch {
-    errorMessage.value = 'Could not fetch city results. Please try again.'
+    errorMessage.value = languageStore.t('search.error')
     results.value = []
     isOpen.value = false
   } finally {
@@ -139,11 +141,11 @@ function getCitySubtitle(city: CitySearchResult): string {
         ref="inputRef"
         v-model="query"
         type="text"
-        placeholder="Search a city…"
+        :placeholder="languageStore.t('search.placeholder')"
         autocomplete="off"
         spellcheck="false"
         class="flex-1 bg-transparent text-sm text-storm-water-800 placeholder-storm-water-400 outline-none dark:text-dune-foam dark:placeholder-sea-mist-300/55"
-        aria-label="Search for a city"
+        :aria-label="languageStore.t('search.aria')"
         aria-autocomplete="list"
         :aria-expanded="isOpen"
         aria-controls="city-dropdown"
@@ -171,7 +173,7 @@ function getCitySubtitle(city: CitySearchResult): string {
       <button
         v-else-if="query"
         class="shrink-0 text-storm-water-400 transition-colors hover:text-storm-water-800 dark:text-sea-mist-300/70 dark:hover:text-white"
-        aria-label="Clear search"
+        :aria-label="languageStore.t('search.clear')"
         @click="
           () => {
             query = ''

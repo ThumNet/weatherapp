@@ -1,24 +1,26 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
 import type { WeatherIntensity } from '@/utils/weatherCodes'
 
   const weatherStore = useWeatherStore()
+const languageStore = useLanguageStore()
 
 const precipitationIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/></svg>`
 
 /** Format an ISO date string (YYYY-MM-DD) to a short day name like "Mon". */
 function formatDayName(dateStr: string, index: number): string {
-  if (index === 0) return 'Today'
+  if (index === 0) return languageStore.t('daily.today')
   const date = new Date(dateStr + 'T12:00:00') // noon to avoid TZ edge cases
-  return date.toLocaleDateString('en-US', { weekday: 'short' })
+  return date.toLocaleDateString(languageStore.locale, { weekday: 'short' })
 }
 
 /** Format a date string to show the month/day, e.g. "Mar 29". */
 function formatDate(dateStr: string): string {
   const date = new Date(dateStr + 'T12:00:00')
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  return date.toLocaleDateString(languageStore.locale, { month: 'short', day: 'numeric' })
 }
 
 interface DayRow {
@@ -120,7 +122,7 @@ const error = computed(() => weatherStore.error)
     v-if="isLoading"
     class="surface-panel w-full max-w-md overflow-hidden p-5"
     aria-busy="true"
-    aria-label="Loading 7-day forecast"
+    :aria-label="languageStore.t('daily.loading')"
   >
     <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
     <div v-for="n in 7" :key="n" class="flex animate-pulse items-center gap-3 py-2.5">
@@ -140,7 +142,7 @@ const error = computed(() => weatherStore.error)
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold">Could not load forecast</p>
+        <p class="font-semibold">{{ languageStore.t('daily.error') }}</p>
         <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
@@ -159,7 +161,7 @@ const error = computed(() => weatherStore.error)
 
     <div class="relative z-10 p-5">
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
-        7-Day Forecast
+        {{ languageStore.t('daily.title') }}
       </h2>
 
       <!-- Forecast rows -->
@@ -207,7 +209,7 @@ const error = computed(() => weatherStore.error)
 
       <!-- Inline error when a refresh fails but old data is shown -->
       <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
-        ⚠️ Refresh failed — showing last known data
+        ⚠️ {{ languageStore.t('common.refreshFailed') }}
       </p>
     </div>
   </div>

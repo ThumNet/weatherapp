@@ -7,8 +7,11 @@
  * `import.meta.env.DEV` is true — stripped from production builds entirely.
  */
 import WeatherIcon from '@/components/WeatherIcon.vue'
+import { useLanguageStore } from '@/stores/language'
 import type { WeatherIntensity } from '@/utils/weatherCodes'
 import { getMoonPhaseName, getMoonPhaseIcon } from '@/composables/useMoonPhase'
+
+const languageStore = useLanguageStore()
 
 interface IconEntry {
   /** WMO code to pass to WeatherIcon */
@@ -150,7 +153,7 @@ const moonPhases = [
 <template>
   <section
     class="mt-2 rounded-2xl border border-dashed border-amber-400/60 bg-amber-50/60 px-4 py-5 dark:border-amber-400/30 dark:bg-amber-900/10"
-    aria-label="Weather icon showcase (dev only)"
+    :aria-label="languageStore.language === 'nl' ? 'Voorbeeld van weericonen (alleen dev)' : 'Weather icon showcase (dev only)'"
   >
     <!-- Header -->
     <div class="mb-4 flex items-center gap-2">
@@ -158,9 +161,9 @@ const moonPhases = [
         DEV
       </span>
       <h2 class="text-sm font-semibold text-slate-700 dark:text-slate-200">
-        Weather icon showcase
+        {{ languageStore.language === 'nl' ? 'Voorbeeld van weericonen' : 'Weather icon showcase' }}
       </h2>
-      <span class="text-xs text-slate-500 dark:text-slate-400">(not shown in production)</span>
+      <span class="text-xs text-slate-500 dark:text-slate-400">{{ languageStore.language === 'nl' ? '(niet zichtbaar in productie)' : '(not shown in production)' }}</span>
     </div>
 
     <!-- Weather icon groups -->
@@ -198,7 +201,7 @@ const moonPhases = [
               v-if="entry.isDay === false"
               class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300"
             >
-              night
+               {{ languageStore.language === 'nl' ? 'nacht' : 'night' }}
             </span>
           </div>
         </div>
@@ -207,7 +210,7 @@ const moonPhases = [
       <!-- Moon phases -->
       <div>
         <p class="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
-          Moon phases
+           {{ languageStore.language === 'nl' ? 'Maanfasen' : 'Moon phases' }}
         </p>
         <div class="flex flex-wrap gap-3">
           <div
@@ -226,7 +229,7 @@ const moonPhases = [
               v-html="phase.icon"
             />
             <span class="max-w-[80px] text-center text-[10px] leading-tight text-slate-600 dark:text-slate-300">
-              {{ phase.name }}
+               {{ languageStore.t(`moon.${phase.name}`) }}
             </span>
             <span class="rounded-full bg-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-500 dark:bg-slate-700 dark:text-slate-400">
               {{ Math.round(phase.fraction * 100) }}%

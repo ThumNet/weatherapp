@@ -15,7 +15,7 @@
 
 export interface MoonPhaseInfo {
   phaseFraction: number
-  phaseName: string
+  phaseKey: string
   phaseIcon: string
 }
 
@@ -152,7 +152,7 @@ export function getMoonPhaseIcon(phaseName: string): string {
 
 export function useMoonPhase(date?: Date): MoonPhaseInfo {
   const phaseFraction = getMoonPhaseFraction(date)
-  const phaseName = getMoonPhaseName(phaseFraction)
-  const phaseIcon = getMoonPhaseIcon(phaseName)
-  return { phaseFraction, phaseName, phaseIcon }
+  const phaseKey = getMoonPhaseName(phaseFraction)
+  const phaseIcon = getMoonPhaseIcon(phaseKey)
+  return { phaseFraction, phaseKey, phaseIcon }
 }

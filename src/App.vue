@@ -6,6 +6,7 @@ import { usePullToRefresh } from '@/composables/usePullToRefresh'
 import { useLocationStore } from '@/stores/location'
 import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
+import { useLanguageStore } from '@/stores/language'
 import { useThemeStore } from '@/stores/theme'
 import { reverseGeocode } from '@/services/weatherService'
 import LocationSearch from '@/components/LocationSearch.vue'
@@ -20,6 +21,7 @@ const isDev = import.meta.env.DEV
 const locationStore = useLocationStore()
 const weatherStore = useWeatherStore()
 const precipitationStore = usePrecipitationStore()
+const languageStore = useLanguageStore()
 const themeStore = useThemeStore()
 const { requestPosition, loading: geoLoading, error: geoError } = useGeolocation()
 const { isOnline } = useOnlineStatus()
@@ -37,10 +39,16 @@ function cycleTheme(): void {
   themeStore.setTheme(THEME_CYCLE[(idx + 1) % THEME_CYCLE.length])
 }
 const themeLabel = computed(() => {
-  if (themeStore.theme === 'dark') return 'Switch to light mode'
-  if (themeStore.theme === 'light') return 'Switch to system theme'
-  return 'Switch to dark mode'
+  if (themeStore.theme === 'dark') return languageStore.t('theme.darkToLight')
+  if (themeStore.theme === 'light') return languageStore.t('theme.lightToSystem')
+  return languageStore.t('theme.systemToDark')
 })
+
+const languageLabel = computed(() =>
+  languageStore.language === 'nl'
+    ? languageStore.t('app.switchLanguage', { language: languageStore.t('app.languageEnglish') })
+    : languageStore.t('app.switchLanguage', { language: languageStore.t('app.languageDutch') }),
+)
 
 // ── Stale data auto-refresh ──────────────────────────────────────────────────
 const STALE_THRESHOLD_MS = 30 * 60 * 1000 // 30 minutes
@@ -80,7 +88,7 @@ const { isPulling, isRefreshing, pullProgress } = usePullToRefresh({ onRefresh: 
 const lastUpdatedLabel = computed<string | null>(() => {
   const d = weatherStore.lastUpdated
   if (!d) return null
-  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+  return d.toLocaleTimeString(languageStore.locale, { hour: '2-digit', minute: '2-digit' })
 })
 
 const isLoading = computed(() => weatherStore.loading || precipitationStore.loading)
@@ -152,7 +160,7 @@ watch(
             d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"
           />
         </svg>
-        {{ isRefreshing ? 'Refreshing…' : 'Release to refresh' }}
+        {{ isRefreshing ? languageStore.t('app.refreshing') : languageStore.t('app.releaseToRefresh') }}
       </div>
     </Transition>
 
@@ -179,8 +187,8 @@ watch(
             d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"
           />
         </svg>
-        Offline — showing cached data
-        <template v-if="lastUpdatedLabel">· Last updated {{ lastUpdatedLabel }}</template>
+        {{ languageStore.t('app.offline') }}
+        <template v-if="lastUpdatedLabel">· {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}</template>
       </div>
     </Transition>
 
@@ -203,7 +211,7 @@ watch(
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
-              aria-label="Detecting location"
+              :aria-label="languageStore.t('app.detectingLocation')"
             >
               <circle
                 class="opacity-25"
@@ -219,16 +227,16 @@ watch(
                 d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            <span class="text-sm text-storm-water-700 dark:text-sea-mist-200">Detecting…</span>
+            <span class="text-sm text-storm-water-700 dark:text-sea-mist-200">{{ languageStore.t('app.detecting') }}</span>
           </template>
           <template v-else>
             <div class="min-w-0">
-              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">Forecast</span>
+              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">{{ languageStore.t('app.forecast') }}</span>
               <span class="block truncate text-lg font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ locationStore.cityName }}</span>
             </div>
             <button
               class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white"
-              aria-label="Change location"
+              :aria-label="languageStore.t('app.changeLocation')"
               @click="isEditingLocation = !isEditingLocation"
             >
               <svg
@@ -252,9 +260,18 @@ watch(
           <div class="ml-auto flex items-center gap-1">
             <Transition name="fade">
               <span v-if="isOnline && lastUpdatedLabel" class="hidden text-[11px] tracking-wide text-storm-water-500 md:inline dark:text-sea-mist-300/60">
-                Last updated {{ lastUpdatedLabel }}
+                {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}
               </span>
             </Transition>
+
+            <button
+              class="flex min-w-[3rem] items-center justify-center rounded-full border border-slate-300 bg-slate-50 px-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
+              :title="languageLabel"
+              :aria-label="languageLabel"
+              @click="languageStore.toggleLanguage"
+            >
+              {{ languageStore.language.toUpperCase() }}
+            </button>
 
             <!-- Theme toggle button — cycles dark → light → system -->
             <button
@@ -310,8 +327,8 @@ watch(
             <button
               class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 disabled:opacity-40 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
               :disabled="isLoading"
-              :title="isLoading ? 'Refreshing…' : 'Refresh weather data'"
-              aria-label="Refresh weather data"
+              :title="isLoading ? languageStore.t('app.refreshing') : languageStore.t('app.refreshWeatherData')"
+              :aria-label="languageStore.t('app.refreshWeatherData')"
               @click="refreshAll"
             >
               <svg

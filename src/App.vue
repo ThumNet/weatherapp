@@ -137,7 +137,7 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-dvh text-storm-water-800 dark:text-slate-50">
+  <div class="min-h-dvh bg-white text-storm-water-800 transition-colors duration-300 dark:bg-slate-950 dark:text-slate-50">
     <!-- Pull-to-refresh indicator -->
     <Transition name="ptr">
       <div
@@ -169,7 +169,7 @@ watch(
     <Transition name="slide-down">
       <div
         v-if="!isOnline"
-        class="flex items-center justify-center gap-2 border-b border-white/30 bg-gradient-to-r from-[#c7924b]/90 via-[#d6aa70]/90 to-[#c68a46]/90 px-4 py-2.5 text-center text-sm font-medium text-[#2f2316] backdrop-blur-sm"
+        class="flex items-center justify-center gap-2 border-b border-white/30 bg-gradient-to-r from-[#c7924b]/90 via-[#d6aa70]/90 to-[#c68a46]/90 px-4 py-1.5 text-center text-sm font-medium text-[#2f2316] backdrop-blur-sm"
         role="status"
         aria-live="polite"
       >
@@ -194,16 +194,28 @@ watch(
     </Transition>
 
     <!-- Compact header bar — sticky, full-width, with inner centering -->
-    <header class="sticky top-0 z-40 border-b border-slate-300/80 bg-[#f4f7f8]/96 backdrop-blur-md dark:border-slate-700 dark:bg-[#17222b]/96">
-      <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-3 pt-safe pt-4">
+    <header class="sticky top-0 z-40 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
+      <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pt-safe">
         <!-- Header row -->
-        <div class="flex items-center gap-3 rounded-[1.2rem] border border-slate-300 bg-white px-3 py-2.5 shadow-[0_8px_24px_rgba(36,48,57,0.05)] dark:border-slate-700 dark:bg-[#1b2731] dark:shadow-none">
-          <span class="group flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-700 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam" aria-hidden="true">
-            <WindmillIcon class="size-[22px]" />
-          </span>
+        <div class="grid grid-cols-[1fr_auto_1fr] items-center py-1.5">
+          <!-- Left: Logo -->
+          <div class="flex items-center justify-start">
+            <span class="pl-12 group flex shrink-0 items-center justify-center text-dutch-orange" aria-hidden="true">
+              <WindmillIcon class="size-16" />
+            </span>
+          </div>
 
-          <!-- Location: detecting state or city name + edit button -->
-          <template v-if="geoLoading">
+          <!-- Center: Location -->
+          <div class="flex min-w-0 items-center justify-center gap-2 relative">
+            <template v-if="isEditingLocation">
+              <div class="absolute w-[280px] z-50">
+                <LocationSearch
+                  @select="isEditingLocation = false"
+                  @cancel="isEditingLocation = false"
+                />
+              </div>
+            </template>
+            <template v-else-if="geoLoading">
             <svg
               class="size-4 animate-spin text-storm-water-700 dark:text-sea-mist-200"
               xmlns="http://www.w3.org/2000/svg"
@@ -228,42 +240,29 @@ watch(
             <span class="text-sm text-storm-water-700 dark:text-sea-mist-200">{{ languageStore.t('app.detecting') }}</span>
           </template>
           <template v-else>
-            <div class="min-w-0">
-              <span class="block text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/70">{{ languageStore.t('app.forecast') }}</span>
-              <span class="block truncate text-lg font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ locationStore.cityName }}</span>
-            </div>
             <button
-              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white"
+              class="group flex flex-col items-center justify-center min-w-0 transition-colors"
               :aria-label="languageStore.t('app.changeLocation')"
               @click="isEditingLocation = !isEditingLocation"
             >
-              <svg
-                class="size-4"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
-                />
-              </svg>
+              <span class="block text-[10px] uppercase tracking-[0.24em] text-storm-water-500 transition-colors group-hover:text-dutch-orange dark:text-sea-mist-300/70 dark:group-hover:text-dutch-orange">{{ languageStore.t('app.forecast') }}</span>
+              <span class="flex items-center gap-1 truncate text-base font-semibold leading-tight text-storm-water-800 transition-colors group-hover:text-dutch-orange dark:text-dune-foam dark:group-hover:text-dutch-orange">
+                <span class="truncate">{{ locationStore.cityName }}</span>
+                <svg class="size-3.5 opacity-40 transition-opacity group-hover:opacity-100" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                </svg>
+              </span>
             </button>
           </template>
+          </div>
 
           <!-- Right side: last updated + theme toggle + refresh -->
-          <div class="ml-auto flex items-center gap-1">
-            <Transition name="fade">
-              <span v-if="isOnline && lastUpdatedLabel" class="hidden text-[11px] tracking-wide text-storm-water-500 md:inline dark:text-sea-mist-300/60">
-                {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}
-              </span>
-            </Transition>
+          <div class="flex flex-col items-end justify-center gap-0.5">
+            <!-- Buttons Row -->
+            <div class="flex items-center gap-1">
 
             <button
-              class="flex min-w-[3rem] items-center justify-center rounded-full border border-slate-300 bg-slate-50 px-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
+              class="flex h-9 items-center justify-center px-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-storm-water-400 transition-colors hover:text-dutch-orange dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
               :title="languageLabel"
               :aria-label="languageLabel"
               @click="languageStore.toggleLanguage"
@@ -273,7 +272,7 @@ watch(
 
             <!-- Theme toggle button — cycles dark → light → system -->
             <button
-              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
+              class="flex size-9 items-center justify-center text-storm-water-400 transition-colors hover:text-dutch-orange dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
               :title="themeLabel"
               :aria-label="themeLabel"
               @click="cycleTheme"
@@ -323,7 +322,7 @@ watch(
 
             <!-- Refresh button — min 44px tap target -->
             <button
-              class="flex size-9 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-600 transition-colors hover:bg-slate-100 hover:text-storm-water-800 active:bg-slate-100 disabled:opacity-40 dark:border-slate-600 dark:bg-[#22313d] dark:text-sea-mist-300 dark:hover:bg-[#2a3a47] dark:hover:text-white dark:active:bg-[#2a3a47]"
+              class="flex size-9 items-center justify-center text-storm-water-400 transition-colors hover:text-dutch-orange disabled:opacity-40 dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
               :disabled="isLoading"
               :title="isLoading ? languageStore.t('app.refreshing') : languageStore.t('app.refreshWeatherData')"
               :aria-label="languageStore.t('app.refreshWeatherData')"
@@ -346,18 +345,16 @@ watch(
                 />
               </svg>
             </button>
+            </div>
+            
+            <Transition name="fade">
+              <span v-if="isOnline && lastUpdatedLabel" class="pr-1 text-[9px] uppercase tracking-wider text-storm-water-400 dark:text-sea-mist-300/50">
+                {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}
+              </span>
+            </Transition>
           </div>
         </div>
 
-        <!-- Search row: visible when editing -->
-        <Transition name="fade">
-          <div v-if="isEditingLocation" class="mt-3">
-            <LocationSearch
-              @select="isEditingLocation = false"
-              @cancel="isEditingLocation = false"
-            />
-          </div>
-        </Transition>
 
         <!-- Geolocation error notice -->
         <Transition name="fade">

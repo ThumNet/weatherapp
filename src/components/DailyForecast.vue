@@ -120,10 +120,11 @@ const error = computed(() => weatherStore.error)
   <!-- Loading skeleton -->
   <div
     v-if="isLoading"
-    class="surface-panel w-full max-w-md overflow-hidden p-5"
+    class="w-full pb-6"
     aria-busy="true"
     :aria-label="languageStore.t('daily.loading')"
   >
+    <div class="px-2">
     <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
     <div v-for="n in 7" :key="n" class="flex animate-pulse items-center gap-3 py-2.5">
       <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
@@ -132,11 +133,12 @@ const error = computed(() => weatherStore.error)
       <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
     </div>
   </div>
+  </div>
 
   <!-- Error state (no data at all) -->
   <div
     v-else-if="error && !days.length"
-    class="w-full max-w-md overflow-hidden rounded-panel border border-[#a96f61]/30 bg-[#b97a6a]/18 p-5 shadow-mist backdrop-blur-xl dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18 dark:shadow-storm"
+    class="w-full border border-[#a96f61]/30 bg-[#b97a6a]/18 p-5 dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18"
     role="alert"
   >
     <div class="flex items-start gap-3">
@@ -151,15 +153,15 @@ const error = computed(() => weatherStore.error)
   <!-- Forecast card -->
   <div
     v-else-if="days.length"
-    class="surface-panel relative w-full max-w-md overflow-hidden transition-all duration-500"
+    class="relative w-full pb-6 transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing with existing data -->
     <div
       v-if="weatherStore.loading"
-      class="relative z-10 h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-storm-water-500/50 to-transparent dark:via-sea-mist-300/45"
+      class="absolute left-0 top-0 z-10 h-0.5 w-full animate-pulse bg-dutch-orange"
     />
 
-    <div class="relative z-10 p-5">
+    <div class="relative z-10 px-2">
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
         {{ languageStore.t('daily.title') }}
       </h2>
@@ -168,14 +170,13 @@ const error = computed(() => weatherStore.error)
       <div
         v-for="(day, index) in days"
         :key="day.date"
-        class="surface-inset flex min-h-[52px] items-center gap-3 rounded-[1rem] px-3 py-3"
-        :class="index > 0 ? 'mt-2' : ''"
+        class="flex min-h-[52px] items-center gap-3 border-b border-slate-200 py-3 last:border-0 dark:border-slate-800"
       >
         <!-- Day name + date -->
         <div class="w-16 shrink-0">
           <span
             class="block text-sm font-semibold"
-            :class="index === 0 ? 'text-storm-water-800 dark:text-dune-foam' : 'text-storm-water-700 dark:text-sea-mist-100'"
+            :class="index === 0 ? 'text-dutch-orange' : 'text-storm-water-700 dark:text-sea-mist-100'"
           >
             {{ day.dayName }}
           </span>

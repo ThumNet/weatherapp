@@ -1,42 +1,70 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- Dark blue rounded background -->
-  <rect width="512" height="512" rx="96" fill="#1e40af"/>
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" fill="#f4f8fb" rx="20" />
+  <defs>
+    <!-- Windmill Blade Definition -->
+    <g id="blade">
+      <!-- Main beam -->
+      <line x1="50" y1="45" x2="50" y2="4" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" />
+      <!-- Sail frame -->
+      <rect x="51" y="8" width="10" height="32" fill="#3b82f6" fill-opacity="0.8" stroke="#1e293b" stroke-width="1" rx="0.5" />
+      <!-- Lattice lines -->
+      <line x1="51" y1="16" x2="61" y2="16" stroke="#1e293b" stroke-width="0.5" />
+      <line x1="51" y1="24" x2="61" y2="24" stroke="#1e293b" stroke-width="0.5" />
+      <line x1="51" y1="32" x2="61" y2="32" stroke="#1e293b" stroke-width="0.5" />
+    </g>
+    
+    <!-- Sun Ray Definition -->
+    <line id="ray" x1="85" y1="5" x2="85" y2="0" stroke="#FF9B00" stroke-width="2" stroke-linecap="round" />
+  </defs>
 
-  <!-- Sun rays -->
-  <g fill="#fbbf24" opacity="0.9">
-    <!-- Sun center -->
-    <circle cx="300" cy="185" r="52"/>
-    <!-- Rays -->
-    <rect x="295" y="105" width="10" height="28" rx="5"/>
-    <rect x="295" y="237" width="10" height="28" rx="5"/>
-    <rect x="217" y="180" width="28" height="10" rx="5"/>
-    <rect x="349" y="180" width="28" height="10" rx="5"/>
-    <!-- Diagonal rays -->
-    <rect x="243" y="125" width="10" height="28" rx="5" transform="rotate(-45 248 139)"/>
-    <rect x="343" y="125" width="10" height="28" rx="5" transform="rotate(45 348 139)"/>
-    <rect x="243" y="222" width="10" height="28" rx="5" transform="rotate(45 248 236)"/>
-    <rect x="343" y="222" width="10" height="28" rx="5" transform="rotate(-45 348 236)"/>
+  <!-- Sun (Top Right) -->
+  <g>
+    <circle cx="85" cy="20" r="9" fill="#FF9B00" />
+    <use href="#ray" />
+    <use href="#ray" transform="rotate(45 85 20)" />
+    <use href="#ray" transform="rotate(90 85 20)" />
+    <use href="#ray" transform="rotate(135 85 20)" />
+    <use href="#ray" transform="rotate(180 85 20)" />
+    <use href="#ray" transform="rotate(225 85 20)" />
+    <use href="#ray" transform="rotate(270 85 20)" />
+    <use href="#ray" transform="rotate(315 85 20)" />
   </g>
 
-  <!-- Main cloud (white) -->
-  <g fill="white">
-    <!-- cloud body -->
-    <ellipse cx="220" cy="300" rx="115" ry="75"/>
-    <!-- cloud bumps -->
-    <circle cx="155" cy="285" r="58"/>
-    <circle cx="255" cy="265" r="72"/>
-    <circle cx="320" cy="295" r="52"/>
+  <!-- Clouds (Background, shifted left and raised higher) -->
+  <g transform="translate(0, -35)">
+    <path d="M 10 65 A 12 12 0 0 1 20 53 A 18 18 0 0 1 50 60 A 12 12 0 0 1 50 80 L 10 80 A 8 8 0 0 1 10 65 Z" fill="#e2e8f0" />
+    <path d="M 25 75 A 10 10 0 0 1 35 65 A 15 15 0 0 1 60 70 A 10 10 0 0 1 60 88 L 25 88 A 6 6 0 0 1 25 75 Z" fill="#cbd5e1" opacity="0.8"/>
+    <!-- Third cloud on the right side -->
+    <path d="M 55 70 A 8 8 0 0 1 65 60 A 12 12 0 0 1 85 65 A 8 8 0 0 1 85 80 L 55 80 A 6 6 0 0 1 55 70 Z" fill="#e2e8f0" opacity="0.7"/>
   </g>
 
-  <!-- Cloud underside fill (clean flat bottom) -->
-  <rect x="97" y="310" width="275" height="65" rx="0" fill="white"/>
+  <!-- Windmill Base/Tower -->
+  <path d="M 36 90 L 43 45 L 57 45 L 64 90 Z" fill="#334155" />
+  
+  <!-- Brick/Wood horizontal texture lines -->
+  <path d="M 41.5 55 L 58.5 55 M 39.5 65 L 60.5 65 M 38 75 L 62 75 M 36.5 85 L 63.5 85" stroke="#94a3b8" stroke-width="0.5" stroke-dasharray="2 1" opacity="0.5" />
+  
+  <!-- Windmill Cap/Roof -->
+  <path d="M 41 45 C 41 35, 59 35, 59 45 Z" fill="#1e293b" />
+  
+  <!-- Gallery/Deck (Stelling) -->
+  <rect x="32" y="70" width="36" height="3" rx="1" fill="#1e293b" />
+  <path d="M 34 73 L 37 90 M 66 73 L 63 90" stroke="#1e293b" stroke-width="1.5" stroke-linecap="round" />
+  
+  <!-- Door and Windows -->
+  <path d="M 47 90 L 47 82 A 3 3 0 0 1 53 82 L 53 90 Z" fill="#0f172a" />
+  <rect x="48" y="58" width="4" height="6" rx="1" fill="#0f172a" />
+  <rect x="48" y="48" width="4" height="5" rx="1" fill="#0f172a" />
 
-  <!-- Rain drops -->
-  <g fill="#93c5fd" opacity="0.85">
-    <ellipse cx="155" cy="395" rx="7" ry="14"/>
-    <ellipse cx="195" cy="415" rx="7" ry="14"/>
-    <ellipse cx="235" cy="395" rx="7" ry="14"/>
-    <ellipse cx="275" cy="415" rx="7" ry="14"/>
-    <ellipse cx="315" cy="395" rx="7" ry="14"/>
+  <!-- Blades group -->
+  <g style="transform-origin: 50px 45px;">
+    <use href="#blade" transform="rotate(45 50 45)" />
+    <use href="#blade" transform="rotate(135 50 45)" />
+    <use href="#blade" transform="rotate(225 50 45)" />
+    <use href="#blade" transform="rotate(315 50 45)" />
   </g>
+  
+  <!-- Axis/Hub -->
+  <circle cx="50" cy="45" r="3.5" fill="#0f172a" />
+  <circle cx="50" cy="45" r="1.5" fill="#cbd5e1" />
 </svg>

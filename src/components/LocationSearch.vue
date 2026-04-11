@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useLocationStore } from '@/stores/location'
 import { searchCities } from '@/services/weatherService'
 import type { CitySearchResult } from '@/types/weather'
@@ -10,6 +11,7 @@ const emit = defineEmits<{
 }>()
 
 const locationStore = useLocationStore()
+const languageStore = useLanguageStore()
 
 const query = ref('')
 const results = ref<CitySearchResult[]>([])
@@ -39,7 +41,7 @@ async function performSearch(value: string): Promise<void> {
     isOpen.value = results.value.length > 0
     activeIndex.value = -1
   } catch {
-    errorMessage.value = 'Could not fetch city results. Please try again.'
+    errorMessage.value = languageStore.t('search.error')
     results.value = []
     isOpen.value = false
   } finally {
@@ -66,6 +68,14 @@ function selectCity(city: CitySearchResult): void {
 }
 
 function onKeyDown(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    isOpen.value = false
+    activeIndex.value = -1
+    inputRef.value?.blur()
+    emit('cancel')
+    return
+  }
+
   if (!isOpen.value) return
 
   if (event.key === 'ArrowDown') {
@@ -79,11 +89,6 @@ function onKeyDown(event: KeyboardEvent): void {
     if (activeIndex.value >= 0 && activeIndex.value < results.value.length) {
       selectCity(results.value[activeIndex.value]!)
     }
-  } else if (event.key === 'Escape') {
-    isOpen.value = false
-    activeIndex.value = -1
-    inputRef.value?.blur()
-    emit('cancel')
   }
 }
 
@@ -113,10 +118,10 @@ function getCitySubtitle(city: CitySearchResult): string {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full max-w-md">
+  <div ref="containerRef" class="relative w-full ">
     <!-- Search input -->
     <div
-      class="flex items-center gap-3 rounded-[1.1rem] border border-slate-300 bg-white px-4 py-3 shadow-[0_8px_22px_rgba(36,48,57,0.05)] transition-all focus-within:border-storm-water-500 dark:border-slate-700 dark:bg-[#1b2731] dark:focus-within:border-sea-mist-300"
+      class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 transition-all focus-within:border-dutch-orange dark:border-slate-800 dark:bg-slate-950 shadow-sm"
     >
       <!-- Magnifying glass icon -->
       <svg
@@ -138,12 +143,17 @@ function getCitySubtitle(city: CitySearchResult): string {
       <input
         ref="inputRef"
         v-model="query"
-        type="text"
-        placeholder="Search a city…"
+        type="search"
+        name="city-search"
+        :placeholder="languageStore.t('search.placeholder')"
         autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
         spellcheck="false"
-        class="flex-1 bg-transparent text-sm text-storm-water-800 placeholder-storm-water-400 outline-none dark:text-dune-foam dark:placeholder-sea-mist-300/55"
-        aria-label="Search for a city"
+        data-1p-ignore="true"
+        data-lpignore="true"
+        class="flex-1 bg-transparent text-sm text-storm-water-800 placeholder-storm-water-400 outline-none dark:text-dune-foam dark:placeholder-sea-mist-300/55 [&::-webkit-search-cancel-button]:hidden [&::-webkit-search-decoration]:hidden [&::-webkit-search-results-button]:hidden [&::-webkit-search-results-decoration]:hidden"
+        :aria-label="languageStore.t('search.aria')"
         aria-autocomplete="list"
         :aria-expanded="isOpen"
         aria-controls="city-dropdown"
@@ -171,7 +181,7 @@ function getCitySubtitle(city: CitySearchResult): string {
       <button
         v-else-if="query"
         class="shrink-0 text-storm-water-400 transition-colors hover:text-storm-water-800 dark:text-sea-mist-300/70 dark:hover:text-white"
-        aria-label="Clear search"
+        :aria-label="languageStore.t('search.clear')"
         @click="
           () => {
             query = ''
@@ -204,7 +214,7 @@ function getCitySubtitle(city: CitySearchResult): string {
       v-if="isOpen && results.length > 0"
       id="city-dropdown"
       role="listbox"
-      class="absolute z-50 mt-2 w-full overflow-hidden rounded-[1.1rem] border border-slate-300 bg-white shadow-[0_12px_28px_rgba(36,48,57,0.08)] dark:border-slate-700 dark:bg-[#1b2731]"
+      class="absolute z-50 mt-2 w-full overflow-hidden rounded-md border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900"
     >
       <li
         v-for="(city, index) in results"
@@ -214,8 +224,8 @@ function getCitySubtitle(city: CitySearchResult): string {
         class="flex cursor-pointer items-center gap-3 px-4 py-3 transition-colors"
         :class="
           index === activeIndex
-            ? 'bg-storm-water-700 text-dune-foam'
-            : 'text-storm-water-700 hover:bg-slate-50 dark:text-sea-mist-100 dark:hover:bg-[#22313d]'
+            ? 'bg-slate-50 text-dutch-orange dark:bg-slate-800 dark:text-dutch-orange'
+            : 'text-storm-water-700 dark:text-sea-mist-100'
         "
         @mousedown.prevent="selectCity(city)"
         @mouseover="activeIndex = index"

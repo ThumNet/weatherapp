@@ -3,6 +3,7 @@ import 'leaflet/dist/leaflet.css'
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { LMap, LTileLayer, LMarker } from '@vue-leaflet/vue-leaflet'
 import L from 'leaflet'
+import { useLanguageStore } from '@/stores/language'
 import { useLocationStore } from '@/stores/location'
 import { fetchRadarFrames, buildRadarTileUrl, formatFrameTime } from '@/services/rainviewerService'
 import type { RadarFrame } from '@/services/rainviewerService'
@@ -22,6 +23,7 @@ L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 // Store & reactive state
 // ---------------------------------------------------------------------------
 const locationStore = useLocationStore()
+const languageStore = useLanguageStore()
 
 const mapCenter = computed<[number, number]>(() => [
   locationStore.latitude,
@@ -67,7 +69,7 @@ const isCurrentFrameNowcast = computed<boolean>(() => {
 const currentTimeLabel = computed<string>(() => {
   if (!currentFrame.value) return ''
   const timeStr = formatFrameTime(currentFrame.value.time)
-  return isCurrentFrameNowcast.value ? `${timeStr} (forecast)` : timeStr
+  return isCurrentFrameNowcast.value ? `${timeStr} (${languageStore.t('scrubber.forecast')})` : timeStr
 })
 
 const frameCount = computed(() => frames.value.length)
@@ -87,7 +89,7 @@ async function loadFrames(): Promise<void> {
     currentFrameIndex.value = Math.max(0, result.nowcastStartIndex - 1)
     framesLoaded.value = true
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Failed to load radar data'
+    error.value = err instanceof Error ? err.message : languageStore.t('radar.loadingMap')
   } finally {
     loading.value = false
   }
@@ -203,7 +205,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
         class="fixed inset-0 z-50 flex flex-col bg-[#17222b] text-dune-foam"
         role="dialog"
         aria-modal="true"
-        aria-label="Rain Radar"
+        :aria-label="languageStore.t('radar.dialog')"
       >
         <!-- Top bar -->
         <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-700 bg-[#1b2731] px-5 py-3">
@@ -215,14 +217,14 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
               </svg>
             </span>
             <div>
-              <p class="text-[11px] uppercase tracking-[0.24em] text-sea-mist-300/55">Live precipitation</p>
-              <h2 class="text-lg font-semibold text-dune-foam">Rain Radar</h2>
+              <p class="text-[11px] uppercase tracking-[0.24em] text-sea-mist-300/55">{{ languageStore.t('radar.livePrecipitation') }}</p>
+              <h2 class="text-lg font-semibold text-dune-foam">{{ languageStore.t('radar.dialog') }}</h2>
             </div>
           </div>
           <!-- Close button — min 44px tap target -->
           <button
             class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-200/70 transition hover:bg-[#2a3a47] hover:text-white active:bg-[#2a3a47]"
-            aria-label="Close Rain Radar"
+            :aria-label="languageStore.t('radar.close')"
             @click="closeOverlay"
           >
             <svg
@@ -248,7 +250,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             v-if="loading"
             class="flex h-full items-center justify-center"
             aria-busy="true"
-            aria-label="Loading radar map"
+            :aria-label="languageStore.t('radar.loadingMap')"
           >
             <div class="flex flex-col items-center gap-3 text-sea-mist-200/75">
               <svg
@@ -265,7 +267,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
                   d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
                 />
               </svg>
-              <span class="text-sm">Loading radar…</span>
+              <span class="text-sm">{{ languageStore.t('radar.loading') }}</span>
             </div>
           </div>
 
@@ -282,7 +284,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
                 class="mt-3 block w-full rounded-xl border border-slate-600 bg-[#22313d] px-4 py-2 text-xs font-medium text-dune-foam transition hover:bg-[#2a3a47]"
                 @click="loadFrames"
               >
-                Retry
+                 {{ languageStore.t('radar.retry') }}
               </button>
             </div>
           </div>
@@ -337,7 +339,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             <button
               class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
               :disabled="currentFrameIndex === 0 || frames.length === 0"
-              aria-label="Previous frame"
+              :aria-label="languageStore.t('radar.previousFrame')"
               @click="stepBack"
             >
               <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -348,7 +350,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             <!-- Play / Pause — 48px to make it the obvious CTA -->
             <button
               class="flex size-12 items-center justify-center rounded-full bg-[#d1a56d] text-[#1f160d] transition hover:brightness-105 active:brightness-95 disabled:opacity-40"
-              :aria-label="isPlaying ? 'Pause animation' : 'Play animation'"
+              :aria-label="isPlaying ? languageStore.t('radar.pauseAnimation') : languageStore.t('radar.playAnimation')"
               :disabled="frames.length === 0"
               @click="togglePlay"
             >
@@ -378,7 +380,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             <button
               class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
               :disabled="currentFrameIndex === frameCount - 1 || frames.length === 0"
-              aria-label="Next frame"
+              :aria-label="languageStore.t('radar.nextFrame')"
               @click="stepForward"
             >
               <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -389,7 +391,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
           <!-- Attribution note -->
           <p class="mt-2 text-center text-[10px] tracking-[0.16em] text-sea-mist-300/35">
-            Radar data by RainViewer
+            {{ languageStore.t('radar.dataBy') }}
           </p>
         </div>
       </div>

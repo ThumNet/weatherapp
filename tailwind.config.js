@@ -12,6 +12,7 @@ export default {
         sans: ['Manrope', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
+        'dutch-orange': '#FF9B00',
         'dutch-blue': {
           50: '#eff6ff',
           100: '#dbeafe',
@@ -77,14 +78,6 @@ export default {
       },
       screens: {
         xs: '390px',
-      },
-      borderRadius: {
-        hero: '2rem',
-        panel: '1.5rem',
-      },
-      boxShadow: {
-        mist: '0 18px 50px rgba(31, 58, 74, 0.14)',
-        storm: '0 22px 60px rgba(9, 20, 28, 0.34)',
       },
     }
   },

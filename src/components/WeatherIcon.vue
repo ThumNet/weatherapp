@@ -34,6 +34,7 @@
  * <WeatherIcon :code="0" :size="64" label="Clear sky" />
  */
 import { computed } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { getWeatherSvgIcon, getWeatherDescription } from '@/utils/weatherCodes'
 import type { WeatherIntensity } from '@/utils/weatherCodes'
 
@@ -58,8 +59,10 @@ const props = withDefaults(
   },
 )
 
+const languageStore = useLanguageStore()
+
 const svgPath = computed(() => getWeatherSvgIcon(props.code, props.intensity, props.isDay))
-const ariaLabel = computed(() => props.label ?? getWeatherDescription(props.code))
+const ariaLabel = computed(() => props.label ?? getWeatherDescription(props.code, languageStore.t))
 const isDecorative = computed(() => props.label === undefined)
 </script>
 

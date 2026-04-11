@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import { usePrecipitationStore } from '@/stores/precipitation'
 import { getWeatherDescription, degreesToCompass } from '@/utils/weatherCodes'
@@ -11,6 +12,7 @@ defineEmits<{ (e: 'open-radar'): void }>()
 
 const weatherStore = useWeatherStore()
 const precipStore = usePrecipitationStore()
+const languageStore = useLanguageStore()
 const moonPhase = useMoonPhase()
 
 const weather = computed(() => weatherStore.currentWeather)
@@ -21,7 +23,7 @@ const error = computed(() => weatherStore.error)
 /** Format an ISO datetime string (e.g. "2026-04-02T06:14") to "HH:MM" */
 function formatTime(iso: string): string {
   const d = new Date(iso)
-  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit', hour12: false })
+  return d.toLocaleTimeString(languageStore.locale, { hour: '2-digit', minute: '2-digit', hour12: false })
 }
 
 const todaySunrise = computed<string | null>(() =>
@@ -50,32 +52,38 @@ const todayPrecipProb = computed(() => daily.value?.precipitationProbabilityMax?
 const todayPrecipHours = computed(() => daily.value?.precipitationHours?.[0] ?? null)
 const todayPrecipSum = computed(() => daily.value?.precipitationSum?.[0] ?? null)
 const todayCondition = computed(() =>
-  weather.value !== null ? getWeatherDescription(weather.value.weatherCode) : '',
+  weather.value !== null ? getWeatherDescription(weather.value.weatherCode, languageStore.t) : '',
 )
 
 const humidityRainDetail = computed(() => {
   const precip = todayPrecipSum.value
   if (precip == null) return ''
-  if (precip < 0.1) return 'No rain expected'
-  if (precip < 1) return `${precip.toFixed(1)} mm expected`
-  return `${Math.round(precip * 10) / 10} mm expected`
+  if (precip < 0.1) return languageStore.t('current.noRainExpected')
+  if (precip < 1) return languageStore.t('current.mmExpected', { value: precip.toFixed(1) })
+  return languageStore.t('current.mmExpected', { value: Math.round(precip * 10) / 10 })
 })
 
 const windSummary = computed(() => {
   const speed = weather.value?.windSpeed
   if (speed == null) return ''
-  const tone = speed < 8 ? 'Calm' : speed < 18 ? 'Light breeze' : speed < 28 ? 'Breezy' : 'Windy'
+  const tone = speed < 8
+    ? languageStore.t('current.calm')
+    : speed < 18
+      ? languageStore.t('current.lightBreeze')
+      : speed < 28
+        ? languageStore.t('current.breezy')
+        : languageStore.t('current.windy')
   return `${tone} ${windCompass.value}`
 })
 
 const rainSummary = computed(() => {
   const mins = precipStore.minutesUntilRain
   if (mins === null) {
-    if ((todayPrecipProb.value ?? 0) >= 45) return 'Showers possible later'
-    return 'Mostly dry today'
+    if ((todayPrecipProb.value ?? 0) >= 45) return languageStore.t('current.showersLater')
+    return languageStore.t('current.mostlyDryToday')
   }
-  if (mins === 0) return `${rainIntensityLabel.value} now`
-  return `${rainIntensityLabel.value} in ${mins} min`
+  if (mins === 0) return `${rainIntensityLabel.value} ${languageStore.t('current.now')}`
+  return languageStore.t('current.inMinutes', { label: rainIntensityLabel.value, minutes: mins })
 })
 
 const todayOutlook = computed(() => {
@@ -86,14 +94,14 @@ const todayOutlook = computed(() => {
   const min = todayMinTemp.value
   const wind = windSummary.value.toLowerCase()
 
-  let rainPhrase = 'staying mostly dry'
-  if (precipProb >= 70 && precipHours >= 4) rainPhrase = 'with rain likely for much of the day'
-  else if (precipProb >= 55) rainPhrase = 'with showers likely later on'
-  else if (precipProb >= 30) rainPhrase = 'with a slight chance of rain later'
+  let rainPhrase = languageStore.t('current.stayingMostlyDry')
+  if (precipProb >= 70 && precipHours >= 4) rainPhrase = languageStore.t('current.rainLikelyMuchOfDay')
+  else if (precipProb >= 55) rainPhrase = languageStore.t('current.showersLikelyLater')
+  else if (precipProb >= 30) rainPhrase = languageStore.t('current.slightChanceOfRainLater')
 
   let rangePhrase = ''
-  if (max !== null && min !== null) rangePhrase = `High ${max}°, low ${min}°.`
-  else if (max !== null) rangePhrase = `High near ${max}°.`
+  if (max !== null && min !== null) rangePhrase = languageStore.t('current.highLow', { max, min })
+  else if (max !== null) rangePhrase = languageStore.t('current.highNear', { max })
 
   return `${condition}, ${wind}, ${rainPhrase}. ${rangePhrase}`.replace(/\s+/g, ' ').trim()
 })
@@ -154,11 +162,19 @@ const rainIntensityLabel = computed<string>(() => {
   const idx = precipStore.entries.findIndex((e) => e.mmPerHour >= 0.1)
   if (idx === -1) return ''
   const mm = precipStore.entries[idx].mmPerHour
-  if (mm < 0.5) return 'Light drizzle'   // > 0 to < 0.5 mm/h
-  if (mm <= 2.5) return 'Light rain'     // 0.5 to 2.5 mm/h
-  if (mm <= 7.6) return 'Moderate rain'  // 2.6 to 7.6 mm/h
-  return 'Heavy rain'                     // > 7.6 mm/h
+  if (mm < 0.5) return languageStore.t('current.lightDrizzle')
+  if (mm <= 2.5) return languageStore.t('current.lightRain')
+  if (mm <= 7.6) return languageStore.t('current.moderateRain')
+  return languageStore.t('current.heavyRain')
 })
+
+function precipitationIntensityLabel(mmPerHour: number): string {
+  if (mmPerHour <= 0) return languageStore.t('current.dry')
+  if (mmPerHour < 0.5) return languageStore.t('current.drizzle')
+  if (mmPerHour <= 2.5) return languageStore.t('current.light')
+  if (mmPerHour <= 7.6) return languageStore.t('current.moderate')
+  return languageStore.t('current.heavy')
+}
 
 /** WMO code to show in the rain alert icon (clear-sky or current weather code) */
 const rainAlertCode = computed<number>(() => {
@@ -217,11 +233,11 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-if="loading && !weather"
-    class="surface-hero w-full max-w-md overflow-hidden"
+    class="w-full max-w-md"
     aria-busy="true"
-    aria-label="Loading weather data"
+    :aria-label="languageStore.t('current.loading')"
   >
-    <div class="p-6">
+    <div class="py-6">
       <!-- Temperature skeleton -->
       <div class="mb-4 flex items-end justify-between">
         <div class="h-20 w-36 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20" />
@@ -255,13 +271,13 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-else-if="error && !weather"
-    class="w-full max-w-md overflow-hidden rounded-hero border border-[#a96f61]/30 bg-[#b97a6a]/18 p-6 shadow-mist backdrop-blur-xl dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18 dark:shadow-storm"
+    class="w-full border border-[#a96f61]/30 bg-[#b97a6a]/18 py-6 dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18"
     role="alert"
   >
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold">Could not load weather</p>
+        <p class="font-semibold">{{ languageStore.t('current.error') }}</p>
         <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
@@ -272,30 +288,28 @@ const gridLines = computed(() => {
   <!-- ------------------------------------------------------------------ -->
   <div
     v-else-if="weather"
-    class="surface-hero relative w-full max-w-md overflow-hidden transition-all duration-500"
+    class="relative w-full transition-all duration-500"
   >
     <!-- Subtle loading bar when refreshing -->
     <div
       v-if="loading"
-      class="relative z-10 h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-storm-water-500/50 to-transparent dark:via-sea-mist-300/50"
+      class="absolute left-0 top-0 z-10 h-0.5 w-full animate-pulse bg-dutch-orange"
     />
 
-    <div class="relative z-10 p-6">
+    <div class="relative z-10 py-6">
       <!-- Hero overview -->
-      <div class="mb-4 grid gap-4 sm:grid-cols-[minmax(0,0.6fr)_minmax(0,1.15fr)_auto] sm:items-center">
+      <div class="mb-8 grid gap-6 px-4 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-10 sm:px-6">
         <div class="min-w-0 sm:self-center">
-          <div class="min-w-0">
-            <div class="flex items-start gap-1 leading-none">
-              <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-storm-water-800 dark:text-dune-foam sm:text-[4.75rem]">
-                {{ temperature }}
-              </span>
-              <span class="mt-2.5 text-[1.7rem] font-normal text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
-            </div>
+          <div class="flex items-start gap-1 leading-none">
+            <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-dutch-orange sm:text-[4.75rem]">
+              {{ temperature }}
+            </span>
+            <span class="mt-2.5 text-[1.7rem] font-normal text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
           </div>
         </div>
 
-        <div class="px-1 py-1 sm:self-center">
-          <p class="mb-2 text-[10px] uppercase tracking-[0.3em] text-storm-water-500 dark:text-sea-mist-300/70">
+        <div class="min-w-0 sm:self-center">
+          <p class="max-w-md text-[10px] text-center uppercase leading-relaxed tracking-[0.15em] text-storm-water-500 dark:text-sea-mist-300/70">
             {{ todayOutlook }}
           </p>
         </div>
@@ -305,20 +319,20 @@ const gridLines = computed(() => {
           :intensity="currentWeatherIntensity"
           :is-day="weather.isDay"
           :size="78"
-          class="self-center justify-self-start transition-all duration-300 sm:justify-self-end"
+          class="shrink-0 self-center justify-self-start transition-all duration-300 sm:justify-self-end"
         />
       </div>
 
       <!-- Stats grid -->
-      <div class="grid grid-cols-2 gap-3">
+      <div class="grid grid-cols-2 border-y border-slate-200 dark:border-slate-800">
         <!-- Feels like -->
         <div
-          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
+          class="flex flex-col items-center justify-center gap-1 border-b border-r border-slate-200 bg-white px-2 py-5 text-center dark:border-slate-800 dark:bg-slate-950"
         >
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Feels like</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.feelsLike') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ feelsLike }}°C</span>
           <span
             v-if="todayMaxTemp !== null && todayMinTemp !== null"
@@ -330,12 +344,12 @@ const gridLines = computed(() => {
 
         <!-- Humidity -->
         <div
-          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
+          class="flex flex-col items-center justify-center gap-1 border-b border-slate-200 bg-white px-2 py-5 text-center dark:border-slate-800 dark:bg-slate-950"
         >
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Humidity</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.humidity') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ weather.humidity }}%</span>
           <span
             v-if="humidityRainDetail"
@@ -347,12 +361,12 @@ const gridLines = computed(() => {
 
         <!-- Wind -->
         <div
-          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
+          class="flex flex-col items-center justify-center gap-1 border-r border-slate-200 bg-white px-2 py-5 text-center dark:border-slate-800 dark:bg-slate-950"
         >
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Wind</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.wind') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">
             {{ Math.round(weather.windSpeed) }}
             <span class="text-xs font-normal text-storm-water-500 dark:text-sea-mist-300/70">km/h</span>
@@ -362,21 +376,21 @@ const gridLines = computed(() => {
 
         <!-- Moon phase -->
         <div
-          class="surface-inset flex flex-col items-center gap-1 rounded-[1.1rem] px-2 py-3 text-center"
+          class="flex flex-col items-center justify-center gap-1 bg-white px-2 py-5 text-center dark:bg-slate-950"
         >
           <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Moon</span>
-          <span class="text-[15px] font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ moonPhase.phaseName }}</span>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.moon') }}</span>
+          <span class="text-[15px] font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ languageStore.t(`moon.${moonPhase.phaseKey}`) }}</span>
         </div>
       </div>
 
       <!-- Sunrise / Sunset tile -->
       <div
         v-if="todaySunrise || todaySunset"
-        class="surface-inset mt-3 flex items-center justify-around rounded-[1.1rem] px-4 py-3"
+        class="grid grid-cols-2 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
       >
         <!-- Sunrise -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center justify-center gap-2 border-r border-slate-200 px-2 py-5 dark:border-slate-800">
           <!-- Sunrise icon: sun rising above horizon line -->
           <svg class="size-5 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
@@ -384,16 +398,13 @@ const gridLines = computed(() => {
             <line x1="2" y1="20" x2="22" y2="20"/>
           </svg>
           <div class="text-center">
-            <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunrise</p>
+             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunrise') }}</p>
             <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</p>
           </div>
         </div>
 
-        <!-- Divider -->
-        <div class="h-8 w-px bg-slate-200 dark:bg-slate-600" aria-hidden="true" />
-
         <!-- Sunset -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center justify-center gap-2 px-2 py-5">
           <!-- Sunset icon: sun setting below horizon line -->
           <svg class="size-5 shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 10v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
@@ -402,7 +413,7 @@ const gridLines = computed(() => {
             <path d="M12 6l-1.5 2h3L12 6z" fill="currentColor" stroke="none"/>
           </svg>
           <div class="text-center">
-            <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">Sunset</p>
+             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunset') }}</p>
             <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</p>
           </div>
         </div>
@@ -410,20 +421,20 @@ const gridLines = computed(() => {
 
       <!-- Inline error when a refresh fails (but old weather data is still shown) -->
       <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
-        ⚠️ Refresh failed — showing last known data
+        ⚠️ {{ languageStore.t('common.refreshFailed') }}
       </p>
 
       <!-- ---------------------------------------------------------------- -->
       <!-- Precipitation section                                              -->
       <!-- ---------------------------------------------------------------- -->
-      <hr class="my-5 border atmospheric-rule" />
+      <hr class="my-5 hidden border-t border-slate-200 dark:border-slate-800" />
 
       <!-- Precipitation loading skeleton (weather card already visible) -->
       <template v-if="precipStore.loading && precipStore.entries.length === 0">
         <div
           class="mb-3 h-8 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20"
           aria-busy="true"
-          aria-label="Loading precipitation data"
+          :aria-label="languageStore.t('current.loadingPrecipitation')"
         />
         <div class="flex items-end gap-0.5">
           <div
@@ -447,11 +458,11 @@ const gridLines = computed(() => {
               <div
                 v-for="line in gridLines"
                 :key="line.mmPerHour"
-                 class="pointer-events-none absolute left-0 right-0 z-10"
-                 :style="{ bottom: `${line.percent}%` }"
-               >
-                 <div class="border-t border-dashed border-storm-water-300/35 dark:border-white/10" />
-               </div>
+                class="pointer-events-none absolute left-0 right-0 z-10"
+                :style="{ bottom: `${line.percent}%` }"
+              >
+                <div class="border-t border-dashed border-slate-200 dark:border-slate-800" />
+              </div>
 
               <!-- Bar columns -->
               <div class="flex h-full items-end gap-px">
@@ -461,13 +472,14 @@ const gridLines = computed(() => {
                  class="relative flex-1 rounded-t transition-all duration-300"
                 :class="barColorClass(entry.mmPerHour)"
                 :style="{ height: `${barHeightPercent(entry.mmPerHour)}%` }"
-                :title="`${entry.time} — ${entry.mmPerHour > 0 ? entry.mmPerHour.toFixed(2) + ' mm/h (' + (entry.mmPerHour < 0.5 ? 'drizzle' : entry.mmPerHour <= 2.5 ? 'light' : entry.mmPerHour <= 7.6 ? 'moderate' : 'heavy') + ')' : 'dry'}`"
-                :aria-label="`${entry.time}: ${entry.mmPerHour.toFixed(2)} mm/h`"
+                :title="entry.mmPerHour > 0
+                  ? languageStore.t('current.barTitle', { time: entry.time, amount: entry.mmPerHour.toFixed(2), intensity: precipitationIntensityLabel(entry.mmPerHour) })
+                  : languageStore.t('current.barTitleDry', { time: entry.time })"
+                :aria-label="languageStore.t('current.barAria', { time: entry.time, amount: entry.mmPerHour.toFixed(2) })"
               >
-                <!-- Highlight the first rainy bar -->
                 <div
                   v-if="idx === precipStore.minutesUntilRain! / 5 && precipStore.isRainExpected"
-                  class="absolute inset-x-0 -top-1 mx-auto h-1 w-1 rounded-full bg-yellow-300"
+                  class="absolute inset-x-0 -top-1 mx-auto h-1 w-1 rounded-full bg-dutch-orange"
                 />
               </div>
             </div>
@@ -500,17 +512,16 @@ const gridLines = computed(() => {
                 {{ entry.time }}
               </span>
             </div>
-            <span class="shrink-0 pl-1 text-[9px] leading-tight text-storm-water-400 dark:text-sea-mist-300/35">mm/h</span>
+            <span class="shrink-0 pl-1 text-[9px] leading-tight text-storm-water-400 dark:text-sea-mist-300/35">mm/u</span>
           </div>
         </div>
 
         <!-- Alert banner — tappable button to open radar -->
         <button
-          class="mt-5 flex w-full items-center gap-3 rounded-[1.1rem] border px-4 py-3 text-sm font-semibold transition-colors"
+          class="mt-8 flex w-full items-center gap-3 border-y bg-white px-4 py-4 text-sm font-semibold transition-colors dark:bg-slate-950"
           :class="{
-            'border-storm-water-700 bg-storm-water-700 text-dune-foam': alertStyle === 'rain',
-            'border-[#d1a56d] bg-[#efe1cd] text-[#352516] dark:bg-[#56422c] dark:text-[#f3dfbf]': alertStyle === 'soon',
-            'border-slate-300 bg-slate-50 text-storm-water-800 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam': alertStyle === 'clear',
+            'border-dutch-orange text-dutch-orange': alertStyle === 'rain' || alertStyle === 'soon',
+            'border-slate-200 text-storm-water-800 dark:border-slate-800 dark:text-dune-foam': alertStyle === 'clear',
           }"
           @click="$emit('open-radar')"
         >
@@ -522,13 +533,11 @@ const gridLines = computed(() => {
           />
 
           <!-- Message -->
-          <span v-if="alertStyle === 'rain'">{{ rainIntensityLabel }} — falling now</span>
+          <span v-if="alertStyle === 'rain'">{{ languageStore.t('current.fallingNow', { label: rainIntensityLabel }) }}</span>
           <span v-else-if="alertStyle === 'soon'">
-            {{ rainIntensityLabel }} in {{ precipStore.minutesUntilRain }} minute{{
-              precipStore.minutesUntilRain === 1 ? '' : 's'
-            }}
+            {{ languageStore.t('current.rainInMinutes', { label: rainIntensityLabel, minutes: precipStore.minutesUntilRain! }) }}
           </span>
-          <span v-else>No rain expected for the next 2 hours</span>
+          <span v-else>{{ languageStore.t('current.noRainNext2Hours') }}</span>
 
           <!-- Refreshing spinner -->
           <svg
@@ -537,7 +546,7 @@ const gridLines = computed(() => {
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            aria-label="Refreshing"
+            :aria-label="languageStore.t('app.refreshing')"
           >
             <circle
               class="opacity-25"
@@ -581,7 +590,7 @@ const gridLines = computed(() => {
         <div class="flex items-start gap-3 rounded-xl bg-red-500/20 px-4 py-3" role="alert">
           <span class="mt-0.5 text-xl" aria-hidden="true">⚠️</span>
           <div>
-            <p class="text-sm font-semibold">Precipitation data unavailable</p>
+             <p class="text-sm font-semibold">{{ languageStore.t('current.precipitationUnavailable') }}</p>
             <p class="mt-0.5 text-xs text-red-600 dark:text-red-200">{{ precipStore.error }}</p>
           </div>
         </div>

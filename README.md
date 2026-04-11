@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="public/icon.svg" width="128" height="128" alt="Dutch Weather Icon" />
+</p>
+
 # Dutch Weather PWA
 
 An ad-free, offline-capable weather app for the Netherlands — built with Vue 3 and powered entirely by free APIs.

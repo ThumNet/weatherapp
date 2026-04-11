@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
 
 const weatherStore = useWeatherStore()
+const languageStore = useLanguageStore()
 
 const forecast = computed(() => weatherStore.hourlyForecast)
 const loading = computed(() => weatherStore.loading)
@@ -44,19 +46,23 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-if="loading && !forecast"
-    class="surface-panel w-full max-w-md overflow-hidden"
+    class="w-full border-b border-slate-200 pb-6 dark:border-slate-800"
     aria-busy="true"
-    aria-label="Loading hourly forecast"
+    :aria-label="languageStore.t('hourly.loading')"
   >
-    <div class="p-5">
+    <div class="px-2">
       <div class="mb-4 h-4 w-36 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
       <!-- Card strip skeleton -->
-      <div class="flex gap-2 overflow-x-hidden pb-2">
+      <div class="flex overflow-x-hidden pb-2">
         <div
           v-for="n in 8"
           :key="n"
-          class="h-24 w-16 flex-shrink-0 animate-pulse rounded-xl bg-slate-200 dark:bg-white/20"
-        />
+          class="flex h-24 w-[4.5rem] flex-shrink-0 flex-col items-center justify-center gap-2 border-r border-slate-200 last:border-r-0 dark:border-slate-800"
+        >
+          <div class="h-3 w-8 animate-pulse rounded bg-slate-200 dark:bg-white/20" />
+          <div class="h-6 w-6 animate-pulse rounded-full bg-slate-200 dark:bg-white/20" />
+          <div class="h-4 w-6 animate-pulse rounded bg-slate-200 dark:bg-white/20" />
+        </div>
       </div>
     </div>
   </div>
@@ -66,13 +72,13 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-else-if="error && !forecast"
-    class="w-full max-w-md overflow-hidden rounded-panel border border-[#a96f61]/30 bg-[#b97a6a]/18 p-6 shadow-mist backdrop-blur-xl dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18 dark:shadow-storm"
+    class="w-full border-b border-[#a96f61]/30 bg-[#b97a6a]/18 p-6 dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18"
     role="alert"
   >
     <div class="flex items-start gap-3">
       <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
       <div>
-        <p class="font-semibold">Could not load hourly forecast</p>
+        <p class="font-semibold">{{ languageStore.t('hourly.error') }}</p>
         <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
       </div>
     </div>
@@ -83,26 +89,26 @@ const hourlyCards = computed<HourlyCard[]>(() => {
   <!-- -------------------------------------------------------------------- -->
   <div
     v-else-if="forecast"
-    class="surface-panel relative w-full max-w-md overflow-hidden transition-all duration-500"
+    class="relative w-full border-b border-slate-200 pb-6 transition-all duration-500 dark:border-slate-800"
   >
     <!-- Subtle loading bar when refreshing -->
     <div
       v-if="loading"
-      class="relative z-10 h-0.5 w-full animate-pulse bg-gradient-to-r from-transparent via-storm-water-500/50 to-transparent dark:via-sea-mist-300/45"
+      class="absolute left-0 top-0 z-10 h-0.5 w-full animate-pulse bg-dutch-orange"
     />
 
-    <div class="relative z-10 p-5">
+    <div class="relative z-10 px-2">
       <!-- Section title -->
       <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
-        24-Hour Forecast
+        {{ languageStore.t('hourly.title') }}
       </h2>
 
       <!-- Horizontally scrollable card strip -->
       <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
         <div
-          v-for="card in hourlyCards"
+          v-for="(card, idx) in hourlyCards"
           :key="card.time"
-          class="surface-inset flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 rounded-[1rem] px-1.5 py-2.5"
+          class="flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 border-r border-slate-200 px-1.5 py-2.5 last:border-r-0 dark:border-slate-800"
         >
           <!-- Time -->
           <span class="text-[11px] uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ card.time }}</span>
@@ -127,7 +133,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
 
       <!-- Inline error when refresh fails but old data is shown -->
       <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
-        ⚠️ Refresh failed — showing last known data
+        ⚠️ {{ languageStore.t('common.refreshFailed') }}
       </p>
     </div>
   </div>

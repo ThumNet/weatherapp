@@ -22,7 +22,7 @@ export async function searchCities(query: string): Promise<CitySearchResult[]> {
   const trimmed = query.trim()
   if (!trimmed) return []
 
-  const url = `${GEOCODING_BASE}/search?name=${encodeURIComponent(trimmed)}&count=5&language=en&format=json`
+  const url = `${GEOCODING_BASE}/search?name=${encodeURIComponent(trimmed)}&count=20&language=en&format=json`
 
   const response = await fetch(url)
   if (!response.ok) {
@@ -35,7 +35,10 @@ export async function searchCities(query: string): Promise<CitySearchResult[]> {
     return []
   }
 
-  return data.results.map((r) => ({
+  // Filter strictly to the Netherlands and return max 5 results
+  const nlResults = data.results.filter((r) => r.country_code === 'NL').slice(0, 5)
+
+  return nlResults.map((r) => ({
     name: r.name,
     latitude: r.latitude,
     longitude: r.longitude,

@@ -2,8 +2,10 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const basePath = process.env.VITE_BASE_PATH || '/'
+
 export default defineConfig({
-  base: process.env.VITE_BASE_PATH || '/',
+  base: basePath,
   plugins: [
     vue(),
     VitePWA({
@@ -16,8 +18,8 @@ export default defineConfig({
         theme_color: '#0f2027',
         background_color: '#0f2027',
         display: 'standalone',
-        scope: '/',
-        start_url: '/',
+        scope: basePath,
+        start_url: basePath,
         categories: ['weather'],
         icons: [
           {

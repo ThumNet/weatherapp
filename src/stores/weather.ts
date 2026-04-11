@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { translate } from '@/utils/i18n'
 import {
   fetchCurrentWeather,
   fetchDailyForecast,
@@ -65,6 +66,11 @@ export const useWeatherStore = defineStore('weather', () => {
     cached?.lastUpdated ? new Date(cached.lastUpdated) : null,
   )
 
+  function currentLanguage(): 'nl' | 'en' {
+    if (typeof document === 'undefined') return 'nl'
+    return document.documentElement.lang === 'en' ? 'en' : 'nl'
+  }
+
   async function fetchWeather(lat: number, lon: number): Promise<void> {
     loading.value = true
     error.value = null
@@ -89,7 +95,7 @@ export const useWeatherStore = defineStore('weather', () => {
       })
     } catch (err) {
       error.value =
-        err instanceof Error ? err.message : 'Failed to fetch weather data. Please try again.'
+        err instanceof Error ? err.message : translate(currentLanguage(), 'weather.fetchError')
       // Keep the previous weather data visible while showing the error
     } finally {
       loading.value = false

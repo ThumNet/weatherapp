@@ -20,7 +20,7 @@
 export type WeatherIntensity = 'light' | 'moderate' | 'heavy'
 
 interface WeatherCodeMeta {
-  description: string
+  descriptionKey: string
   /** Emoji fallback (kept for non-SVG usage and legacy callers) */
   icon: string
   /** SVG icon key for the WeatherIcon component */
@@ -451,44 +451,48 @@ export const SVG_ICONS: Record<SvgIconKey, string> = {
 // ---------------------------------------------------------------------------
 
 const CODE_MAP: Record<number, WeatherCodeMeta> = {
-  0:  { description: 'Clear sky',                   icon: '☀️',     svgKey: 'clear-day' },
-  1:  { description: 'Mainly clear',                icon: '🌤️',    svgKey: 'mostly-clear' },
-  2:  { description: 'Partly cloudy',               icon: '⛅',     svgKey: 'partly-cloudy' },
-  3:  { description: 'Overcast',                    icon: '☁️',     svgKey: 'overcast' },
-  45: { description: 'Fog',                         icon: '🌫️',    svgKey: 'fog' },
-  48: { description: 'Icy fog',                     icon: '🌫️',    svgKey: 'fog-icy' },
-  51: { description: 'Light drizzle',               icon: '🌧️',    svgKey: 'drizzle-light' },
-  53: { description: 'Drizzle',                     icon: '🌧️',    svgKey: 'drizzle-moderate' },
-  55: { description: 'Heavy drizzle',               icon: '🌧️',    svgKey: 'drizzle-heavy' },
-  56: { description: 'Light freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-drizzle-light' },
-  57: { description: 'Heavy freezing drizzle',      icon: '🌧️❄️',  svgKey: 'freezing-drizzle-heavy' },
-  61: { description: 'Light rain',                  icon: '🌧️',    svgKey: 'rain-light' },
-  63: { description: 'Rain',                        icon: '🌧️',    svgKey: 'rain-moderate' },
-  65: { description: 'Heavy rain',                  icon: '🌧️',    svgKey: 'rain-heavy' },
-  66: { description: 'Light freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain-light' },
-  67: { description: 'Heavy freezing rain',         icon: '🌧️❄️',  svgKey: 'freezing-rain-heavy' },
-  71: { description: 'Light snow',                  icon: '🌨️',    svgKey: 'snow-light' },
-  73: { description: 'Snow',                        icon: '🌨️',    svgKey: 'snow-moderate' },
-  75: { description: 'Heavy snow',                  icon: '🌨️',    svgKey: 'snow-heavy' },
-  77: { description: 'Snow grains',                 icon: '🌨️',    svgKey: 'snow-light' },
-  80: { description: 'Light rain showers',          icon: '🌦️',    svgKey: 'showers-light' },
-  81: { description: 'Rain showers',                icon: '🌦️',    svgKey: 'showers-moderate' },
-  82: { description: 'Violent rain showers',        icon: '🌦️',    svgKey: 'showers-heavy' },
-  85: { description: 'Snow showers',                icon: '🌨️',    svgKey: 'snow-showers-light' },
-  86: { description: 'Heavy snow showers',          icon: '🌨️',    svgKey: 'snow-showers-heavy' },
-  95: { description: 'Thunderstorm',                icon: '⛈️',    svgKey: 'thunderstorm' },
-  96: { description: 'Thunderstorm with hail',      icon: '⛈️',    svgKey: 'thunderstorm-hail' },
-  99: { description: 'Thunderstorm with heavy hail',icon: '⛈️',    svgKey: 'thunderstorm-hail-heavy' },
+  0:  { descriptionKey: 'weather.clearSky',                    icon: '☀️',     svgKey: 'clear-day' },
+  1:  { descriptionKey: 'weather.mainlyClear',                 icon: '🌤️',    svgKey: 'mostly-clear' },
+  2:  { descriptionKey: 'weather.partlyCloudy',                icon: '⛅',     svgKey: 'partly-cloudy' },
+  3:  { descriptionKey: 'weather.overcast',                    icon: '☁️',     svgKey: 'overcast' },
+  45: { descriptionKey: 'weather.fog',                         icon: '🌫️',    svgKey: 'fog' },
+  48: { descriptionKey: 'weather.icyFog',                      icon: '🌫️',    svgKey: 'fog-icy' },
+  51: { descriptionKey: 'weather.lightDrizzle',                icon: '🌧️',    svgKey: 'drizzle-light' },
+  53: { descriptionKey: 'weather.drizzle',                     icon: '🌧️',    svgKey: 'drizzle-moderate' },
+  55: { descriptionKey: 'weather.heavyDrizzle',                icon: '🌧️',    svgKey: 'drizzle-heavy' },
+  56: { descriptionKey: 'weather.lightFreezingDrizzle',        icon: '🌧️❄️',  svgKey: 'freezing-drizzle-light' },
+  57: { descriptionKey: 'weather.heavyFreezingDrizzle',        icon: '🌧️❄️',  svgKey: 'freezing-drizzle-heavy' },
+  61: { descriptionKey: 'weather.lightRain',                   icon: '🌧️',    svgKey: 'rain-light' },
+  63: { descriptionKey: 'weather.rain',                        icon: '🌧️',    svgKey: 'rain-moderate' },
+  65: { descriptionKey: 'weather.heavyRain',                   icon: '🌧️',    svgKey: 'rain-heavy' },
+  66: { descriptionKey: 'weather.lightFreezingRain',           icon: '🌧️❄️',  svgKey: 'freezing-rain-light' },
+  67: { descriptionKey: 'weather.heavyFreezingRain',           icon: '🌧️❄️',  svgKey: 'freezing-rain-heavy' },
+  71: { descriptionKey: 'weather.lightSnow',                   icon: '🌨️',    svgKey: 'snow-light' },
+  73: { descriptionKey: 'weather.snow',                        icon: '🌨️',    svgKey: 'snow-moderate' },
+  75: { descriptionKey: 'weather.heavySnow',                   icon: '🌨️',    svgKey: 'snow-heavy' },
+  77: { descriptionKey: 'weather.snowGrains',                  icon: '🌨️',    svgKey: 'snow-light' },
+  80: { descriptionKey: 'weather.lightRainShowers',            icon: '🌦️',    svgKey: 'showers-light' },
+  81: { descriptionKey: 'weather.rainShowers',                 icon: '🌦️',    svgKey: 'showers-moderate' },
+  82: { descriptionKey: 'weather.violentRainShowers',          icon: '🌦️',    svgKey: 'showers-heavy' },
+  85: { descriptionKey: 'weather.snowShowers',                 icon: '🌨️',    svgKey: 'snow-showers-light' },
+  86: { descriptionKey: 'weather.heavySnowShowers',            icon: '🌨️',    svgKey: 'snow-showers-heavy' },
+  95: { descriptionKey: 'weather.thunderstorm',                icon: '⛈️',    svgKey: 'thunderstorm' },
+  96: { descriptionKey: 'weather.thunderstormWithHail',        icon: '⛈️',    svgKey: 'thunderstorm-hail' },
+  99: { descriptionKey: 'weather.thunderstormWithHeavyHail',   icon: '⛈️',    svgKey: 'thunderstorm-hail-heavy' },
 }
 
-const FALLBACK: WeatherCodeMeta = { description: 'Unknown', icon: '🌡️', svgKey: 'unknown' }
+const FALLBACK: WeatherCodeMeta = { descriptionKey: 'weather.unknown', icon: '🌡️', svgKey: 'unknown' }
 
 function lookup(code: number): WeatherCodeMeta {
   return CODE_MAP[code] ?? FALLBACK
 }
 
-export function getWeatherDescription(code: number): string {
-  return lookup(code).description
+export function getWeatherDescription(
+  code: number,
+  translate?: (key: string) => string,
+): string {
+  const key = lookup(code).descriptionKey
+  return translate ? translate(key) : key
 }
 
 /** @deprecated Prefer getWeatherSvgIcon — emoji output kept for legacy callers */

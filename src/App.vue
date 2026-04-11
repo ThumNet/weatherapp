@@ -15,6 +15,7 @@ import HourlyForecast from '@/components/HourlyForecast.vue'
 import DailyForecast from '@/components/DailyForecast.vue'
 import RadarMap from '@/components/RadarMap.vue'
 import WeatherIconDemo from '@/components/WeatherIconDemo.vue'
+import WindmillIcon from '@/components/WindmillIcon.vue'
 
 const isDev = import.meta.env.DEV
 
@@ -197,11 +198,8 @@ watch(
       <div class="mx-auto w-full max-w-lg px-4 md:max-w-2xl pb-3 pt-safe pt-4">
         <!-- Header row -->
         <div class="flex items-center gap-3 rounded-[1.2rem] border border-slate-300 bg-white px-3 py-2.5 shadow-[0_8px_24px_rgba(36,48,57,0.05)] dark:border-slate-700 dark:bg-[#1b2731] dark:shadow-none">
-          <span class="flex size-10 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-700 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam" aria-hidden="true">
-            <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 15.5A4.5 4.5 0 0 1 8.5 11H9a5 5 0 1 1 9.7 1.8A3.5 3.5 0 1 1 18 19H8a4 4 0 0 1-4-3.5Z" />
-              <path d="M8 19l1.2-2.1M12 19l1.2-2.1M16 19l1.2-2.1" />
-            </svg>
+          <span class="group flex size-10 shrink-0 items-center justify-center rounded-full border border-slate-300 bg-slate-50 text-storm-water-700 dark:border-slate-600 dark:bg-[#22313d] dark:text-dune-foam" aria-hidden="true">
+            <WindmillIcon class="size-[22px]" />
           </span>
 
           <!-- Location: detecting state or city name + edit button -->

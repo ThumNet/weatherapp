@@ -110,8 +110,8 @@ const days = computed<DayRow[]>(() => {
     precipSum: Math.round((f.precipitationSum[i] ?? 0) * 10) / 10,
     // precipitationHours is null when absent from older persisted cache shapes
     precipHours: f.precipitationHours !== null ? (f.precipitationHours[i] ?? null) : null,
-    windSpeed: f.windSpeedMax !== null ? (f.windSpeedMax[i] ?? null) : null,
-    windDirection: f.windDirectionDominant !== null ? (f.windDirectionDominant[i] ?? null) : null,
+    windSpeed: f.windSpeedMax?.[i] ?? null,
+    windDirection: f.windDirectionDominant?.[i] ?? null,
   }))
 })
 

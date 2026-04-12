@@ -38,8 +38,8 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     precip: forecast.value!.precipitation[i] ?? 0,
     precipProb: forecast.value!.precipitationProbability[i] ?? 0,
     isDay: forecast.value!.isDay !== null ? (forecast.value!.isDay[i] === 1) : null,
-    windSpeed: forecast.value!.windSpeed !== null ? (forecast.value!.windSpeed[i] ?? null) : null,
-    windDirection: forecast.value!.windDirection !== null ? (forecast.value!.windDirection[i] ?? null) : null,
+    windSpeed: forecast.value!.windSpeed?.[i] ?? null,
+    windDirection: forecast.value!.windDirection?.[i] ?? null,
   }))
 })
 </script>

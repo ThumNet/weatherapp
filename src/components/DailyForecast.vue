@@ -195,19 +195,16 @@ const error = computed(() => weatherStore.error)
         />
 
         <!-- Precipitation info -->
-        <div class="flex items-center gap-3 text-xs text-storm-water-600 dark:text-sea-mist-200">
-          <div class="flex items-center gap-1.5">
-            <span class="flex items-center gap-0.5">
-              <span class="size-3.5" aria-hidden="true" v-html="precipitationIcon" />
-              <span>{{ day.precipProb }}%</span>
-            </span>
-            <span v-if="day.precipSum > 0" class="text-storm-water-500 dark:text-[#d7b07c]/82">
-              {{ day.precipSum }}mm
-            </span>
+        <div class="flex flex-1 items-center gap-1 text-xs text-storm-water-600 dark:text-sea-mist-200">
+          <div class="w-12 shrink-0 flex items-center gap-0.5">
+            <span class="size-3.5" aria-hidden="true" v-html="precipitationIcon" />
+            <span>{{ day.precipProb }}%</span>
           </div>
-          
+          <div class="w-12 shrink-0 text-storm-water-500 dark:text-[#d7b07c]/82">
+            <span v-if="day.precipSum > 0">{{ day.precipSum }}mm</span>
+          </div>
           <div v-if="day.windSpeed !== null" class="flex items-center gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
-            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <svg class="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
             </svg>
             <span>{{ Math.round(day.windSpeed) }} {{ day.windDirection !== null ? degreesToCompass(day.windDirection) : '' }}</span>

@@ -331,7 +331,7 @@ const gridLines = computed(() => {
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.feelsLike') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.feelsLike') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ feelsLike }}°C</span>
           <span
             v-if="todayMaxTemp !== null && todayMinTemp !== null"
@@ -348,7 +348,7 @@ const gridLines = computed(() => {
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.humidity') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.humidity') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ weather.humidity }}%</span>
           <span
             v-if="humidityRainDetail"
@@ -365,7 +365,7 @@ const gridLines = computed(() => {
           <svg class="size-5 text-storm-water-500 dark:text-sea-mist-300/70" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.wind') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.wind') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">
             {{ Math.round(weather.windSpeed) }}
             <span class="text-xs font-normal text-storm-water-500 dark:text-sea-mist-300/70">km/h</span>
@@ -378,7 +378,7 @@ const gridLines = computed(() => {
           class="flex flex-col items-center justify-center gap-1 bg-white px-2 py-5 text-center dark:bg-slate-950"
         >
           <svg class="size-5 shrink-0" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" v-html="moonPhase.phaseIcon" />
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.moon') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.moon') }}</span>
           <span class="text-[15px] font-semibold leading-tight text-storm-water-800 dark:text-dune-foam">{{ languageStore.t(`moon.${moonPhase.phaseKey}`) }}</span>
         </div>
       </div>
@@ -396,7 +396,7 @@ const gridLines = computed(() => {
             <path d="M5 17a7 7 0 0 1 14 0"/>
             <line x1="2" y1="20" x2="22" y2="20"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunrise') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunrise') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</span>
         </div>
 
@@ -409,7 +409,7 @@ const gridLines = computed(() => {
             <line x1="2" y1="20" x2="22" y2="20"/>
             <path d="M12 6l-1.5 2h3L12 6z" fill="currentColor" stroke="none"/>
           </svg>
-          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunset') }}</span>
+          <span class="text-[10px] font-medium uppercase tracking-[0.12em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunset') }}</span>
           <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</span>
         </div>
       </div>

@@ -103,46 +103,50 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     />
 
     <div class="relative z-10 px-2">
-      <!-- Section title & Scroll indicator -->
-      <div class="mb-4 flex items-center justify-between">
+      <!-- Section title -->
+      <div class="mb-4">
         <h2 class="text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
           {{ languageStore.t('hourly.title') }}
         </h2>
-        <div class="flex items-center gap-1 text-[10px] uppercase tracking-wider text-storm-water-400 dark:text-sea-mist-300/50 animate-pulse">
-          <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-        </div>
       </div>
 
       <!-- Horizontally scrollable card strip -->
-      <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
-        <div
-          v-for="(card, idx) in hourlyCards"
-          :key="card.time"
-          class="flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 border-r border-slate-200 px-1.5 py-2.5 last:border-r-0 dark:border-slate-800"
-        >
-          <!-- Time -->
-          <span class="text-[11px] uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ card.time }}</span>
-          <!-- Weather icon -->
-          <WeatherIcon
-            :code="card.code"
-            :intensity="card.precip > 7.6 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
-            :is-day="card.isDay"
-            :size="28"
-          />
-          <!-- Temperature -->
-          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
-          <!-- Wind -->
-          <div v-if="card.windSpeed !== null" class="flex items-baseline gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
-            <span class="text-[10px] font-medium">{{ Math.round(card.windSpeed) }}</span>
-            <span class="text-[9px] uppercase tracking-wider">{{ card.windDirection !== null ? degreesToCompass(card.windDirection) : '' }}</span>
+      <div class="relative">
+        <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory pr-8">
+          <div
+            v-for="(card, idx) in hourlyCards"
+            :key="card.time"
+            class="flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 border-r border-slate-200 px-1.5 py-2.5 last:border-r-0 dark:border-slate-800"
+          >
+            <!-- Time -->
+            <span class="text-[11px] uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ card.time }}</span>
+            <!-- Weather icon -->
+            <WeatherIcon
+              :code="card.code"
+              :intensity="card.precip > 7.6 ? 'heavy' : card.precip >= 0.5 ? 'moderate' : card.precip > 0 ? 'light' : undefined"
+              :is-day="card.isDay"
+              :size="28"
+            />
+            <!-- Temperature -->
+            <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
+            <!-- Wind -->
+            <div v-if="card.windSpeed !== null" class="flex items-baseline gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
+              <span class="text-[10px] font-medium">{{ Math.round(card.windSpeed) }}</span>
+              <span class="text-[9px] uppercase tracking-wider">{{ card.windDirection !== null ? degreesToCompass(card.windDirection) : '' }}</span>
+            </div>
+            <!-- Precipitation mm (only if > 0) -->
+            <span
+              v-if="card.precip > 0"
+              class="text-[11px] font-medium text-storm-water-600 dark:text-sea-mist-200/90"
+            >{{ card.precip }}mm</span>
+            <!-- Precipitation probability -->
+            <span class="text-[10px] text-storm-water-400 dark:text-[#d7b07c]/70">{{ card.precipProb }}%</span>
           </div>
-          <!-- Precipitation mm (only if > 0) -->
-          <span
-            v-if="card.precip > 0"
-            class="text-[11px] font-medium text-storm-water-600 dark:text-sea-mist-200/90"
-          >{{ card.precip }}mm</span>
-          <!-- Precipitation probability -->
-          <span class="text-[10px] text-storm-water-400 dark:text-[#d7b07c]/70">{{ card.precipProb }}%</span>
+        </div>
+
+        <!-- Floating Scroll indicator arrow -->
+        <div class="pointer-events-none absolute -right-2 top-0 bottom-0 flex items-center justify-end bg-gradient-to-l from-white via-white/80 to-transparent dark:from-slate-950 dark:via-slate-950/80 w-10 pb-2 pr-1">
+          <svg class="size-4 text-storm-water-400 dark:text-sea-mist-300/50 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
         </div>
       </div>
 

@@ -380,9 +380,7 @@ watch(
         <Transition name="content-fade" appear>
           <CurrentWeather @open-radar="openRadar" />
         </Transition>
-        <Transition name="content-fade" appear>
-          <RadarMap ref="radarRef" />
-        </Transition>
+        <RadarMap ref="radarRef" />
         <Transition name="content-fade" appear>
           <HourlyForecast />
         </Transition>

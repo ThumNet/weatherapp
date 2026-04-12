@@ -200,22 +200,22 @@ function onPointerDown(event: PointerEvent): void {
       @pointerdown="onPointerDown"
     >
       <!-- ── Track ───────────────────────────────────────────────────── -->
-      <div class="relative h-1.5 w-full rounded-full bg-slate-700">
+      <div class="relative h-1.5 w-full rounded-full bg-slate-200 dark:bg-slate-700">
         <!-- Past fill (blue) -->
         <div
           v-if="currentFrameIndex < nowcastStartIndex || !hasNowcast"
-          class="absolute inset-y-0 left-0 rounded-full bg-[#7b95a5]"
+          class="absolute inset-y-0 left-0 rounded-full bg-storm-water-400 dark:bg-[#7b95a5]"
           :style="{ width: `${filledWidth}%` }"
         />
 
         <!-- Forecast zone: full blue past + amber forecast portion -->
         <template v-else>
           <div
-            class="absolute inset-y-0 left-0 rounded-l-full bg-[#7b95a5]"
+            class="absolute inset-y-0 left-0 rounded-l-full bg-storm-water-400 dark:bg-[#7b95a5]"
             :style="{ width: `${nowPosition}%` }"
           />
           <div
-            class="absolute inset-y-0 bg-[#d4a261]"
+            class="absolute inset-y-0 bg-dutch-orange dark:bg-[#d4a261]"
             :style="{
               left: `${nowPosition}%`,
               width: `${filledWidth - nowPosition}%`,
@@ -226,7 +226,7 @@ function onPointerDown(event: PointerEvent): void {
         <!-- "Now" divider line on track -->
         <div
           v-if="frames.length > 0"
-          class="absolute top-1/2 z-10 h-3 w-0.5 -translate-y-1/2 rounded-full bg-dune-foam/75"
+          class="absolute top-1/2 z-10 h-3 w-0.5 -translate-y-1/2 rounded-full bg-storm-water-800/75 dark:bg-dune-foam/75"
           :style="{ left: `${nowPosition}%` }"
         />
       </div>
@@ -238,8 +238,8 @@ function onPointerDown(event: PointerEvent): void {
       >
         <div class="flex size-[44px] items-center justify-center">
           <div
-            class="size-5 rounded-full ring-2 ring-dune-foam/70 transition-colors duration-150"
-            :class="isNowcast ? 'bg-[#d4a261]' : 'bg-[#7192a4]'"
+            class="size-5 rounded-full ring-2 ring-white/70 shadow-sm transition-colors duration-150 dark:ring-dune-foam/70"
+            :class="isNowcast ? 'bg-dutch-orange dark:bg-[#d4a261]' : 'bg-storm-water-500 dark:bg-[#7192a4]'"
           />
         </div>
       </div>
@@ -257,14 +257,14 @@ function onPointerDown(event: PointerEvent): void {
           class="w-px -translate-x-1/2"
           :class="[
             tick.isNow
-              ? 'h-4 bg-white'
+              ? 'h-4 bg-storm-water-400 dark:bg-white'
               : tick.isCurrent
-                ? 'h-3.5 bg-white/70'
+                ? 'h-3.5 bg-storm-water-300 dark:bg-white/70'
                 : tick.isPlaceholder
-                  ? 'h-3 bg-white/[0.07]'
+                  ? 'h-3 bg-storm-water-200/50 dark:bg-white/[0.07]'
                   : tick.isForecast
-                    ? 'h-3 bg-amber-400/30'
-                    : 'h-3 bg-white/20',
+                    ? 'h-3 bg-amber-400/60 dark:bg-amber-400/30'
+                    : 'h-3 bg-storm-water-200 dark:bg-white/20',
           ]"
         />
       </div>
@@ -274,19 +274,13 @@ function onPointerDown(event: PointerEvent): void {
     <div class="mt-1 text-center">
       <span
         class="text-sm font-semibold tabular-nums"
-        :class="isNowcast ? 'text-amber-400' : 'text-white'"
+        :class="isNowcast ? 'text-amber-500 dark:text-amber-400' : 'text-storm-water-800 dark:text-white'"
       >
         {{ currentTimeLabel }}
       </span>
       <span
-        v-if="isNowcast"
-        class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-amber-400/70"
-      >
-         {{ languageStore.t('scrubber.forecast') }}
-      </span>
-      <span
-        v-else-if="ticks.find(t => t.isNow && t.isCurrent)"
-        class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-white/50"
+        v-if="ticks.find(t => t.isNow && t.isCurrent)"
+        class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-storm-water-400 dark:text-white/50"
       >
          {{ languageStore.t('scrubber.now') }}
       </span>
@@ -295,7 +289,7 @@ function onPointerDown(event: PointerEvent): void {
     <!-- ── No forecast hint ──────────────────────────────────────────── -->
     <p
       v-if="framesLoaded && !hasNowcast"
-      class="mt-1 text-center text-[10px] text-white/40"
+      class="mt-1 text-center text-[10px] text-storm-water-400 dark:text-white/40"
     >
        {{ languageStore.t('scrubber.noForecast') }}
     </p>

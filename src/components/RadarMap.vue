@@ -202,28 +202,22 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
     <Transition name="radar-overlay">
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 flex flex-col bg-[#17222b] text-dune-foam"
+        class="fixed inset-0 z-50 flex flex-col bg-white text-storm-water-800 dark:bg-slate-950 dark:text-slate-50"
         role="dialog"
         aria-modal="true"
         :aria-label="languageStore.t('radar.dialog')"
       >
         <!-- Top bar -->
-        <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-700 bg-[#1b2731] px-5 py-3">
+        <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3 pt-safe dark:border-slate-800 dark:bg-slate-950">
           <div class="flex items-center gap-2">
-            <span class="flex size-9 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100" aria-hidden="true">
-              <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 15.5A4.5 4.5 0 0 1 8.5 11H9a5 5 0 1 1 9.7 1.8A3.5 3.5 0 1 1 18 19H8a4 4 0 0 1-4-3.5Z" />
-                <path d="M9 18.5l1-2M13 18.5l1-2M17 18.5l1-2" />
-              </svg>
-            </span>
             <div>
-              <p class="text-[11px] uppercase tracking-[0.24em] text-sea-mist-300/55">{{ languageStore.t('radar.livePrecipitation') }}</p>
-              <h2 class="text-lg font-semibold text-dune-foam">{{ languageStore.t('radar.dialog') }}</h2>
+              <p class="text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/55">{{ languageStore.t('radar.livePrecipitation') }}</p>
+              <h2 class="text-lg font-semibold text-storm-water-800 dark:text-dune-foam">{{ languageStore.t('radar.dialog') }}</h2>
             </div>
           </div>
           <!-- Close button — min 44px tap target -->
           <button
-            class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-200/70 transition hover:bg-[#2a3a47] hover:text-white active:bg-[#2a3a47]"
+            class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
             :aria-label="languageStore.t('radar.close')"
             @click="closeOverlay"
           >
@@ -248,13 +242,13 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           <!-- Loading state -->
           <div
             v-if="loading"
-            class="flex h-full items-center justify-center"
+            class="flex h-full items-center justify-center bg-slate-50 dark:bg-slate-900"
             aria-busy="true"
             :aria-label="languageStore.t('radar.loadingMap')"
           >
-            <div class="flex flex-col items-center gap-3 text-sea-mist-200/75">
+            <div class="flex flex-col items-center gap-3 text-storm-water-400 dark:text-sea-mist-200/75">
               <svg
-                class="size-8 animate-spin"
+                class="size-8 animate-spin text-dutch-orange"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -274,14 +268,14 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           <!-- Error state -->
           <div
             v-else-if="error && frames.length === 0"
-            class="flex h-full items-center justify-center px-6"
+            class="flex h-full items-center justify-center bg-slate-50 px-6 dark:bg-slate-900"
             role="alert"
           >
-            <div class="rounded-[1.1rem] border border-slate-700 bg-[#1b2731] px-5 py-4 text-center text-sm text-[#efcb9a]">
+            <div class="rounded-[1.1rem] border border-red-200 bg-red-50 px-5 py-4 text-center text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
               <span class="mb-1 block text-2xl">⚠️</span>
               {{ error }}
               <button
-                class="mt-3 block w-full rounded-xl border border-slate-600 bg-[#22313d] px-4 py-2 text-xs font-medium text-dune-foam transition hover:bg-[#2a3a47]"
+                class="mt-3 block w-full rounded-xl border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:bg-red-900/40 dark:text-red-100 dark:hover:bg-red-900/60"
                 @click="loadFrames"
               >
                  {{ languageStore.t('radar.retry') }}
@@ -320,7 +314,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
         </div>
 
         <!-- Animation controls -->
-        <div class="relative z-10 shrink-0 border-t border-slate-700 bg-[#1b2731] px-5 py-4">
+        <div class="relative z-10 shrink-0 border-t border-slate-200 bg-white px-5 py-4 pb-safe dark:border-slate-800 dark:bg-slate-950">
           <!-- Timeline scrubber -->
           <div class="mb-3">
             <RadarScrubberB
@@ -337,7 +331,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           <div class="flex items-center justify-center gap-4">
             <!-- Step back — 44px min tap target -->
             <button
-              class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
+              class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
               :disabled="currentFrameIndex === 0 || frames.length === 0"
               :aria-label="languageStore.t('radar.previousFrame')"
               @click="stepBack"
@@ -349,7 +343,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
             <!-- Play / Pause — 48px to make it the obvious CTA -->
             <button
-              class="flex size-12 items-center justify-center rounded-full bg-[#d1a56d] text-[#1f160d] transition hover:brightness-105 active:brightness-95 disabled:opacity-40"
+              class="flex size-12 items-center justify-center text-storm-water-800 transition hover:text-dutch-orange active:text-storm-water-900 disabled:opacity-40 dark:text-[#FF9B00] dark:hover:brightness-125 dark:active:brightness-90"
               :aria-label="isPlaying ? languageStore.t('radar.pauseAnimation') : languageStore.t('radar.playAnimation')"
               :disabled="frames.length === 0"
               @click="togglePlay"
@@ -378,7 +372,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 
             <!-- Step forward — 44px min tap target -->
             <button
-              class="flex size-11 items-center justify-center rounded-full border border-slate-600 bg-[#22313d] text-sea-mist-100/85 transition hover:bg-[#2a3a47] active:bg-[#2a3a47] disabled:opacity-30"
+              class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
               :disabled="currentFrameIndex === frameCount - 1 || frames.length === 0"
               :aria-label="languageStore.t('radar.nextFrame')"
               @click="stepForward"
@@ -390,7 +384,7 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
           </div>
 
           <!-- Attribution note -->
-          <p class="mt-2 text-center text-[10px] tracking-[0.16em] text-sea-mist-300/35">
+          <p class="mt-2 text-center text-[10px] tracking-[0.16em] text-storm-water-400 dark:text-sea-mist-300/35">
             {{ languageStore.t('radar.dataBy') }}
           </p>
         </div>

@@ -132,7 +132,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
           <!-- Temperature -->
           <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
           <!-- Wind -->
-          <div v-if="card.windSpeed !== null" class="flex flex-col items-center gap-0.5 text-storm-water-500 dark:text-sea-mist-300/70">
+          <div v-if="card.windSpeed !== null" class="flex items-baseline gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
             <span class="text-[10px] font-medium">{{ Math.round(card.windSpeed) }}</span>
             <span class="text-[9px] uppercase tracking-wider">{{ card.windDirection !== null ? degreesToCompass(card.windDirection) : '' }}</span>
           </div>

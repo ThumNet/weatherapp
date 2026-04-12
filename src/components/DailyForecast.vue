@@ -3,9 +3,9 @@ import { computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
-import type { WeatherIntensity } from '@/utils/weatherCodes'
+import { degreesToCompass, type WeatherIntensity } from '@/utils/weatherCodes'
 
-  const weatherStore = useWeatherStore()
+const weatherStore = useWeatherStore()
 const languageStore = useLanguageStore()
 
 const precipitationIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0Z"/></svg>`
@@ -34,6 +34,8 @@ interface DayRow {
   precipSum: number
   /** Hours with precipitation ≥ 0.1 mm; null when field is absent from older cache shapes */
   precipHours: number | null
+  windSpeed: number | null
+  windDirection: number | null
 }
 
 /**
@@ -108,6 +110,8 @@ const days = computed<DayRow[]>(() => {
     precipSum: Math.round((f.precipitationSum[i] ?? 0) * 10) / 10,
     // precipitationHours is null when absent from older persisted cache shapes
     precipHours: f.precipitationHours !== null ? (f.precipitationHours[i] ?? null) : null,
+    windSpeed: f.windSpeedMax !== null ? (f.windSpeedMax[i] ?? null) : null,
+    windDirection: f.windDirectionDominant !== null ? (f.windDirectionDominant[i] ?? null) : null,
   }))
 })
 
@@ -191,14 +195,23 @@ const error = computed(() => weatherStore.error)
         />
 
         <!-- Precipitation info -->
-        <div class="flex items-center gap-2 text-xs text-storm-water-600 dark:text-sea-mist-200">
-          <span class="flex items-center gap-0.5">
-            <span class="size-3.5" aria-hidden="true" v-html="precipitationIcon" />
-            <span>{{ day.precipProb }}%</span>
-          </span>
-          <span v-if="day.precipSum > 0" class="flex items-center gap-0.5 text-storm-water-500 dark:text-[#d7b07c]/82">
-            <span>{{ day.precipSum }}mm</span>
-          </span>
+        <div class="flex items-center gap-3 text-xs text-storm-water-600 dark:text-sea-mist-200">
+          <div class="flex items-center gap-1.5">
+            <span class="flex items-center gap-0.5">
+              <span class="size-3.5" aria-hidden="true" v-html="precipitationIcon" />
+              <span>{{ day.precipProb }}%</span>
+            </span>
+            <span v-if="day.precipSum > 0" class="text-storm-water-500 dark:text-[#d7b07c]/82">
+              {{ day.precipSum }}mm
+            </span>
+          </div>
+          
+          <div v-if="day.windSpeed !== null" class="flex items-center gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
+            <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+            </svg>
+            <span>{{ Math.round(day.windSpeed) }} {{ day.windDirection !== null ? degreesToCompass(day.windDirection) : '' }}</span>
+          </div>
         </div>
 
         <!-- Temperature range (pushed to the right) -->

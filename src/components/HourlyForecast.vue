@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
+import { degreesToCompass } from '@/utils/weatherCodes'
 
 const weatherStore = useWeatherStore()
 const languageStore = useLanguageStore()
@@ -24,6 +25,8 @@ interface HourlyCard {
   precip: number
   precipProb: number
   isDay: boolean | null
+  windSpeed: number | null
+  windDirection: number | null
 }
 
 const hourlyCards = computed<HourlyCard[]>(() => {
@@ -35,6 +38,8 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     precip: forecast.value!.precipitation[i] ?? 0,
     precipProb: forecast.value!.precipitationProbability[i] ?? 0,
     isDay: forecast.value!.isDay !== null ? (forecast.value!.isDay[i] === 1) : null,
+    windSpeed: forecast.value!.windSpeed !== null ? (forecast.value!.windSpeed[i] ?? null) : null,
+    windDirection: forecast.value!.windDirection !== null ? (forecast.value!.windDirection[i] ?? null) : null,
   }))
 })
 </script>
@@ -98,10 +103,15 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     />
 
     <div class="relative z-10 px-2">
-      <!-- Section title -->
-      <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
-        {{ languageStore.t('hourly.title') }}
-      </h2>
+      <!-- Section title & Scroll indicator -->
+      <div class="mb-4 flex items-center justify-between">
+        <h2 class="text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
+          {{ languageStore.t('hourly.title') }}
+        </h2>
+        <div class="flex items-center gap-1 text-[10px] uppercase tracking-wider text-storm-water-400 dark:text-sea-mist-300/50 animate-pulse">
+          <svg class="size-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+        </div>
+      </div>
 
       <!-- Horizontally scrollable card strip -->
       <div class="flex gap-2 overflow-x-auto pb-2 -mx-1 px-1 snap-x snap-mandatory">
@@ -121,6 +131,11 @@ const hourlyCards = computed<HourlyCard[]>(() => {
           />
           <!-- Temperature -->
           <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ card.temp }}°</span>
+          <!-- Wind -->
+          <div v-if="card.windSpeed !== null" class="flex flex-col items-center gap-0.5 text-storm-water-500 dark:text-sea-mist-300/70">
+            <span class="text-[10px] font-medium">{{ Math.round(card.windSpeed) }}</span>
+            <span class="text-[9px] uppercase tracking-wider">{{ card.windDirection !== null ? degreesToCompass(card.windDirection) : '' }}</span>
+          </div>
           <!-- Precipitation mm (only if > 0) -->
           <span
             v-if="card.precip > 0"

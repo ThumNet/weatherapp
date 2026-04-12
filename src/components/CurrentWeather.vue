@@ -298,8 +298,15 @@ const gridLines = computed(() => {
 
     <div class="relative z-10 py-6">
       <!-- Hero overview -->
-      <div class="mb-8 grid gap-6 px-4 sm:grid-cols-[auto_1fr_auto] sm:items-center sm:gap-10 sm:px-6">
-        <div class="min-w-0 sm:self-center">
+      <div class="mb-8 flex flex-col items-center justify-center gap-4 px-4 sm:px-6">
+        <div class="flex items-center gap-4">
+          <WeatherIcon
+            :code="weather.weatherCode"
+            :intensity="currentWeatherIntensity"
+            :is-day="weather.isDay"
+            :size="78"
+            class="shrink-0 transition-all duration-300"
+          />
           <div class="flex items-start gap-1 leading-none">
             <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-dutch-orange sm:text-[4.75rem]">
               {{ temperature }}
@@ -308,19 +315,11 @@ const gridLines = computed(() => {
           </div>
         </div>
 
-        <div class="min-w-0 sm:self-center">
+        <div class="min-w-0">
           <p class="max-w-md text-[10px] text-center uppercase leading-relaxed tracking-[0.15em] text-storm-water-500 dark:text-sea-mist-300/70">
             {{ todayOutlook }}
           </p>
         </div>
-
-        <WeatherIcon
-          :code="weather.weatherCode"
-          :intensity="currentWeatherIntensity"
-          :is-day="weather.isDay"
-          :size="78"
-          class="shrink-0 self-center justify-self-start transition-all duration-300 sm:justify-self-end"
-        />
       </div>
 
       <!-- Stats grid -->
@@ -390,32 +389,28 @@ const gridLines = computed(() => {
         class="grid grid-cols-2 border-b border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950"
       >
         <!-- Sunrise -->
-        <div class="flex items-center justify-center gap-2 border-r border-slate-200 px-2 py-5 dark:border-slate-800">
+        <div class="flex flex-col items-center justify-center gap-1 border-r border-slate-200 px-2 py-5 text-center dark:border-slate-800">
           <!-- Sunrise icon: sun rising above horizon line -->
-          <svg class="size-5 shrink-0 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="size-5 text-amber-500 dark:text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 2v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
             <path d="M5 17a7 7 0 0 1 14 0"/>
             <line x1="2" y1="20" x2="22" y2="20"/>
           </svg>
-          <div class="text-center">
-             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunrise') }}</p>
-            <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</p>
-          </div>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunrise') }}</span>
+          <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunrise }}</span>
         </div>
 
         <!-- Sunset -->
-        <div class="flex items-center justify-center gap-2 px-2 py-5">
+        <div class="flex flex-col items-center justify-center gap-1 px-2 py-5 text-center">
           <!-- Sunset icon: sun setting below horizon line -->
-          <svg class="size-5 shrink-0 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <svg class="size-5 text-orange-500 dark:text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <path d="M12 10v2M4.93 4.93l1.41 1.41M2 12h2M20 12h2M18.66 4.93l-1.41 1.41"/>
             <path d="M5 17a7 7 0 0 1 14 0"/>
             <line x1="2" y1="20" x2="22" y2="20"/>
             <path d="M12 6l-1.5 2h3L12 6z" fill="currentColor" stroke="none"/>
           </svg>
-          <div class="text-center">
-             <p class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunset') }}</p>
-            <p class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</p>
-          </div>
+          <span class="text-xs font-medium uppercase tracking-[0.18em] text-storm-water-500 dark:text-sea-mist-300/65">{{ languageStore.t('current.sunset') }}</span>
+          <span class="text-[15px] font-semibold text-storm-water-800 dark:text-dune-foam">{{ todaySunset }}</span>
         </div>
       </div>
 

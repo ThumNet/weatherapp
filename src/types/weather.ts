@@ -124,6 +124,8 @@ export interface HourlyForecast {
   weatherCode: number[]
   /** 1 = daytime, 0 = nighttime per hour. Null array when absent from older cached shapes. */
   isDay: number[] | null
+  windSpeed: number[] | null
+  windDirection: number[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (hourly fields) */
@@ -139,6 +141,8 @@ export interface OpenMeteoHourlyResponse {
     precipitation: string
     weather_code: string
     is_day?: string
+    wind_speed_10m?: string
+    wind_direction_10m?: string
   }
   hourly: {
     time: string[]
@@ -147,6 +151,8 @@ export interface OpenMeteoHourlyResponse {
     precipitation: number[]
     weather_code: number[]
     is_day?: number[]
+    wind_speed_10m?: number[]
+    wind_direction_10m?: number[]
   }
 }
 
@@ -173,6 +179,8 @@ export interface DailyForecast {
    */
   sunrise: string[] | null
   sunset: string[] | null
+  windSpeedMax: number[] | null
+  windDirectionDominant: number[] | null
 }
 
 /** Raw response shape from Open-Meteo /v1/forecast (daily fields only) */
@@ -192,6 +200,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_hours?: string
     sunrise?: string
     sunset?: string
+    wind_speed_10m_max?: string
+    wind_direction_10m_dominant?: string
   }
   daily: {
     time: string[]
@@ -204,6 +214,8 @@ export interface OpenMeteoDailyResponse {
     precipitation_hours?: number[]
     sunrise?: string[]
     sunset?: string[]
+    wind_speed_10m_max?: number[]
+    wind_direction_10m_dominant?: number[]
   }
 }
 

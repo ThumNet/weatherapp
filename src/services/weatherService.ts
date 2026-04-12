@@ -122,7 +122,7 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
   const params = new URLSearchParams({
     latitude: String(lat),
     longitude: String(lon),
-    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,is_day',
+    hourly: 'temperature_2m,precipitation_probability,precipitation,weather_code,is_day,wind_speed_10m,wind_direction_10m',
     timezone: 'auto',
     forecast_hours: '24',
   })
@@ -144,6 +144,8 @@ export async function fetchHourlyForecast(lat: number, lon: number): Promise<Hou
     precipitation: h.precipitation,
     weatherCode: h.weather_code,
     isDay: h.is_day ?? null,
+    windSpeed: h.wind_speed_10m ?? null,
+    windDirection: h.wind_direction_10m ?? null,
   }
 }
 
@@ -155,7 +157,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     latitude: String(lat),
     longitude: String(lon),
     daily:
-      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours,sunrise,sunset',
+      'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,precipitation_hours,sunrise,sunset,wind_speed_10m_max,wind_direction_10m_dominant',
     timezone: 'auto',
   })
 
@@ -179,5 +181,7 @@ export async function fetchDailyForecast(lat: number, lon: number): Promise<Dail
     precipitationHours: d.precipitation_hours ?? null,
     sunrise: d.sunrise ?? null,
     sunset: d.sunset ?? null,
+    windSpeedMax: d.wind_speed_10m_max ?? null,
+    windDirectionDominant: d.wind_direction_10m_dominant ?? null,
   }
 }

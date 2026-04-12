@@ -95,6 +95,7 @@ const lastUpdatedLabel = computed<string | null>(() => {
 const isLoading = computed(() => weatherStore.loading || precipitationStore.loading)
 
 const isEditingLocation = ref(false)
+const isMenuOpen = ref(false)
 
 onMounted(async () => {
   // Register visibility-change handler to auto-refresh stale data when the
@@ -200,7 +201,7 @@ watch(
         <div class="grid grid-cols-[1fr_auto_1fr] items-center py-1.5">
           <!-- Left: Logo -->
           <div class="flex items-center justify-start">
-            <span class="pl-12 group flex shrink-0 items-center justify-center text-dutch-orange" aria-hidden="true">
+            <span class="pl-2 group flex shrink-0 items-center justify-center text-dutch-orange" aria-hidden="true">
               <WindmillIcon class="size-16" />
             </span>
           </div>
@@ -256,99 +257,106 @@ watch(
           </template>
           </div>
 
-          <!-- Right side: last updated + theme toggle + refresh -->
-          <div class="flex flex-col items-end justify-center gap-0.5">
-            <!-- Buttons Row -->
-            <div class="flex items-center gap-1">
-
+          <!-- Right side: hamburger menu -->
+          <div class="flex flex-col items-end justify-center relative z-50">
             <button
-              class="flex h-9 items-center justify-center px-2.5 text-[11px] font-semibold uppercase tracking-[0.14em] text-storm-water-400 transition-colors hover:text-dutch-orange dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
-              :title="languageLabel"
-              :aria-label="languageLabel"
-              @click="languageStore.toggleLanguage"
+              class="flex size-10 items-center justify-center text-storm-water-800 transition-colors hover:text-dutch-orange dark:text-slate-50 dark:hover:text-dutch-orange"
+              @click="isMenuOpen = !isMenuOpen"
+              aria-label="Menu"
             >
-              {{ languageStore.language.toUpperCase() }}
-            </button>
-
-            <!-- Theme toggle button — cycles dark → light → system -->
-            <button
-              class="flex size-9 items-center justify-center text-storm-water-400 transition-colors hover:text-dutch-orange dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
-              :title="themeLabel"
-              :aria-label="themeLabel"
-              @click="cycleTheme"
-            >
-              <svg
-                v-if="themeStore.theme === 'dark'"
-                class="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
-              </svg>
-              <svg
-                v-else-if="themeStore.theme === 'light'"
-                class="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M21 12.79A9 9 0 1 1 11.21 3c0 5 4 9 9 9 .27 0 .53-.01.79-.05Z" />
-              </svg>
-              <svg
-                v-else
-                class="size-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                aria-hidden="true"
-              >
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.52 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.09A1.65 1.65 0 0 0 15 4.6a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9c0 .66.39 1.26 1 1.5H21a2 2 0 1 1 0 4h-.09c-.61.24-1.01.84-1.51 1.5Z" />
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
 
-            <!-- Refresh button — min 44px tap target -->
-            <button
-              class="flex size-9 items-center justify-center text-storm-water-400 transition-colors hover:text-dutch-orange disabled:opacity-40 dark:text-sea-mist-300/70 dark:hover:text-dutch-orange"
-              :disabled="isLoading"
-              :title="isLoading ? languageStore.t('app.refreshing') : languageStore.t('app.refreshWeatherData')"
-              :aria-label="languageStore.t('app.refreshWeatherData')"
-              @click="refreshAll"
-            >
-              <svg
-                class="size-4"
-                :class="{ 'animate-spin': isLoading }"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                aria-hidden="true"
+            <Transition name="fade">
+              <div
+                v-if="isMenuOpen"
+                class="absolute right-0 top-full mt-1 flex flex-col items-start gap-1 rounded-xl border border-slate-200 bg-white p-2 shadow-lg dark:border-slate-800 dark:bg-slate-950 min-w-[120px]"
               >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15"
-                />
-              </svg>
-            </button>
-            </div>
+                <button
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-storm-water-700 transition-colors hover:bg-slate-100 hover:text-dutch-orange dark:text-sea-mist-200 dark:hover:bg-slate-800 dark:hover:text-dutch-orange"
+                  :title="languageLabel"
+                  @click="languageStore.toggleLanguage(); isMenuOpen = false"
+                >
+                  <span class="text-xs uppercase tracking-wider">{{ languageStore.language }}</span>
+                  <span>{{ languageStore.language === 'nl' ? 'English' : 'Nederlands' }}</span>
+                </button>
+
+                <button
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-storm-water-700 transition-colors hover:bg-slate-100 hover:text-dutch-orange dark:text-sea-mist-200 dark:hover:bg-slate-800 dark:hover:text-dutch-orange"
+                  :title="themeLabel"
+                  @click="cycleTheme(); isMenuOpen = false"
+                >
+                  <svg
+                    v-if="themeStore.theme === 'dark'"
+                    class="size-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="4" />
+                    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                  </svg>
+                  <svg
+                    v-else-if="themeStore.theme === 'light'"
+                    class="size-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3c0 5 4 9 9 9 .27 0 .53-.01.79-.05Z" />
+                  </svg>
+                  <svg
+                    v-else
+                    class="size-4 shrink-0"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <circle cx="12" cy="12" r="3" />
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.65 1.65 0 0 0 15 19.4a1.65 1.65 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.52 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 19.4 9c0 .66.39 1.26 1 1.5H21a2 2 0 1 1 0 4h-.09c-.61.24-1.01.84-1.51 1.5Z" />
+                  </svg>
+                  <span class="capitalize">{{ themeStore.theme }}</span>
+                </button>
+
+                <button
+                  class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-storm-water-700 transition-colors hover:bg-slate-100 hover:text-dutch-orange disabled:opacity-40 dark:text-sea-mist-200 dark:hover:bg-slate-800 dark:hover:text-dutch-orange"
+                  :disabled="isLoading"
+                  :title="isLoading ? languageStore.t('app.refreshing') : languageStore.t('app.refreshWeatherData')"
+                  @click="refreshAll(); isMenuOpen = false"
+                >
+                  <svg
+                    class="size-4 shrink-0"
+                    :class="{ 'animate-spin': isLoading }"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="2"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 0 0 4.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 0 1-15.357-2m15.357 2H15" />
+                  </svg>
+                  <span>{{ languageStore.t('app.refreshWeatherData') || 'Refresh' }}</span>
+                </button>
+              </div>
+            </Transition>
             
             <Transition name="fade">
-              <span v-if="isOnline && lastUpdatedLabel" class="pr-1 text-[9px] uppercase tracking-wider text-storm-water-400 dark:text-sea-mist-300/50">
+              <span v-if="isOnline && lastUpdatedLabel" class="absolute -bottom-3 right-1 whitespace-nowrap text-[9px] uppercase tracking-wider text-storm-water-400 dark:text-sea-mist-300/50 pointer-events-none">
                 {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}
               </span>
             </Transition>

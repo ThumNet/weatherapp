@@ -300,6 +300,12 @@ const gridLines = computed(() => {
       <!-- Hero overview -->
       <div class="mb-8 flex flex-col items-center justify-center gap-4 px-4 sm:px-6">
         <div class="flex items-center gap-4">
+          <div class="flex items-start gap-1 leading-none">
+            <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-dutch-orange sm:text-[4.75rem]">
+              {{ temperature }}
+            </span>
+            <span class="mt-2.5 text-[1.7rem] font-normal text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
+          </div>
           <WeatherIcon
             :code="weather.weatherCode"
             :intensity="currentWeatherIntensity"
@@ -307,12 +313,6 @@ const gridLines = computed(() => {
             :size="78"
             class="shrink-0 transition-all duration-300"
           />
-          <div class="flex items-start gap-1 leading-none">
-            <span data-display="true" class="font-display text-[4.5rem] font-medium tracking-[-0.05em] text-dutch-orange sm:text-[4.75rem]">
-              {{ temperature }}
-            </span>
-            <span class="mt-2.5 text-[1.7rem] font-normal text-storm-water-500 dark:text-sea-mist-200/80">°C</span>
-          </div>
         </div>
 
         <div class="min-w-0">

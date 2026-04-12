@@ -393,7 +393,7 @@ watch(
               </Transition>
               
               <Transition name="fade">
-                <span v-if="isOnline && lastUpdatedLabel" class="absolute -bottom-3 right-1 whitespace-nowrap text-[9px] text-storm-water-300/70 dark:text-sea-mist-300/30 pointer-events-none">
+                <span v-if="isOnline && lastUpdatedLabel && !isMenuOpen" class="absolute -bottom-3 right-1 whitespace-nowrap text-[9px] text-storm-water-300/70 dark:text-sea-mist-300/30 pointer-events-none">
                   {{ languageStore.t('app.lastUpdated', { time: lastUpdatedLabel }) }}
                 </span>
               </Transition>

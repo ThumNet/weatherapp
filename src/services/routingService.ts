@@ -12,17 +12,18 @@ export interface RouteFeature {
 }
 
 export async function fetchBikeRoute(start: RoutePoint, end: RoutePoint): Promise<RouteFeature | null> {
-  const url = `https://router.project-osrm.org/route/v1/bicycle/${start.lon},${start.lat};${end.lon},${end.lat}?geometries=geojson&overview=full`
+  const url = `https://brouter.de/brouter?lonlats=${start.lon},${start.lat}|${end.lon},${end.lat}&profile=trekking&alternativeidx=0&format=geojson`
   
   try {
     const res = await fetch(url)
     if (!res.ok) return null
     const data = await res.json()
-    if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+    if (data.features && data.features.length > 0) {
+      const feature = data.features[0]
       return {
-        geometry: data.routes[0].geometry,
-        distance: data.routes[0].distance,
-        duration: data.routes[0].duration
+        geometry: feature.geometry,
+        distance: parseInt(feature.properties['track-length'], 10),
+        duration: parseInt(feature.properties['total-time'], 10)
       }
     }
     return null

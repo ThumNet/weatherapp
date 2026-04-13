@@ -16,8 +16,8 @@ L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 
 const props = defineProps<{
   route: any
-  home: { lat: number; lon: number; name: string }
-  work: { lat: number; lon: number; name: string }
+  origin: { lat: number; lon: number; name: string }
+  destination: { lat: number; lon: number; name: string }
   weather: CurrentWeather | null
   bearing: number
 }>()
@@ -32,7 +32,7 @@ const mapCenter = computed<[number, number]>(() => {
     const midIndex = Math.floor(polylinePoints.value.length / 2)
     return polylinePoints.value[midIndex]
   }
-  return [props.home.lat, props.home.lon]
+  return [props.origin.lat, props.origin.lon]
 })
 
 const bounds = computed(() => {
@@ -138,10 +138,10 @@ function getWindIcon(marker: any) {
       :weight="5"
     />
 
-    <LMarker :lat-lng="[props.home.lat, props.home.lon]">
+    <LMarker :lat-lng="[props.origin.lat, props.origin.lon]">
     </LMarker>
 
-    <LMarker :lat-lng="[props.work.lat, props.work.lon]">
+    <LMarker :lat-lng="[props.destination.lat, props.destination.lon]">
     </LMarker>
 
     <LMarker 

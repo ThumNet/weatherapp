@@ -11,6 +11,7 @@ import type { CurrentWeather } from '@/types/weather'
 
 const commuteStore = useCommuteStore()
 const isOpen = ref(false)
+const isReversed = ref(false)
 
 const route = ref<RouteFeature | null>(null)
 const headwindComponent = ref<number | null>(null)
@@ -30,17 +31,20 @@ async function calculateCommute() {
   loading.value = true
   error.value = null
   try {
-    const routeData = await fetchBikeRoute(commuteStore.home, commuteStore.work)
+    const origin = isReversed.value ? commuteStore.work : commuteStore.home
+    const destination = isReversed.value ? commuteStore.home : commuteStore.work
+
+    const routeData = await fetchBikeRoute(origin, destination)
     if (routeData) {
       route.value = routeData
       
       overallBearing.value = calculateBearing(
-        commuteStore.home.lat, commuteStore.home.lon,
-        commuteStore.work.lat, commuteStore.work.lon
+        origin.lat, origin.lon,
+        destination.lat, destination.lon
       )
       
-      const midLat = (commuteStore.home.lat + commuteStore.work.lat) / 2
-      const midLon = (commuteStore.home.lon + commuteStore.work.lon) / 2
+      const midLat = (origin.lat + destination.lat) / 2
+      const midLon = (origin.lon + destination.lon) / 2
       const weather = await fetchCurrentWeather(midLat, midLon)
       midWeather.value = weather
       
@@ -62,9 +66,13 @@ onMounted(() => {
   }
 })
 
-watch(() => [commuteStore.home, commuteStore.work], () => {
+watch(() => [commuteStore.home, commuteStore.work, isReversed.value], () => {
   void calculateCommute()
 }, { deep: true })
+
+function toggleDirection() {
+  isReversed.value = !isReversed.value
+}
 
 const headwindMsg = computed(() => {
   if (headwindComponent.value === null) return ''
@@ -114,7 +122,10 @@ const onSelectWork = (c: AddressSearchResult) => {
             <div class="font-medium text-[13px] text-storm-water-800 dark:text-dune-foam" :class="{'text-red-600 dark:text-red-400': headwindComponent !== null && headwindComponent > 0, 'text-green-600 dark:text-green-400': headwindComponent !== null && headwindComponent <= 0}">
               {{ headwindMsg }}
             </div>
-            <div class="text-[10px] uppercase tracking-wider text-storm-water-500 dark:text-sea-mist-300/70 mt-1">Home to Work</div>
+            <button @click.stop="toggleDirection" class="group flex items-center justify-end gap-1 text-[10px] uppercase tracking-wider text-storm-water-500 hover:text-dutch-orange dark:text-sea-mist-300/70 dark:hover:text-dutch-orange mt-1 ml-auto transition-colors" aria-label="Swap direction">
+              <span>{{ isReversed ? 'Work to Home' : 'Home to Work' }}</span>
+              <svg class="size-3.5 transition-transform group-hover:scale-110" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 14v-12"/><path d="M3 14l4 4 4-4"/><path d="M19 10l-4-4-4 4"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -170,13 +181,17 @@ const onSelectWork = (c: AddressSearchResult) => {
               <div class="text-sm font-semibold text-storm-water-800 dark:text-dune-foam">
                 {{ (route.distance / 1000).toFixed(1) }} km
               </div>
+              <button @click="toggleDirection" class="flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-storm-water-700 shadow-sm transition-colors hover:text-dutch-orange dark:border-slate-700 dark:bg-slate-800 dark:text-sea-mist-100 dark:hover:text-dutch-orange">
+                <svg class="size-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v12"/><path d="M15 14v-12"/><path d="M3 14l4 4 4-4"/><path d="M19 10l-4-4-4 4"/></svg>
+                <span>{{ isReversed ? 'Work to Home' : 'Home to Work' }}</span>
+              </button>
               <div class="text-sm font-medium text-storm-water-500 dark:text-sea-mist-300">
                 ~{{ Math.round(route.duration / 60) }} min
               </div>
             </div>
             
             <div v-if="commuteStore.home && commuteStore.work" class="flex-1 min-h-[300px] w-full rounded-xl overflow-hidden relative z-0 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
-               <CommuteMapRenderer v-if="route" :route="route" :home="commuteStore.home" :work="commuteStore.work" :weather="midWeather" :bearing="overallBearing" />
+               <CommuteMapRenderer v-if="route" :route="route" :origin="isReversed ? commuteStore.work : commuteStore.home" :destination="isReversed ? commuteStore.home : commuteStore.work" :weather="midWeather" :bearing="overallBearing" />
                <div v-else class="flex h-full items-center justify-center text-storm-water-500 text-sm">
                  <svg class="size-5 animate-spin mr-2" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none" /><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" /></svg>
                  Loading map...

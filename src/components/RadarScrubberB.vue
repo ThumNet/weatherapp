@@ -122,7 +122,7 @@ const ticks = computed<TickEntry[]>(() => {
 const thumbPosition = computed<number>(() => {
   if (props.frames.length <= 1) return 0
   // Find the tick that matches the current frame index (non-placeholder ticks)
-  const realTicks = ticks.value.filter(t => !t.isPlaceholder)
+  const realTicks = ticks.value.filter((t) => !t.isPlaceholder)
   if (realTicks.length === 0) return 0
   const currentTick = realTicks[props.currentFrameIndex]
   return currentTick ? currentTick.percent : 0
@@ -133,7 +133,7 @@ const filledWidth = computed<number>(() => thumbPosition.value)
 
 /** Percentage position (0–100) of the "now" boundary on the track */
 const nowPosition = computed<number>(() => {
-  const nowTick = ticks.value.find(t => t.isNow)
+  const nowTick = ticks.value.find((t) => t.isNow)
   return nowTick ? nowTick.percent : 100
 })
 
@@ -151,7 +151,7 @@ function calcIndexFromPointer(e: PointerEvent): number {
   // Map the ratio to the tick timeline, but clamp to the last real frame
   const percent = ratio * 100
   // Find the closest real (non-placeholder) tick
-  const realTicks = ticks.value.filter(t => !t.isPlaceholder)
+  const realTicks = ticks.value.filter((t) => !t.isPlaceholder)
   let closest = 0
   let minDist = Infinity
   for (let i = 0; i < realTicks.length; i++) {
@@ -196,7 +196,7 @@ function onPointerDown(event: PointerEvent): void {
       :aria-valuemin="0"
       :aria-valuemax="frameCount - 1"
       :aria-valuenow="currentFrameIndex"
-       :aria-label="languageStore.t('scrubber.timeline')"
+      :aria-label="languageStore.t('scrubber.timeline')"
       @pointerdown="onPointerDown"
     >
       <!-- ── Track ───────────────────────────────────────────────────── -->
@@ -238,8 +238,12 @@ function onPointerDown(event: PointerEvent): void {
       >
         <div class="flex size-[44px] items-center justify-center">
           <div
-            class="size-5 rounded-full ring-2 ring-white/70 shadow-sm transition-colors duration-150 dark:ring-dune-foam/70"
-            :class="isNowcast ? 'bg-dutch-orange dark:bg-[#d4a261]' : 'bg-storm-water-500 dark:bg-[#7192a4]'"
+            class="size-5 rounded-full shadow-sm ring-2 ring-white/70 transition-colors duration-150 dark:ring-dune-foam/70"
+            :class="
+              isNowcast
+                ? 'bg-dutch-orange dark:bg-[#d4a261]'
+                : 'bg-storm-water-500 dark:bg-[#7192a4]'
+            "
           />
         </div>
       </div>
@@ -274,15 +278,17 @@ function onPointerDown(event: PointerEvent): void {
     <div class="mt-1 text-center">
       <span
         class="text-sm font-semibold tabular-nums"
-        :class="isNowcast ? 'text-amber-500 dark:text-amber-400' : 'text-storm-water-800 dark:text-white'"
+        :class="
+          isNowcast ? 'text-amber-500 dark:text-amber-400' : 'text-storm-water-800 dark:text-white'
+        "
       >
         {{ currentTimeLabel }}
       </span>
       <span
-        v-if="ticks.find(t => t.isNow && t.isCurrent)"
+        v-if="ticks.find((t) => t.isNow && t.isCurrent)"
         class="ml-1.5 text-[10px] font-medium uppercase tracking-wide text-storm-water-400 dark:text-white/50"
       >
-         {{ languageStore.t('scrubber.now') }}
+        {{ languageStore.t('scrubber.now') }}
       </span>
     </div>
 
@@ -291,7 +297,7 @@ function onPointerDown(event: PointerEvent): void {
       v-if="framesLoaded && !hasNowcast"
       class="mt-1 text-center text-[10px] text-storm-water-400 dark:text-white/40"
     >
-       {{ languageStore.t('scrubber.noForecast') }}
+      {{ languageStore.t('scrubber.noForecast') }}
     </p>
   </div>
 </template>

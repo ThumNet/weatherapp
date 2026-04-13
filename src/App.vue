@@ -12,6 +12,7 @@ import { useThemeStore } from '@/stores/theme'
 import { reverseGeocode } from '@/services/weatherService'
 import LocationSearch from '@/components/LocationSearch.vue'
 import CurrentWeather from '@/components/CurrentWeather.vue'
+import CommuteWidget from '@/components/CommuteWidget.vue'
 import HourlyForecast from '@/components/HourlyForecast.vue'
 import DailyForecast from '@/components/DailyForecast.vue'
 import RadarMap from '@/components/RadarMap.vue'
@@ -419,6 +420,9 @@ watch(
           <CurrentWeather @open-radar="openRadar" />
         </Transition>
         <RadarMap ref="radarRef" />
+        <Transition name="content-fade" appear>
+          <CommuteWidget />
+        </Transition>
         <Transition name="content-fade" appear>
           <HourlyForecast />
         </Transition>

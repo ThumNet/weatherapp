@@ -3,6 +3,10 @@ import { computed } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { useWeatherStore } from '@/stores/weather'
 import WeatherIcon from '@/components/WeatherIcon.vue'
+import WidgetContainer from '@/components/WidgetContainer.vue'
+import WidgetHeader from '@/components/WidgetHeader.vue'
+import WidgetError from '@/components/WidgetError.vue'
+import WidgetLoadingBar from '@/components/WidgetLoadingBar.vue'
 import { degreesToCompass, type WeatherIntensity } from '@/utils/weatherCodes'
 
 const weatherStore = useWeatherStore()
@@ -63,7 +67,10 @@ interface DayRow {
  *   moderate: 7.6  to 20   mm  → 'moderate'
  *   heavy:    > 20 mm          → 'heavy'
  */
-function dailyIntensity(precipHours: number | null, precipSum: number): WeatherIntensity | undefined {
+function dailyIntensity(
+  precipHours: number | null,
+  precipSum: number,
+): WeatherIntensity | undefined {
   if (precipHours !== null) {
     // Primary: avg mm/h over wet hours
     if (precipHours === 0 || precipSum <= 0) return undefined
@@ -120,55 +127,38 @@ const error = computed(() => weatherStore.error)
 </script>
 
 <template>
-  <div>
-  <!-- Loading skeleton -->
-  <div
-    v-if="isLoading"
-    class="w-full pb-6"
-    aria-busy="true"
-    :aria-label="languageStore.t('daily.loading')"
-  >
-    <div class="px-2">
-    <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
-    <div v-for="n in 7" :key="n" class="flex animate-pulse items-center gap-3 py-2.5">
-      <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
-      <div class="h-6 w-6 rounded bg-slate-200 dark:bg-white/20" />
-      <div class="ml-auto h-4 w-20 rounded bg-slate-200 dark:bg-white/20" />
-      <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
-    </div>
-  </div>
-  </div>
-
-  <!-- Error state (no data at all) -->
-  <div
-    v-else-if="error && !days.length"
-    class="w-full border border-[#a96f61]/30 bg-[#b97a6a]/18 p-5 dark:border-[#dca293]/20 dark:bg-[#7d4c42]/18"
-    role="alert"
-  >
-    <div class="flex items-start gap-3">
-      <span class="mt-0.5 text-2xl" aria-hidden="true">⚠️</span>
-      <div>
-        <p class="font-semibold">{{ languageStore.t('daily.error') }}</p>
-        <p class="mt-1 text-sm text-red-600 dark:text-red-200">{{ error }}</p>
+  <div class="relative w-full">
+    <div
+      v-if="isLoading"
+      class="w-full pb-6"
+      aria-busy="true"
+      :aria-label="languageStore.t('daily.loading')"
+    >
+      <div class="px-2">
+        <div class="mb-4 h-4 w-28 animate-pulse rounded-lg bg-slate-200 dark:bg-white/20" />
+        <div v-for="n in 7" :key="n" class="flex animate-pulse items-center gap-3 py-2.5">
+          <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
+          <div class="h-6 w-6 rounded bg-slate-200 dark:bg-white/20" />
+          <div class="ml-auto h-4 w-20 rounded bg-slate-200 dark:bg-white/20" />
+          <div class="h-4 w-10 rounded bg-slate-200 dark:bg-white/20" />
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Forecast card -->
-  <div
-    v-else-if="days.length"
-    class="relative w-full pb-6 transition-all duration-500"
-  >
-    <!-- Subtle loading bar when refreshing with existing data -->
-    <div
-      v-if="weatherStore.loading"
-      class="absolute left-0 top-0 z-10 h-0.5 w-full animate-pulse bg-dutch-orange"
+    <!-- Error state (no data at all) -->
+    <WidgetError
+      v-else-if="error && !days.length"
+      :title="languageStore.t('daily.error')"
+      :error="error"
     />
 
-    <div class="relative z-10 px-2">
-      <h2 class="mb-4 text-sm font-semibold uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/65">
-        {{ languageStore.t('daily.title') }}
-      </h2>
+    <!-- Forecast card -->
+    <WidgetContainer v-else-if="days.length" class="border-b-0 pb-2">
+      <template #loading-bar>
+        <WidgetLoadingBar v-if="weatherStore.loading" />
+      </template>
+
+      <WidgetHeader :title="languageStore.t('daily.title')" />
 
       <!-- Forecast rows -->
       <div
@@ -180,11 +170,15 @@ const error = computed(() => weatherStore.error)
         <div class="w-16 shrink-0">
           <span
             class="block text-sm font-semibold"
-            :class="index === 0 ? 'text-dutch-orange' : 'text-storm-water-700 dark:text-sea-mist-100'"
+            :class="
+              index === 0 ? 'text-dutch-orange' : 'text-storm-water-700 dark:text-sea-mist-100'
+            "
           >
             {{ day.dayName }}
           </span>
-          <span class="block text-xs text-storm-water-400 dark:text-sea-mist-300/55">{{ day.dateLabel }}</span>
+          <span class="block text-xs text-storm-water-400 dark:text-sea-mist-300/55">{{
+            day.dateLabel
+          }}</span>
         </div>
 
         <!-- Weather icon -->
@@ -195,34 +189,60 @@ const error = computed(() => weatherStore.error)
         />
 
         <!-- Precipitation info -->
-        <div class="flex flex-1 items-center gap-1 text-xs text-storm-water-600 dark:text-sea-mist-200">
-          <div class="w-12 shrink-0 flex items-center gap-0.5">
+        <div
+          class="flex flex-1 items-center gap-1 text-xs text-storm-water-600 dark:text-sea-mist-200"
+        >
+          <div class="flex w-12 shrink-0 items-center gap-0.5">
             <span class="size-3.5" aria-hidden="true" v-html="precipitationIcon" />
             <span>{{ day.precipProb }}%</span>
           </div>
-          <div class="w-12 shrink-0 text-storm-water-500 dark:text-[#d7b07c]/82">
+          <div class="dark:text-[#d7b07c]/82 w-12 shrink-0 text-storm-water-500">
             <span v-if="day.precipSum > 0">{{ day.precipSum }}mm</span>
           </div>
-          <div v-if="day.windSpeed !== null" class="flex items-center gap-1 text-storm-water-500 dark:text-sea-mist-300/70">
-            <svg class="size-3.5 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/>
+          <div
+            v-if="day.windSpeed !== null"
+            class="flex items-center gap-1 text-storm-water-500 dark:text-sea-mist-300/70"
+          >
+            <svg
+              class="size-3.5 shrink-0"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.75"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path
+                d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"
+              />
             </svg>
-            <span>{{ Math.round(day.windSpeed) }} {{ day.windDirection !== null ? degreesToCompass(day.windDirection) : '' }}</span>
+            <span
+              >{{ Math.round(day.windSpeed) }}
+              {{ day.windDirection !== null ? degreesToCompass(day.windDirection) : '' }}</span
+            >
           </div>
         </div>
 
         <!-- Temperature range (pushed to the right) -->
         <div class="ml-auto flex items-baseline gap-1 tabular-nums">
-          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam">{{ day.tempMax }}°</span>
-          <span class="text-xs text-storm-water-400 dark:text-sea-mist-300/55">/ {{ day.tempMin }}°</span>
+          <span class="text-base font-semibold text-storm-water-800 dark:text-dune-foam"
+            >{{ day.tempMax }}°</span
+          >
+          <span class="text-xs text-storm-water-400 dark:text-sea-mist-300/55"
+            >/ {{ day.tempMin }}°</span
+          >
         </div>
       </div>
 
       <!-- Inline error when a refresh fails but old data is shown -->
-      <p v-if="error" class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]" role="alert">
+      <p
+        v-if="error"
+        class="mt-3 text-center text-xs text-[#7a5422] dark:text-[#e7c48b]"
+        role="alert"
+      >
         ⚠️ {{ languageStore.t('common.refreshFailed') }}
       </p>
-    </div>
-  </div>
+    </WidgetContainer>
   </div>
 </template>

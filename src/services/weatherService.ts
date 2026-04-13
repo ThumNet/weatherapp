@@ -69,13 +69,13 @@ export async function searchAddresses(query: string): Promise<AddressSearchResul
     throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`)
   }
 
-  const data: unknown[] = await response.json()
+  const data: any[] = await response.json()
 
   if (!data || data.length === 0) {
     return []
   }
 
-  return data.map((r: unknown) => {
+  return data.map((r: any) => {
     // Attempt to extract a short, recognizable name, e.g., "Street 1" or "Location Name"
     const name = r.address?.road && r.address?.house_number 
       ? `${r.address.road} ${r.address.house_number}`

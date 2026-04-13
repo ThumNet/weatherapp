@@ -2,11 +2,11 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
 import { useLocationStore } from '@/stores/location'
-import { searchCities } from '@/services/weatherService'
-import type { CitySearchResult } from '@/types/weather'
+import { searchAddresses } from '@/services/weatherService'
+import type { AddressSearchResult } from '@/types/weather'
 
 const emit = defineEmits<{
-  (e: 'select', city: CitySearchResult): void
+  (e: 'select', city: AddressSearchResult): void
   (e: 'cancel'): void
 }>()
 
@@ -14,7 +14,7 @@ const locationStore = useLocationStore()
 const languageStore = useLanguageStore()
 
 const query = ref('')
-const results = ref<CitySearchResult[]>([])
+const results = ref<AddressSearchResult[]>([])
 const isOpen = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -37,7 +37,7 @@ async function performSearch(value: string): Promise<void> {
   errorMessage.value = null
 
   try {
-    results.value = await searchCities(trimmed)
+    results.value = await searchAddresses(trimmed)
     isOpen.value = results.value.length > 0
     activeIndex.value = -1
   } catch {
@@ -58,7 +58,7 @@ watch(query, (newVal) => {
   }, 300)
 })
 
-function selectCity(city: CitySearchResult): void {
+function selectCity(city: AddressSearchResult): void {
   query.value = ''
   results.value = []
   isOpen.value = false
@@ -110,9 +110,8 @@ onUnmounted(() => {
   }
 })
 
-function getCitySubtitle(city: CitySearchResult): string {
-  const parts = [city.admin1, city.country].filter(Boolean)
-  return parts.join(', ')
+function getCitySubtitle(city: AddressSearchResult): string {
+  return city.subtitle
 }
 </script>
 

@@ -74,11 +74,11 @@ const headwindMsg = computed(() => {
   return `Light Tailwind (${Math.abs(headwindComponent.value).toFixed(1)} km/h)`
 })
 
-const onSelectHome = (c: CitySearchResult) => {
+const onSelectHome = (c: AddressSearchResult) => {
   commuteStore.setHome(c.latitude, c.longitude, c.name)
 }
 
-const onSelectWork = (c: CitySearchResult) => {
+const onSelectWork = (c: AddressSearchResult) => {
   commuteStore.setWork(c.latitude, c.longitude, c.name)
 }
 </script>

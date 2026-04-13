@@ -69,14 +69,6 @@ const isCurrentFrameNowcast = computed<boolean>(() => {
   return currentFrameIndex.value >= nowcastStartIndex.value
 })
 
-const currentTimeLabel = computed<string>(() => {
-  if (!currentFrame.value) return ''
-  const timeStr = formatFrameTime(currentFrame.value.time)
-  return isCurrentFrameNowcast.value
-    ? `${timeStr} (${languageStore.t('scrubber.forecast')})`
-    : timeStr
-})
-
 const frameCount = computed(() => frames.value.length)
 
 // ---------------------------------------------------------------------------

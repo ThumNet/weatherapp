@@ -52,6 +52,13 @@ export interface CitySearchResult {
   admin1?: string
 }
 
+export interface AddressSearchResult {
+  name: string
+  latitude: number
+  longitude: number
+  subtitle: string
+}
+
 // ---------------------------------------------------------------------------
 // Current weather
 // ---------------------------------------------------------------------------

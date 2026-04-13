@@ -1,4 +1,5 @@
 import type {
+  AddressSearchResult,
   CitySearchResult,
   CurrentWeather,
   DailyForecast,
@@ -45,6 +46,48 @@ export async function searchCities(query: string): Promise<CitySearchResult[]> {
     country: r.country,
     admin1: r.admin1,
   }))
+}
+
+/**
+ * Search for addresses using the Nominatim API.
+ * Returns up to 5 matching results, restricted to the Netherlands.
+ */
+export async function searchAddresses(query: string): Promise<AddressSearchResult[]> {
+  const trimmed = query.trim()
+  if (!trimmed) return []
+
+  const url = `${NOMINATIM_BASE}/search?q=${encodeURIComponent(trimmed)}&format=json&countrycodes=nl&limit=5&addressdetails=1`
+
+  const response = await fetch(url, {
+    headers: {
+      'User-Agent': 'DutchWeatherPWA/1.0 (https://github.com/example/dutch-weather)',
+      Accept: 'application/json',
+    },
+  })
+
+  if (!response.ok) {
+    throw new Error(`Nominatim API error: ${response.status} ${response.statusText}`)
+  }
+
+  const data: any[] = await response.json()
+
+  if (!data || data.length === 0) {
+    return []
+  }
+
+  return data.map((r: any) => {
+    // Attempt to extract a short, recognizable name, e.g., "Street 1" or "Location Name"
+    const name = r.address?.road && r.address?.house_number 
+      ? `${r.address.road} ${r.address.house_number}`
+      : (r.name || r.display_name.split(',')[0])
+      
+    return {
+      name: name,
+      latitude: parseFloat(r.lat),
+      longitude: parseFloat(r.lon),
+      subtitle: r.display_name
+    }
+  })
 }
 
 /**

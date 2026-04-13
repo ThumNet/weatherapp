@@ -73,7 +73,7 @@ const isDecorative = computed(() => props.label === undefined)
     viewBox="0 0 64 64"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    class="select-none shrink-0"
+    class="shrink-0 select-none"
     v-bind="isDecorative ? { 'aria-hidden': 'true' } : { role: 'img', 'aria-label': ariaLabel }"
     v-html="svgPath"
   />

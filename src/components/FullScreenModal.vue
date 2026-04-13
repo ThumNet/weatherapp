@@ -20,15 +20,18 @@ function onKeydown(event: KeyboardEvent): void {
 }
 
 // Watch isOpen to: lock body scroll, manage key listener
-watch(() => props.isOpen, (open) => {
-  if (open) {
-    document.body.classList.add('overflow-hidden')
-    document.addEventListener('keydown', onKeydown)
-  } else {
-    document.body.classList.remove('overflow-hidden')
-    document.removeEventListener('keydown', onKeydown)
-  }
-})
+watch(
+  () => props.isOpen,
+  (open) => {
+    if (open) {
+      document.body.classList.add('overflow-hidden')
+      document.addEventListener('keydown', onKeydown)
+    } else {
+      document.body.classList.remove('overflow-hidden')
+      document.removeEventListener('keydown', onKeydown)
+    }
+  },
+)
 
 onUnmounted(() => {
   document.body.classList.remove('overflow-hidden')
@@ -47,10 +50,14 @@ onUnmounted(() => {
         :aria-label="ariaLabel || title"
       >
         <!-- Top bar -->
-        <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3 pt-safe dark:border-slate-800 dark:bg-slate-950">
+        <div
+          class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3 pt-safe dark:border-slate-800 dark:bg-slate-950"
+        >
           <div class="flex items-center gap-2">
             <div>
-              <p class="text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/55">
+              <p
+                class="text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/55"
+              >
                 {{ subtitle }}
               </p>
               <h2 class="text-lg font-semibold text-storm-water-800 dark:text-dune-foam">
@@ -89,7 +96,9 @@ onUnmounted(() => {
 <style scoped>
 .fs-modal-enter-active,
 .fs-modal-leave-active {
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 }
 
 .fs-modal-enter-from,

@@ -56,7 +56,9 @@ const lmapRef = ref<InstanceType<typeof LMap> | null>(null)
 // ---------------------------------------------------------------------------
 // Computed helpers
 // ---------------------------------------------------------------------------
-const currentFrame = computed<RadarFrame | null>(() => frames.value[currentFrameIndex.value] ?? null)
+const currentFrame = computed<RadarFrame | null>(
+  () => frames.value[currentFrameIndex.value] ?? null,
+)
 
 const currentTileUrl = computed<string>(() => {
   if (!currentFrame.value || !radarHost.value) return ''
@@ -70,7 +72,9 @@ const isCurrentFrameNowcast = computed<boolean>(() => {
 const currentTimeLabel = computed<string>(() => {
   if (!currentFrame.value) return ''
   const timeStr = formatFrameTime(currentFrame.value.time)
-  return isCurrentFrameNowcast.value ? `${timeStr} (${languageStore.t('scrubber.forecast')})` : timeStr
+  return isCurrentFrameNowcast.value
+    ? `${timeStr} (${languageStore.t('scrubber.forecast')})`
+    : timeStr
 })
 
 const frameCount = computed(() => frames.value.length)
@@ -158,7 +162,8 @@ watch(isOpen, async (open) => {
     await nextTick()
     // Give the transition a frame to render the map container before invalidating
     setTimeout(() => {
-      const mapInstance = (lmapRef.value as unknown as { leafletObject?: L.Map } | null)?.leafletObject
+      const mapInstance = (lmapRef.value as unknown as { leafletObject?: L.Map } | null)
+        ?.leafletObject
       mapInstance?.invalidateSize()
     }, 150)
   }
@@ -192,155 +197,167 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
   >
     <!-- Map area (flex-1 so it fills all remaining space) -->
     <div class="relative flex-1 overflow-hidden">
-
-          <!-- Loading state -->
-          <div
-            v-if="loading"
-            class="flex h-full items-center justify-center bg-slate-50 dark:bg-slate-900"
-            aria-busy="true"
-            :aria-label="languageStore.t('radar.loadingMap')"
+      <!-- Loading state -->
+      <div
+        v-if="loading"
+        class="flex h-full items-center justify-center bg-slate-50 dark:bg-slate-900"
+        aria-busy="true"
+        :aria-label="languageStore.t('radar.loadingMap')"
+      >
+        <div
+          class="flex flex-col items-center gap-3 text-storm-water-400 dark:text-sea-mist-200/75"
+        >
+          <svg
+            class="size-8 animate-spin text-dutch-orange"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            aria-hidden="true"
           >
-            <div class="flex flex-col items-center gap-3 text-storm-water-400 dark:text-sea-mist-200/75">
-              <svg
-                class="size-8 animate-spin text-dutch-orange"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-              >
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-                <path
-                  class="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              <span class="text-sm">{{ languageStore.t('radar.loading') }}</span>
-            </div>
-          </div>
-
-          <!-- Error state -->
-          <div
-            v-else-if="error && frames.length === 0"
-            class="flex h-full items-center justify-center bg-slate-50 px-6 dark:bg-slate-900"
-            role="alert"
-          >
-            <div class="rounded-[1.1rem] border border-red-200 bg-red-50 px-5 py-4 text-center text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
-              <span class="mb-1 block text-2xl">⚠️</span>
-              {{ error }}
-              <button
-                class="mt-3 block w-full rounded-xl border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:bg-red-900/40 dark:text-red-100 dark:hover:bg-red-900/60"
-                @click="loadFrames"
-              >
-                 {{ languageStore.t('radar.retry') }}
-              </button>
-            </div>
-          </div>
-
-          <!-- Leaflet map -->
-          <LMap
-            v-else
-            ref="lmapRef"
-            :zoom="zoom"
-            :center="mapCenter"
-            :use-global-leaflet="false"
-            style="height: 100%; width: 100%"
-          >
-            <!-- OpenStreetMap base layer -->
-            <LTileLayer
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
-              :options="{ maxZoom: 18 }"
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="10"
+              stroke="currentColor"
+              stroke-width="4"
             />
-
-            <!-- Rain radar overlay -->
-            <LTileLayer
-              v-if="currentTileUrl"
-              :key="currentTileUrl"
-              :url="currentTileUrl"
-              :options="{ opacity: 0.7, maxNativeZoom: RADAR_MAX_ZOOM, maxZoom: 18 }"
-              attribution="RainViewer"
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M4 12a8 8 0 0 1 8-8V0C5.373 0 0 5.373 0 12h4z"
             />
-
-            <!-- User location marker -->
-            <LMarker :lat-lng="mapCenter" />
-          </LMap>
+          </svg>
+          <span class="text-sm">{{ languageStore.t('radar.loading') }}</span>
         </div>
+      </div>
 
-        <!-- Animation controls -->
-        <div class="relative z-10 shrink-0 border-t border-slate-200 bg-white px-5 py-4 pb-safe dark:border-slate-800 dark:bg-slate-950">
-          <!-- Timeline scrubber -->
-          <div class="mb-3">
-            <RadarScrubberB
-              :frames="frames"
-              :current-frame-index="currentFrameIndex"
-              :nowcast-start-index="nowcastStartIndex"
-              :frames-loaded="framesLoaded"
-              @update:current-frame-index="currentFrameIndex = $event"
-              @scrub-start="stopAnimation"
-            />
-          </div>
-
-          <!-- Playback buttons -->
-          <div class="flex items-center justify-center gap-4">
-            <!-- Step back — 44px min tap target -->
-            <button
-              class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
-              :disabled="currentFrameIndex === 0 || frames.length === 0"
-              :aria-label="languageStore.t('radar.previousFrame')"
-              @click="stepBack"
-            >
-              <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
-              </svg>
-            </button>
-
-            <!-- Play / Pause — 48px to make it the obvious CTA -->
-            <button
-              class="flex size-12 items-center justify-center text-storm-water-800 transition hover:text-dutch-orange active:text-storm-water-900 disabled:opacity-40 dark:text-[#FF9B00] dark:hover:brightness-125 dark:active:brightness-90"
-              :aria-label="isPlaying ? languageStore.t('radar.pauseAnimation') : languageStore.t('radar.playAnimation')"
-              :disabled="frames.length === 0"
-              @click="togglePlay"
-            >
-              <!-- Play icon -->
-              <svg
-                v-if="!isPlaying"
-                class="size-6 translate-x-0.5"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M8 5v14l11-7z" />
-              </svg>
-              <!-- Pause icon -->
-              <svg
-                v-else
-                class="size-6"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-                aria-hidden="true"
-              >
-                <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
-              </svg>
-            </button>
-
-            <!-- Step forward — 44px min tap target -->
-            <button
-              class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
-              :disabled="currentFrameIndex === frameCount - 1 || frames.length === 0"
-              :aria-label="languageStore.t('radar.nextFrame')"
-              @click="stepForward"
-            >
-              <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M6 18l8.5-6L6 6v12zm2.5-6 6-4.35v8.69L8.5 12zM16 6h2v12h-2z" />
-              </svg>
-            </button>
-          </div>
-
-          <!-- Attribution note -->
-          <p class="mt-2 text-center text-[10px] tracking-[0.16em] text-storm-water-400 dark:text-sea-mist-300/35">
-            {{ languageStore.t('radar.dataBy') }}
-          </p>
+      <!-- Error state -->
+      <div
+        v-else-if="error && frames.length === 0"
+        class="flex h-full items-center justify-center bg-slate-50 px-6 dark:bg-slate-900"
+        role="alert"
+      >
+        <div
+          class="rounded-[1.1rem] border border-red-200 bg-red-50 px-5 py-4 text-center text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200"
+        >
+          <span class="mb-1 block text-2xl">⚠️</span>
+          {{ error }}
+          <button
+            class="mt-3 block w-full rounded-xl border border-red-200 bg-white px-4 py-2 text-xs font-medium text-red-700 transition hover:bg-red-50 dark:border-red-900/50 dark:bg-red-900/40 dark:text-red-100 dark:hover:bg-red-900/60"
+            @click="loadFrames"
+          >
+            {{ languageStore.t('radar.retry') }}
+          </button>
         </div>
+      </div>
+
+      <!-- Leaflet map -->
+      <LMap
+        v-else
+        ref="lmapRef"
+        :zoom="zoom"
+        :center="mapCenter"
+        :use-global-leaflet="false"
+        style="height: 100%; width: 100%"
+      >
+        <!-- OpenStreetMap base layer -->
+        <LTileLayer
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution="&copy; <a href='https://www.openstreetmap.org/copyright'>OpenStreetMap</a> contributors"
+          :options="{ maxZoom: 18 }"
+        />
+
+        <!-- Rain radar overlay -->
+        <LTileLayer
+          v-if="currentTileUrl"
+          :key="currentTileUrl"
+          :url="currentTileUrl"
+          :options="{ opacity: 0.7, maxNativeZoom: RADAR_MAX_ZOOM, maxZoom: 18 }"
+          attribution="RainViewer"
+        />
+
+        <!-- User location marker -->
+        <LMarker :lat-lng="mapCenter" />
+      </LMap>
+    </div>
+
+    <!-- Animation controls -->
+    <div
+      class="relative z-10 shrink-0 border-t border-slate-200 bg-white px-5 py-4 pb-safe dark:border-slate-800 dark:bg-slate-950"
+    >
+      <!-- Timeline scrubber -->
+      <div class="mb-3">
+        <RadarScrubberB
+          :frames="frames"
+          :current-frame-index="currentFrameIndex"
+          :nowcast-start-index="nowcastStartIndex"
+          :frames-loaded="framesLoaded"
+          @update:current-frame-index="currentFrameIndex = $event"
+          @scrub-start="stopAnimation"
+        />
+      </div>
+
+      <!-- Playback buttons -->
+      <div class="flex items-center justify-center gap-4">
+        <!-- Step back — 44px min tap target -->
+        <button
+          class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
+          :disabled="currentFrameIndex === 0 || frames.length === 0"
+          :aria-label="languageStore.t('radar.previousFrame')"
+          @click="stepBack"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 6h2v12H6zm3.5 6 8.5 6V6z" />
+          </svg>
+        </button>
+
+        <!-- Play / Pause — 48px to make it the obvious CTA -->
+        <button
+          class="flex size-12 items-center justify-center text-storm-water-800 transition hover:text-dutch-orange active:text-storm-water-900 disabled:opacity-40 dark:text-[#FF9B00] dark:hover:brightness-125 dark:active:brightness-90"
+          :aria-label="
+            isPlaying
+              ? languageStore.t('radar.pauseAnimation')
+              : languageStore.t('radar.playAnimation')
+          "
+          :disabled="frames.length === 0"
+          @click="togglePlay"
+        >
+          <!-- Play icon -->
+          <svg
+            v-if="!isPlaying"
+            class="size-6 translate-x-0.5"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <path d="M8 5v14l11-7z" />
+          </svg>
+          <!-- Pause icon -->
+          <svg v-else class="size-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+          </svg>
+        </button>
+
+        <!-- Step forward — 44px min tap target -->
+        <button
+          class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 disabled:opacity-30 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
+          :disabled="currentFrameIndex === frameCount - 1 || frames.length === 0"
+          :aria-label="languageStore.t('radar.nextFrame')"
+          @click="stepForward"
+        >
+          <svg class="size-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M6 18l8.5-6L6 6v12zm2.5-6 6-4.35v8.69L8.5 12zM16 6h2v12h-2z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Attribution note -->
+      <p
+        class="mt-2 text-center text-[10px] tracking-[0.16em] text-storm-water-400 dark:text-sea-mist-300/35"
+      >
+        {{ languageStore.t('radar.dataBy') }}
+      </p>
+    </div>
   </FullScreenModal>
 </template>

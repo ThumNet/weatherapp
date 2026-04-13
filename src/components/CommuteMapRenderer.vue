@@ -53,7 +53,7 @@ const originIcon = L.divIcon({
   `,
   className: 'custom-origin-icon',
   iconSize: [0, 0],
-  iconAnchor: [0, 0]
+  iconAnchor: [0, 0],
 })
 
 const destinationIcon = L.divIcon({
@@ -68,60 +68,70 @@ const destinationIcon = L.divIcon({
   `,
   className: 'custom-destination-icon',
   iconSize: [0, 0],
-  iconAnchor: [0, 0]
+  iconAnchor: [0, 0],
 })
 
 const windMarkers = ref<any[]>([])
 
-watch(polylinePoints, async (points) => {
-  if (points.length < 2) {
-    windMarkers.value = []
-    return
-  }
-  
-  const step = Math.floor(points.length / 4)
-  const promises = []
-  
-  for (let i = step; i < points.length - step; i += step) {
-    const pt = points[i]
-    
-    // Calculate local bearing for this segment
-    const nextPt = points[Math.min(i + 1, points.length - 1)]
-    const prevPt = points[Math.max(i - 1, 0)]
-    
-    // Bearing from prevPt to nextPt (Leaflet coordinates are [lat, lon])
-    const segmentBearing = calculateBearing(prevPt[0], prevPt[1], nextPt[0], nextPt[1])
-    
-    promises.push((async () => {
-      try {
-        const localWeather = await fetchCurrentWeather(pt[0], pt[1])
-        const headwind = calculateHeadwind(localWeather.windSpeed, localWeather.windDirection, segmentBearing)
-        const isHeadwind = headwind > 0
-        const color = isHeadwind ? '#ef4444' : '#22c55e' // red for head, green for tail
-        
-        return {
-          latLng: pt,
-          windDir: localWeather.windDirection,
-          windSpeed: localWeather.windSpeed,
-          color,
-          isHeadwind
-        }
-      } catch (err) {
-        console.error('Failed fetching local weather for marker', err)
-        return null
-      }
-    })())
-  }
-  
-  const results = await Promise.all(promises)
-  windMarkers.value = results.filter((r) => r !== null)
-}, { immediate: true })
+watch(
+  polylinePoints,
+  async (points) => {
+    if (points.length < 2) {
+      windMarkers.value = []
+      return
+    }
+
+    const step = Math.floor(points.length / 4)
+    const promises = []
+
+    for (let i = step; i < points.length - step; i += step) {
+      const pt = points[i]
+
+      // Calculate local bearing for this segment
+      const nextPt = points[Math.min(i + 1, points.length - 1)]
+      const prevPt = points[Math.max(i - 1, 0)]
+
+      // Bearing from prevPt to nextPt (Leaflet coordinates are [lat, lon])
+      const segmentBearing = calculateBearing(prevPt[0], prevPt[1], nextPt[0], nextPt[1])
+
+      promises.push(
+        (async () => {
+          try {
+            const localWeather = await fetchCurrentWeather(pt[0], pt[1])
+            const headwind = calculateHeadwind(
+              localWeather.windSpeed,
+              localWeather.windDirection,
+              segmentBearing,
+            )
+            const isHeadwind = headwind > 0
+            const color = isHeadwind ? '#ef4444' : '#22c55e' // red for head, green for tail
+
+            return {
+              latLng: pt,
+              windDir: localWeather.windDirection,
+              windSpeed: localWeather.windSpeed,
+              color,
+              isHeadwind,
+            }
+          } catch (err) {
+            console.error('Failed fetching local weather for marker', err)
+            return null
+          }
+        })(),
+      )
+    }
+
+    const results = await Promise.all(promises)
+    windMarkers.value = results.filter((r) => r !== null)
+  },
+  { immediate: true },
+)
 
 function getWindIcon(marker: any) {
   // Arrow pointing in the direction wind is blowing TO (which is windDirection + 180 mod 360)
   // E.g. Wind from North (0) blows TO South (180).
   const arrowAngle = (marker.windDir + 180) % 360
-  
+
   const html = `
     <div style="display: flex; align-items: center; justify-content: center; gap: 3px; background: white; padding: 2px 6px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid ${marker.color}; color: ${marker.color}; font-weight: bold; font-size: 11px; font-family: ui-sans-serif, system-ui, sans-serif; white-space: nowrap; width: max-content;">
       <div style="transform: rotate(${arrowAngle}deg); display: flex; align-items: center; justify-content: center;">
@@ -137,7 +147,7 @@ function getWindIcon(marker: any) {
     html,
     className: 'wind-arrow-icon',
     iconSize: [64, 24],
-    iconAnchor: [32, 12]
+    iconAnchor: [32, 12],
   })
 }
 </script>
@@ -167,14 +177,13 @@ function getWindIcon(marker: any) {
       :weight="5"
     />
 
-    <LMarker :lat-lng="[props.origin.lat, props.origin.lon]" :icon="originIcon">
-    </LMarker>
+    <LMarker :lat-lng="[props.origin.lat, props.origin.lon]" :icon="originIcon"> </LMarker>
 
     <LMarker :lat-lng="[props.destination.lat, props.destination.lon]" :icon="destinationIcon">
     </LMarker>
 
-    <LMarker 
-      v-for="(marker, idx) in windMarkers" 
+    <LMarker
+      v-for="(marker, idx) in windMarkers"
       :key="idx"
       :lat-lng="marker.latLng"
       :icon="getWindIcon(marker)"

@@ -76,6 +76,9 @@ export default {
       spacing: {
         safe: 'env(safe-area-inset-bottom)',
       },
+      letterSpacing: {
+        widget: '0.24em',
+      },
       screens: {
         xs: '390px',
       },

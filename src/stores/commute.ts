@@ -51,6 +51,16 @@ export const useCommuteStore = defineStore('commute', () => {
     saveToStorage({ home: home.value, work: work.value })
   }
 
+  function clearHome() {
+    home.value = null
+    saveToStorage({ home: null, work: work.value })
+  }
+
+  function clearWork() {
+    work.value = null
+    saveToStorage({ home: home.value, work: null })
+  }
+
   function resetCommute() {
     home.value = null
     work.value = null
@@ -62,6 +72,8 @@ export const useCommuteStore = defineStore('commute', () => {
     work,
     setHome,
     setWork,
+    clearHome,
+    clearWork,
     resetCommute
   }
 })

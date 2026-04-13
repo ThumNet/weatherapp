@@ -65,18 +65,24 @@ weatherapp/
     │   ├── DailyForecast.vue   # 7-day forecast rows
     │   ├── LocationSearch.vue  # Autocomplete city search (Open-Meteo geocoding)
     │   ├── RadarMap.vue        # Full-screen animated radar overlay (Leaflet + RainViewer)
-    │   └── RadarScrubberB.vue  # Timeline scrubber bar used inside RadarMap
+    │   ├── RadarScrubberB.vue  # Timeline scrubber bar used inside RadarMap
+    │   ├── CommuteWidget.vue   # Bike commute summary and modal wrapper
+    │   ├── CommuteMapRenderer.vue # Leaflet polyline map with dynamic wind badges
+    │   ├── CommuteLocationSearch.vue # Address-level autocomplete (Nominatim)
+    │   └── FullScreenModal.vue # Reusable full-screen mobile modal
     │
     ├── services/
-    │   ├── weatherService.ts       # Open-Meteo: current / hourly / daily + Nominatim reverse-geocode
+    │   ├── weatherService.ts       # Open-Meteo: current / hourly / daily + Nominatim geocode/reverse-geocode
     │   ├── buienradarService.ts    # Buienradar 2-hour precip nowcast (plain-text parser)
-    │   └── rainviewerService.ts    # RainViewer: frame metadata fetch + tile URL builder
+    │   ├── rainviewerService.ts    # RainViewer: frame metadata fetch + tile URL builder
+    │   └── routingService.ts       # BRouter: bike routing profile + wind segment calculations
     │
     ├── stores/                 # Pinia stores — all persist relevant state to localStorage
     │   ├── location.ts         # lat / lon / cityName; default Amsterdam
     │   ├── weather.ts          # current + hourly + daily data, loading/error, lastUpdated
     │   ├── precipitation.ts    # Buienradar entries + derived getters (isRainExpected, minutesUntilRain)
-    │   └── theme.ts            # dark / light / system cycle; applies `dark` class to <html>
+    │   ├── theme.ts            # dark / light / system cycle; applies `dark` class to <html>
+    │   └── commute.ts          # persists Home/Work precise addresses + coords
     │
     ├── composables/
     │   ├── useGeolocation.ts   # navigator.geolocation wrapper; silently falls back on denial
@@ -98,10 +104,11 @@ weatherapp/
 |---|---|---|
 | Open-Meteo forecast | Current weather, 24-hour hourly, 7-day daily | `api.open-meteo.com/v1/forecast` |
 | Open-Meteo geocoding | City autocomplete search | `geocoding-api.open-meteo.com/v1/search` |
-| Nominatim / OSM | Reverse geocode GPS coords → city name | `nominatim.openstreetmap.org/reverse` |
+| Nominatim / OSM | Forward/reverse geocode precise addresses + GPS coords | `nominatim.openstreetmap.org` |
 | Buienradar | 2-hour precipitation nowcast (5-min intervals, NL only) | `gpsgadget.buienradar.nl/data/raintext` |
 | RainViewer | Animated radar frame metadata + tile images | `api.rainviewer.com` / `tilecache.rainviewer.com` |
-| OpenStreetMap | Base map tiles in radar overlay | `[abc].tile.openstreetmap.org` |
+| OpenStreetMap | Base map tiles in radar and commute overlays | `[abc].tile.openstreetmap.org` |
+| BRouter | Bike route geometry (trekking profile), distance, duration | `brouter.de/brouter` |
 
 **Important constraint:** Buienradar only covers the Netherlands. This is by design — the app targets NL users.
 
@@ -165,6 +172,7 @@ There is no staging environment. The live app updates on every merge to `main`.
 | `dutch-weather:weather` | `weather.ts` | `{ currentWeather, hourlyForecast, dailyForecast, lastUpdated }` |
 | `dutch-weather:precipitation` | `precipitation.ts` | `{ entries[], lastUpdated }` |
 | `dutch-weather:theme` | `theme.ts` | `"dark" \| "light" \| "system"` |
+| `dutch-weather:commute` | `commute.ts` | `{ home: Location, work: Location }` |
 
 ---
 

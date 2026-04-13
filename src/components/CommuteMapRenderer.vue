@@ -15,7 +15,7 @@ delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIcon
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 
 const props = defineProps<{
-  route: any
+  route: unknown
   origin: { lat: number; lon: number; name: string }
   destination: { lat: number; lon: number; name: string }
   weather: CurrentWeather | null
@@ -71,7 +71,15 @@ const destinationIcon = L.divIcon({
   iconAnchor: [0, 0],
 })
 
-const windMarkers = ref<any[]>([])
+interface WindMarker {
+  latLng: [number, number]
+  windDir: number
+  windSpeed: number
+  color: string
+  isHeadwind: boolean
+}
+
+const windMarkers = ref<WindMarker[]>([])
 
 watch(
   polylinePoints,
@@ -127,7 +135,7 @@ watch(
   { immediate: true },
 )
 
-function getWindIcon(marker: any) {
+function getWindIcon(marker: WindMarker) {
   // Arrow pointing in the direction wind is blowing TO (which is windDirection + 180 mod 360)
   // E.g. Wind from North (0) blows TO South (180).
   const arrowAngle = (marker.windDir + 180) % 360

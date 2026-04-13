@@ -5,7 +5,7 @@ import { LMap, LTileLayer, LMarker } from '@vue-leaflet/vue-leaflet'
 import L from 'leaflet'
 import { useLanguageStore } from '@/stores/language'
 import { useLocationStore } from '@/stores/location'
-import { fetchRadarFrames, buildRadarTileUrl, formatFrameTime } from '@/services/rainviewerService'
+import { fetchRadarFrames, buildRadarTileUrl } from '@/services/rainviewerService'
 import type { RadarFrame } from '@/services/rainviewerService'
 import RadarScrubberB from '@/components/RadarScrubberB.vue'
 import FullScreenModal from '@/components/FullScreenModal.vue'
@@ -67,14 +67,6 @@ const currentTileUrl = computed<string>(() => {
 
 const isCurrentFrameNowcast = computed<boolean>(() => {
   return currentFrameIndex.value >= nowcastStartIndex.value
-})
-
-const currentTimeLabel = computed<string>(() => {
-  if (!currentFrame.value) return ''
-  const timeStr = formatFrameTime(currentFrame.value.time)
-  return isCurrentFrameNowcast.value
-    ? `${timeStr} (${languageStore.t('scrubber.forecast')})`
-    : timeStr
 })
 
 const frameCount = computed(() => frames.value.length)

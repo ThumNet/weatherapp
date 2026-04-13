@@ -11,7 +11,7 @@ import FullScreenModal from './FullScreenModal.vue'
 import WidgetContainer from '@/components/WidgetContainer.vue'
 import WidgetHeader from '@/components/WidgetHeader.vue'
 import WidgetError from '@/components/WidgetError.vue'
-import type { CitySearchResult } from '@/types/weather'
+import type { AddressSearchResult } from '@/types/weather'
 import type { CurrentWeather } from '@/types/weather'
 
 const commuteStore = useCommuteStore()
@@ -65,7 +65,7 @@ async function calculateCommute() {
     } else {
       error.value = languageStore.t('commute.errorNoRoute')
     }
-  } catch (err) {
+  } catch {
     error.value = languageStore.t('commute.errorFetching')
   } finally {
     loading.value = false

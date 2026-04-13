@@ -84,16 +84,6 @@ const windSummary = computed(() => {
   return `${tone} ${windCompass.value}`
 })
 
-const rainSummary = computed(() => {
-  const mins = precipStore.minutesUntilRain
-  if (mins === null) {
-    if ((todayPrecipProb.value ?? 0) >= 45) return languageStore.t('current.showersLater')
-    return languageStore.t('current.mostlyDryToday')
-  }
-  if (mins === 0) return `${rainIntensityLabel.value} ${languageStore.t('current.now')}`
-  return languageStore.t('current.inMinutes', { label: rainIntensityLabel.value, minutes: mins })
-})
-
 const todayOutlook = computed(() => {
   const condition = todayCondition.value
   const precipProb = todayPrecipProb.value ?? 0
@@ -227,7 +217,7 @@ const gridLines = computed(() => {
     const pct = (t / max) * 100
     return pct >= 5 && pct <= 95
   })
-  return visible.map((t, i) => ({
+  return visible.map((t) => ({
     mmPerHour: t,
     percent: (t / max) * 100,
     label: `${t}`,

@@ -143,7 +143,7 @@ const moonPhases = [
   { fraction: 0.625, name: 'Waning Gibbous' },
   { fraction: 0.75, name: 'Last Quarter' },
   { fraction: 0.875, name: 'Waning Crescent' },
-].map(({ fraction, name }) => ({
+].map(({ fraction }) => ({
   fraction,
   name: getMoonPhaseName(fraction), // derived — sanity-checks the label
   icon: getMoonPhaseIcon(getMoonPhaseName(fraction)),

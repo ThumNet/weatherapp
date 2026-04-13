@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
-import { useLocationStore } from '@/stores/location'
 import { searchAddresses } from '@/services/weatherService'
 import type { AddressSearchResult } from '@/types/weather'
 
@@ -10,7 +9,6 @@ const emit = defineEmits<{
   (e: 'cancel'): void
 }>()
 
-const locationStore = useLocationStore()
 const languageStore = useLanguageStore()
 
 const query = ref('')

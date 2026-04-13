@@ -1,18 +1,20 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useLanguageStore } from '@/stores/language'
-import { searchAddresses } from '@/services/weatherService'
-import type { AddressSearchResult } from '@/types/weather'
+import { useLocationStore } from '@/stores/location'
+import { searchCities } from '@/services/weatherService'
+import type { CitySearchResult } from '@/types/weather'
 
 const emit = defineEmits<{
-  (e: 'select', city: AddressSearchResult): void
+  (e: 'select', city: CitySearchResult): void
   (e: 'cancel'): void
 }>()
 
+const locationStore = useLocationStore()
 const languageStore = useLanguageStore()
 
 const query = ref('')
-const results = ref<AddressSearchResult[]>([])
+const results = ref<CitySearchResult[]>([])
 const isOpen = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -35,7 +37,7 @@ async function performSearch(value: string): Promise<void> {
   errorMessage.value = null
 
   try {
-    results.value = await searchAddresses(trimmed)
+    results.value = await searchCities(trimmed)
     isOpen.value = results.value.length > 0
     activeIndex.value = -1
   } catch {
@@ -56,7 +58,7 @@ watch(query, (newVal) => {
   }, 300)
 })
 
-function selectCity(city: AddressSearchResult): void {
+function selectCity(city: CitySearchResult): void {
   query.value = ''
   results.value = []
   isOpen.value = false
@@ -108,16 +110,17 @@ onUnmounted(() => {
   }
 })
 
-function getCitySubtitle(city: AddressSearchResult): string {
-  return city.subtitle
+function getCitySubtitle(city: CitySearchResult): string {
+  const parts = [city.admin1, city.country].filter(Boolean)
+  return parts.join(', ')
 }
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full">
+  <div ref="containerRef" class="relative w-full ">
     <!-- Search input -->
     <div
-      class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition-all focus-within:border-dutch-orange dark:border-slate-800 dark:bg-slate-950"
+      class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 transition-all focus-within:border-dutch-orange dark:border-slate-800 dark:bg-slate-950 shadow-sm"
     >
       <!-- Magnifying glass icon -->
       <svg

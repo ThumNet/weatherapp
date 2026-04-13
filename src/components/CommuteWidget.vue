@@ -75,11 +75,13 @@ const headwindMsg = computed(() => {
 })
 
 const onSelectHome = (c: AddressSearchResult) => {
-  commuteStore.setHome(c.latitude, c.longitude, c.name)
+  const address = c.subtitle || c.name
+  commuteStore.setHome(c.latitude, c.longitude, address)
 }
 
 const onSelectWork = (c: AddressSearchResult) => {
-  commuteStore.setWork(c.latitude, c.longitude, c.name)
+  const address = c.subtitle || c.name
+  commuteStore.setWork(c.latitude, c.longitude, address)
 }
 </script>
 
@@ -148,8 +150,8 @@ const onSelectWork = (c: AddressSearchResult) => {
               <div>
                 <label class="block text-[10px] font-semibold uppercase tracking-wider text-storm-water-500 dark:text-sea-mist-300 mb-1">Home</label>
                 <div v-if="commuteStore.home" class="flex justify-between items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-lg">
-                  <span class="text-sm font-medium">{{ commuteStore.home.name }}</span>
-                  <button @click="commuteStore.resetCommute()" class="text-red-500 text-xs font-semibold uppercase tracking-wider hover:underline">Clear</button>
+                  <span class="text-sm font-medium line-clamp-2 mr-2">{{ commuteStore.home.name }}</span>
+                  <button @click="commuteStore.resetCommute()" class="shrink-0 text-red-500 text-xs font-semibold uppercase tracking-wider hover:underline">Clear</button>
                 </div>
                 <CommuteLocationSearch v-else @select="onSelectHome" />
               </div>
@@ -157,8 +159,8 @@ const onSelectWork = (c: AddressSearchResult) => {
               <div>
                 <label class="block text-[10px] font-semibold uppercase tracking-wider text-storm-water-500 dark:text-sea-mist-300 mb-1">Work</label>
                 <div v-if="commuteStore.work" class="flex justify-between items-center bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-3 rounded-lg">
-                  <span class="text-sm font-medium">{{ commuteStore.work.name }}</span>
-                  <button @click="commuteStore.resetCommute()" class="text-red-500 text-xs font-semibold uppercase tracking-wider hover:underline">Clear</button>
+                  <span class="text-sm font-medium line-clamp-2 mr-2">{{ commuteStore.work.name }}</span>
+                  <button @click="commuteStore.resetCommute()" class="shrink-0 text-red-500 text-xs font-semibold uppercase tracking-wider hover:underline">Clear</button>
                 </div>
                 <CommuteLocationSearch v-else @select="onSelectWork" />
               </div>

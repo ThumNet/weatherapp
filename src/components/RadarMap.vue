@@ -8,6 +8,7 @@ import { useLocationStore } from '@/stores/location'
 import { fetchRadarFrames, buildRadarTileUrl, formatFrameTime } from '@/services/rainviewerService'
 import type { RadarFrame } from '@/services/rainviewerService'
 import RadarScrubberB from '@/components/RadarScrubberB.vue'
+import FullScreenModal from '@/components/FullScreenModal.vue'
 
 // ---------------------------------------------------------------------------
 // Fix Leaflet default marker icons broken by bundlers
@@ -151,27 +152,15 @@ function closeOverlay(): void {
   isOpen.value = false
 }
 
-// Escape key handler
-function onKeydown(event: KeyboardEvent): void {
-  if (event.key === 'Escape' && isOpen.value) {
-    closeOverlay()
-  }
-}
-
-// Watch isOpen to: lock body scroll, invalidate Leaflet map size, manage key listener
+// Watch isOpen to invalidate Leaflet map size
 watch(isOpen, async (open) => {
   if (open) {
-    document.body.classList.add('overflow-hidden')
-    document.addEventListener('keydown', onKeydown)
     await nextTick()
     // Give the transition a frame to render the map container before invalidating
     setTimeout(() => {
       const mapInstance = (lmapRef.value as unknown as { leafletObject?: L.Map } | null)?.leafletObject
       mapInstance?.invalidateSize()
     }, 150)
-  } else {
-    document.body.classList.remove('overflow-hidden')
-    document.removeEventListener('keydown', onKeydown)
   }
 })
 
@@ -184,8 +173,6 @@ onMounted(() => {
 
 onUnmounted(() => {
   stopAnimation()
-  document.body.classList.remove('overflow-hidden')
-  document.removeEventListener('keydown', onKeydown)
 })
 
 // Stop animation when user changes location (map re-centers)
@@ -197,47 +184,14 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
 </script>
 
 <template>
-  <!-- ── Full-screen overlay (teleported to <body>) ──────────────────────── -->
-  <Teleport to="body">
-    <Transition name="radar-overlay">
-      <div
-        v-if="isOpen"
-        class="fixed inset-0 z-50 flex flex-col bg-white text-storm-water-800 dark:bg-slate-950 dark:text-slate-50"
-        role="dialog"
-        aria-modal="true"
-        :aria-label="languageStore.t('radar.dialog')"
-      >
-        <!-- Top bar -->
-        <div class="relative z-10 flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-5 py-3 pt-safe dark:border-slate-800 dark:bg-slate-950">
-          <div class="flex items-center gap-2">
-            <div>
-              <p class="text-[11px] uppercase tracking-[0.24em] text-storm-water-500 dark:text-sea-mist-300/55">{{ languageStore.t('radar.livePrecipitation') }}</p>
-              <h2 class="text-lg font-semibold text-storm-water-800 dark:text-dune-foam">{{ languageStore.t('radar.dialog') }}</h2>
-            </div>
-          </div>
-          <!-- Close button — min 44px tap target -->
-          <button
-            class="flex size-11 items-center justify-center text-storm-water-500 transition hover:text-dutch-orange active:text-storm-water-800 dark:text-sea-mist-200/70 dark:hover:text-dutch-orange dark:active:text-white"
-            :aria-label="languageStore.t('radar.close')"
-            @click="closeOverlay"
-          >
-            <svg
-              class="size-6"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M18 6L6 18M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-
-        <!-- Map area (flex-1 so it fills all remaining space) -->
-        <div class="relative flex-1 overflow-hidden">
+  <FullScreenModal
+    :is-open="isOpen"
+    :title="languageStore.t('radar.dialog')"
+    :subtitle="languageStore.t('radar.livePrecipitation')"
+    @close="closeOverlay"
+  >
+    <!-- Map area (flex-1 so it fills all remaining space) -->
+    <div class="relative flex-1 overflow-hidden">
 
           <!-- Loading state -->
           <div
@@ -388,19 +342,5 @@ defineExpose({ openOverlay, nowcastStartIndex, isCurrentFrameNowcast })
             {{ languageStore.t('radar.dataBy') }}
           </p>
         </div>
-      </div>
-    </Transition>
-  </Teleport>
+  </FullScreenModal>
 </template>
-
-<style scoped>
-.radar-overlay-enter-active,
-.radar-overlay-leave-active {
-  transition: opacity 0.25s ease;
-}
-
-.radar-overlay-enter-from,
-.radar-overlay-leave-to {
-  opacity: 0;
-}
-</style>

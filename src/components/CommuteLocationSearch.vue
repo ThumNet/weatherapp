@@ -116,10 +116,10 @@ function getCitySubtitle(city: AddressSearchResult): string {
 </script>
 
 <template>
-  <div ref="containerRef" class="relative w-full ">
+  <div ref="containerRef" class="relative w-full">
     <!-- Search input -->
     <div
-      class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 transition-all focus-within:border-dutch-orange dark:border-slate-800 dark:bg-slate-950 shadow-sm"
+      class="flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 shadow-sm transition-all focus-within:border-dutch-orange dark:border-slate-800 dark:bg-slate-950"
     >
       <!-- Magnifying glass icon -->
       <svg

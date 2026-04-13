@@ -94,7 +94,7 @@ const hourlyCards = computed<HourlyCard[]>(() => {
     <div class="relative">
       <div class="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-1 pb-2 pr-8">
         <div
-          v-for="card in hourlyCards"
+          v-for="(card, idx) in hourlyCards"
           :key="card.time"
           class="flex w-[4.5rem] flex-shrink-0 snap-start flex-col items-center gap-1.5 border-r border-slate-200 px-1.5 py-2.5 last:border-r-0 dark:border-slate-800"
         >

@@ -64,6 +64,7 @@ const windMarkers = computed(() => {
     markers.push({
       latLng: pt,
       windDir: windDir,
+      windSpeed: props.weather.windSpeed,
       color,
       isHeadwind
     })
@@ -77,17 +78,21 @@ function getWindIcon(marker: any) {
   const arrowAngle = (marker.windDir + 180) % 360
   
   const html = `
-    <div style="transform: rotate(${arrowAngle}deg); color: ${marker.color}; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: white; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 19V5M5 12l7-7 7 7"/>
-      </svg>
+    <div style="display: flex; align-items: center; justify-content: center; gap: 3px; background: white; padding: 2px 6px; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid ${marker.color}; color: ${marker.color}; font-weight: bold; font-size: 11px; font-family: ui-sans-serif, system-ui, sans-serif; white-space: nowrap; width: max-content;">
+      <div style="transform: rotate(${arrowAngle}deg); display: flex; align-items: center; justify-content: center;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 19V5M5 12l7-7 7 7"/>
+        </svg>
+      </div>
+      <span>${Math.round(marker.windSpeed)} <span style="font-size: 9px; opacity: 0.8; font-weight: 500;">km/h</span></span>
     </div>
   `
+  // We specify iconAnchor so the center of the arrow is roughly on the line.
   return L.divIcon({
     html,
     className: 'wind-arrow-icon',
-    iconSize: [24, 24],
-    iconAnchor: [12, 12]
+    iconSize: [64, 24],
+    iconAnchor: [32, 12]
   })
 }
 </script>

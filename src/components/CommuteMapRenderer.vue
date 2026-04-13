@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import 'leaflet/dist/leaflet.css'
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { LMap, LTileLayer, LMarker, LPolyline } from '@vue-leaflet/vue-leaflet'
 import L from 'leaflet'
 import type { CurrentWeather } from '@/types/weather'
 import { calculateBearing, calculateHeadwind } from '@/services/routingService'
+import { fetchCurrentWeather } from '@/services/weatherService'
 
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
@@ -41,36 +42,51 @@ const bounds = computed(() => {
   return null
 })
 
-const windMarkers = computed(() => {
-  if (!props.weather || polylinePoints.value.length < 2) return []
+const windMarkers = ref<any[]>([])
+
+watch(polylinePoints, async (points) => {
+  if (points.length < 2) {
+    windMarkers.value = []
+    return
+  }
   
-  const windDir = props.weather.windDirection
-  const markers = []
-  const step = Math.floor(polylinePoints.value.length / 4)
-  for (let i = step; i < polylinePoints.value.length - step; i += step) {
-    const pt = polylinePoints.value[i]
+  const step = Math.floor(points.length / 4)
+  const promises = []
+  
+  for (let i = step; i < points.length - step; i += step) {
+    const pt = points[i]
     
     // Calculate local bearing for this segment
-    const nextPt = polylinePoints.value[Math.min(i + 1, polylinePoints.value.length - 1)]
-    const prevPt = polylinePoints.value[Math.max(i - 1, 0)]
+    const nextPt = points[Math.min(i + 1, points.length - 1)]
+    const prevPt = points[Math.max(i - 1, 0)]
     
     // Bearing from prevPt to nextPt (Leaflet coordinates are [lat, lon])
     const segmentBearing = calculateBearing(prevPt[0], prevPt[1], nextPt[0], nextPt[1])
     
-    const headwind = calculateHeadwind(props.weather.windSpeed, windDir, segmentBearing)
-    const isHeadwind = headwind > 0
-    const color = isHeadwind ? '#ef4444' : '#22c55e' // red for head, green for tail
-    
-    markers.push({
-      latLng: pt,
-      windDir: windDir,
-      windSpeed: props.weather.windSpeed,
-      color,
-      isHeadwind
-    })
+    promises.push((async () => {
+      try {
+        const localWeather = await fetchCurrentWeather(pt[0], pt[1])
+        const headwind = calculateHeadwind(localWeather.windSpeed, localWeather.windDirection, segmentBearing)
+        const isHeadwind = headwind > 0
+        const color = isHeadwind ? '#ef4444' : '#22c55e' // red for head, green for tail
+        
+        return {
+          latLng: pt,
+          windDir: localWeather.windDirection,
+          windSpeed: localWeather.windSpeed,
+          color,
+          isHeadwind
+        }
+      } catch (err) {
+        console.error('Failed fetching local weather for marker', err)
+        return null
+      }
+    })())
   }
-  return markers
-})
+  
+  const results = await Promise.all(promises)
+  windMarkers.value = results.filter((r) => r !== null)
+}, { immediate: true })
 
 function getWindIcon(marker: any) {
   // Arrow pointing in the direction wind is blowing TO (which is windDirection + 180 mod 360)

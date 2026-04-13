@@ -72,6 +72,7 @@ function refreshIfStale(): void {
 function onVisibilityChange(): void {
   if (document.visibilityState === 'visible') {
     refreshIfStale()
+    if (updateServiceWorker) { void updateServiceWorker(true) }
   }
 }
 

@@ -166,6 +166,15 @@ const onSelectWork = (c: AddressSearchResult) => {
               </div>
             </div>
             
+            <div v-if="commuteStore.home && commuteStore.work && route" class="flex items-center justify-between px-1">
+              <div class="text-sm font-semibold text-storm-water-800 dark:text-dune-foam">
+                {{ (route.distance / 1000).toFixed(1) }} km
+              </div>
+              <div class="text-sm font-medium text-storm-water-500 dark:text-sea-mist-300">
+                ~{{ Math.round(route.duration / 60) }} min
+              </div>
+            </div>
+            
             <div v-if="commuteStore.home && commuteStore.work" class="flex-1 min-h-[300px] w-full rounded-xl overflow-hidden relative z-0 border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900">
                <CommuteMapRenderer v-if="route" :route="route" :home="commuteStore.home" :work="commuteStore.work" :weather="midWeather" :bearing="overallBearing" />
                <div v-else class="flex h-full items-center justify-center text-storm-water-500 text-sm">

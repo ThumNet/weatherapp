@@ -42,6 +42,35 @@ const bounds = computed(() => {
   return null
 })
 
+const originIcon = L.divIcon({
+  html: `
+    <div style="transform: translate(-50%, -100%);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="#3b82f6" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <circle cx="12" cy="10" r="3" fill="white" stroke="none"></circle>
+      </svg>
+    </div>
+  `,
+  className: 'custom-origin-icon',
+  iconSize: [0, 0],
+  iconAnchor: [0, 0]
+})
+
+const destinationIcon = L.divIcon({
+  html: `
+    <div style="transform: translate(-50%, -100%);">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="#f97316" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.3));">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+        <path d="M9 7h6v5H9V7z" fill="white" stroke="none"></path>
+        <line x1="9" y1="15" x2="9" y2="7" stroke="white" stroke-width="2"></line>
+      </svg>
+    </div>
+  `,
+  className: 'custom-destination-icon',
+  iconSize: [0, 0],
+  iconAnchor: [0, 0]
+})
+
 const windMarkers = ref<any[]>([])
 
 watch(polylinePoints, async (points) => {
@@ -138,10 +167,10 @@ function getWindIcon(marker: any) {
       :weight="5"
     />
 
-    <LMarker :lat-lng="[props.origin.lat, props.origin.lon]">
+    <LMarker :lat-lng="[props.origin.lat, props.origin.lon]" :icon="originIcon">
     </LMarker>
 
-    <LMarker :lat-lng="[props.destination.lat, props.destination.lon]">
+    <LMarker :lat-lng="[props.destination.lat, props.destination.lon]" :icon="destinationIcon">
     </LMarker>
 
     <LMarker 
